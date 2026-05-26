@@ -1,0 +1,38 @@
+---
+const { works } = Astro.props;
+---
+
+<section class="works-section">
+  <div class="section-heading">
+    <p class="eyebrow">Selected Projects</p>
+    <h2>Works</h2>
+  </div>
+
+  <div class="filter-bar">
+    <button class="filter-button active" data-filter="All">All</button>
+    <button class="filter-button" data-filter="Design">Design</button>
+    <button class="filter-button" data-filter="Photography">Photography</button>
+    <button class="filter-button" data-filter="AI Creative">AI Creative</button>
+    <button class="filter-button" data-filter="Vibe Coding">Vibe Coding</button>
+  </div>
+
+  <div class="works-grid">
+    {works.map((work) => (
+      <a
+        href={`/works/${work.slug}`}
+        class={`work-card ${work.featured ? "featured" : ""}`}
+        data-category={work.category}
+      >
+        <div class="work-image">
+          <img src={work.cover} alt={work.title} />
+        </div>
+
+        <div class="work-info">
+          <p>{work.category} / {work.type}</p>
+          <h3>{work.title}</h3>
+          <span>{work.year}</span>
+        </div>
+      </a>
+    ))}
+  </div>
+</section>

@@ -1,0 +1,18 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import WorksGrid from "../../components/WorksGrid.astro";
+import { works } from "../../data/works.js";
+---
+
+<BaseLayout title="Works | Creative Portfolio">
+  <section class="page-hero">
+    <p class="eyebrow">Archive</p>
+    <h1>Works</h1>
+    <p>
+      这里会整理设计、摄影、AI 创作和 vibe coding 网页作品。
+      现在先用占位数据，之后替换成真实项目。
+    </p>
+  </section>
+
+  <WorksGrid works={works} />
+</BaseLayout>

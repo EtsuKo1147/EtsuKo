@@ -1,0 +1,37 @@
+---
+import "../styles/global.css";
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Portfolio</title>
+  </head>
+
+  <body>
+  <div id="loading">
+    <div class="loading-inner">
+      <div class="loading-character"></div>
+
+      <div class="loading-text">
+        <span>N</span>
+        <span>O</span>
+        <span>W</span>
+        <span>&nbsp;</span>
+        <span>L</span>
+        <span>O</span>
+        <span>A</span>
+        <span>D</span>
+        <span>I</span>
+        <span>N</span>
+        <span>G</span>
+      </div>
+    </div>
+  </div>
+
+  <slot />
+
+  <script is:inline src="/main.js"></script>
+</body>

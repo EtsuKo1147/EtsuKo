@@ -1,0 +1,56 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/Hero.astro";
+import WorksGrid from "../components/WorksGrid.astro";
+import { works } from "../data/works.js";
+
+const featuredWorks = works.filter((work) => work.featured);
+---
+
+<BaseLayout title="Creative Portfolio | Home">
+  <Hero />
+
+  <section class="field-section">
+    <div class="section-heading">
+      <p class="eyebrow">Creative Fields</p>
+      <h2>What I Create</h2>
+    </div>
+
+    <div class="field-grid">
+      <article>
+        <span>01</span>
+        <h3>Visual Design</h3>
+        <p>VI、Logo、包装、海报、banner、插画、商品图和品牌官网视觉。</p>
+      </article>
+
+      <article>
+        <span>02</span>
+        <h3>Photography</h3>
+        <p>商品写真、个人写真、图片后期和视觉氛围塑造。</p>
+      </article>
+
+      <article>
+        <span>03</span>
+        <h3>AI Creative</h3>
+        <p>AI 图片、AI 视频、提示词设计、视觉合成和创意实验。</p>
+      </article>
+
+      <article>
+        <span>04</span>
+        <h3>Vibe Coding</h3>
+        <p>结合 AI 编程工具制作交互网页、鼠标动效和视觉实验。</p>
+      </article>
+    </div>
+  </section>
+
+  <WorksGrid works={featuredWorks} />
+
+  <section class="lab-preview">
+    <p class="eyebrow">Interactive Lab</p>
+    <h2>Small experiments for playful web interaction.</h2>
+    <p>
+      这里之后可以放你的鼠标流体特效、粒子实验、WebGL 练习和 AI 辅助编程网页。
+    </p>
+    <a href="/lab" class="button primary">Enter Lab</a>
+  </section>
+</BaseLayout>

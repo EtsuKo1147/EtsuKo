@@ -1,0 +1,68 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { works } from "../../data/works.js";
+
+export function getStaticPaths() {
+  return works.map((work) => ({
+    params: { slug: work.slug },
+    props: { work }
+  }));
+}
+
+const { work } = Astro.props;
+---
+
+<BaseLayout title={`${work.title} | Works`}>
+  <section class="work-detail">
+    <div class="work-detail-header">
+      <p class="eyebrow">{work.category} / {work.type}</p>
+      <h1>{work.title}</h1>
+      <p>{work.description}</p>
+    </div>
+
+    <div class="work-detail-image">
+      <img src={work.cover} alt={work.title} />
+    </div>
+
+    <div class="work-detail-meta">
+      <div>
+        <span>Year</span>
+        <strong>{work.year}</strong>
+      </div>
+
+      <div>
+        <span>Role</span>
+        <strong>{work.role}</strong>
+      </div>
+
+      <div>
+        <span>Tools</span>
+        <strong>{work.tools.join(" / ")}</strong>
+      </div>
+    </div>
+
+    <section class="case-section">
+      <h2>Project Overview</h2>
+      <p>
+        这里之后写项目背景：为什么做这个作品、目标是什么、面向什么人群、
+        你负责了哪些部分、最终呈现了什么效果。
+      </p>
+    </section>
+
+    <section class="case-section">
+      <h2>Design Direction</h2>
+      <p>
+        这里之后写视觉方向：配色、字体、构图、图片风格、关键词、参考方向等。
+      </p>
+    </section>
+
+    <section class="case-section">
+      <h2>Final Output</h2>
+      <p>
+        这里之后可以继续追加多张图片、视频、before/after 对比、网页链接等。
+      </p>
+    </section>
+
+    <a href="/works" class="back-link">← Back to Works</a>
+  </section>
+</BaseLayout>
