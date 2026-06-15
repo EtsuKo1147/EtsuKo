@@ -1,0 +1,213 @@
+/* Hero section — motorcycle & motion frame */
+
+.hero {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  background: #ffffff;
+  color: #000;
+  padding-right: clamp(230px, 24vw, 410px);
+}
+
+.brandVertical {
+  position: absolute;
+  left: clamp(6px, 1.2vw, 36px);
+  top: clamp(6px, 1.2vw, 48px);
+  z-index: 6;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  font-size: clamp(16px, 1vw, 36px);
+  line-height: 1;
+}
+
+.visualStage {
+  position: absolute;
+  left: 4vw;
+  bottom: clamp(28px, 4vh, 56px);
+  width: min(64vw, 1100px);
+  height: min(68vh, 720px);
+}
+
+.frameGroup {
+  position: absolute;
+  left: -110px;
+  top: -25%;
+  width: 110%;
+  aspect-ratio: 16 / 9;
+  z-index: 1;
+  overflow: hidden;
+  contain: paint;
+}
+
+.motionFrame {
+  z-index: 2;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/* ── Frame Mask + Line Animation ────────────────── */
+
+.frameMask {
+  position: absolute;
+  top: 2%;
+  left: 18%;
+  right: 18%;
+  bottom: 6%;
+  z-index: 0;
+  overflow: hidden;
+  clip-path: polygon(0% 0%, 100% 16%, 100% 100%, 0% 86%);
+  pointer-events: none;
+}
+
+.lineSprite {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  width: 200%;
+  height: 100%;
+  animation: lineSpriteFlip 0.4s steps(1, end) infinite;
+}
+
+.lineFrame {
+  flex: 0 0 50%;
+  width: 50%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+@keyframes lineSpriteFlip {
+  0%, 49.999% {
+    transform: translateX(0);
+  }
+
+  50%, 100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* ── Motorcycle ──────────────────────────────────── */
+
+.motorcycle {
+  position: absolute;
+  left: 20%;
+  top: -10%;
+  width: 87%;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.motorcycleImage {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ── Arrow Belt ──────────────────────────────────── */
+
+.arrowBelt {
+  position: absolute;
+  top: -32%;
+  left: 33%;
+  width: clamp(180px, 20vw, 300px);
+  height: clamp(70px, 10vw, 100px);
+  z-index: 2;
+  overflow: hidden;
+  clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+  pointer-events: none;
+  transform: translateX(-120vw);
+}
+
+.visualStage.revealed .arrowBelt {
+  transform: translateX(0);
+}
+
+.arrowSkew {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  clip-path: polygon(0% 0%, 100% 16%, 100% 100%, 0% 86%);
+  transform: skewY(8deg);
+  transform-origin: center;
+}
+
+.arrowGrid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  align-items: center;
+  justify-items: center;
+  height: 100%;
+  width: 100%;
+  pointer-events: none;
+  mask-image: linear-gradient(to right, transparent 0%, black 28%, black 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 28%, black 100%);
+}
+
+.arrowCell {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  background-image: url('/home/arrow.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 83% auto;
+  animation-name: arrowCellPulse;
+  animation-duration: 1.4s;
+  animation-timing-function: steps(1, end);
+  animation-iteration-count: infinite;
+}
+
+.arrowCell:nth-child(1) { animation-delay: 0s; }
+.arrowCell:nth-child(2) { animation-delay: 0.2s; }
+.arrowCell:nth-child(3) { animation-delay: 0.4s; }
+.arrowCell:nth-child(4) { animation-delay: 0.6s; }
+.arrowCell:nth-child(5) { animation-delay: 0.8s; }
+.arrowCell:nth-child(6) { animation-delay: 1s; }
+.arrowCell:nth-child(7) { animation-delay: 1.2s; }
+
+@keyframes arrowCellPulse {
+  0%, 71.428% {
+    opacity: 1;
+  }
+
+  71.429%, 100% {
+    opacity: 0;
+  }
+}
+
+/* ── Mobile ─────────────────────────────────────── */
+@media (max-width: 768px) {
+  .hero {
+    padding-right: 0;
+  }
+
+  .brandVertical {
+    left: 12px;
+    top: 14px;
+    font-size: 20px;
+  }
+
+  .visualStage {
+    left: 0;
+    bottom: 16vh;
+    width: 100vw;
+    height: 60svh;
+  }
+
+  .frameGroup {
+    left: 2vw;
+    top: 22%;
+    width: 78%;
+  }
+
+  .motorcycle {
+    left: 5%;
+    top: 0%;
+    width: 90%;
+  }
+}

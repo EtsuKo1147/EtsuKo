@@ -1,0 +1,34 @@
+.wrap {
+  position: relative;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+}
+
+.timeOverlay {
+  position: absolute;
+  top: 42%;
+  left: 8%;
+  transform: rotate(-5.87deg);
+  transform-origin: left center;
+  font-family: var(--font-intel-mono), "Courier New", monospace;
+  font-size: clamp(10px, 1.1vw, 15px);
+  line-height: 1;
+  color: #111111;
+  letter-spacing: 0.05em;
+  pointer-events: none;
+  white-space: nowrap;
+  user-select: none;
+}
+
+@media (max-width: 768px) {
+  .timeOverlay {
+    top: 40%;
+    left: 6%;
+    font-size: 8px;
+  }
+}

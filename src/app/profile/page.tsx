@@ -1,9 +1,9 @@
-export const metadata = { title: 'About — Etsu.' }
+export const metadata = { title: 'Profile — Etsu.' }
 
-export default function AboutPage() {
+export default function ProfilePage() {
   return (
     <main className="max-w-6xl mx-auto px-6 py-24 flex-1">
-      <p className="text-xs tracking-widest uppercase text-black/40 mb-16">About</p>
+      <p className="text-xs tracking-widest uppercase text-black/40 mb-16">Profile</p>
       <div className="grid md:grid-cols-2 gap-16">
         <h1 className="text-4xl md:text-5xl font-light leading-tight tracking-tight">
           Designer.

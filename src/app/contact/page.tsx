@@ -1,4 +1,4 @@
-export const metadata = { title: 'Contact — Freesh' }
+export const metadata = { title: 'Contact — Etsu.' }
 
 export default function ContactPage() {
   return (

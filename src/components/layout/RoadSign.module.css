@@ -1,0 +1,126 @@
+/* Road Sign Sidebar — SVG image-based, pole as base layer */
+
+.roadSign {
+  position: fixed;
+  top: clamp(8px, 2vh, 28px);
+  right: clamp(-10px, 1vw, 0px);
+  width: clamp(300px, 26vw, 430px);
+  height: min(100svh, 920px);
+  z-index: 50;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+/* Clock sign — above pole */
+.clock {
+  position: absolute;
+  top: 6%;
+  right: -2px;
+  width: 100%;
+  height: auto;
+  z-index: 2;
+  pointer-events: none;
+  display: block;
+  user-select: none;
+}
+
+/* Nav container */
+.nav {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+}
+
+/* Individual sign links */
+.link {
+  position: absolute;
+  display: block;
+  pointer-events: auto;
+  transition: transform 0.18s ease;
+}
+
+.link:hover,
+.link:focus-visible {
+  transform: translateX(8px);
+  outline: none;
+}
+
+.link:active {
+  transform: translateX(14px);
+}
+
+/* Link positions — start below clock, aligned to pole */
+.linkHome {
+  top: 28%;
+  right: clamp(-280px, 34vw, -500px);
+  width: clamp(320px, 37vw, 720px);
+}
+
+.linkWorks {
+  top: 40%;
+  right: clamp(-280px, 34vw, -500px);
+  width: clamp(320px, 37vw, 720px);
+}
+
+.linkProfile {
+  top: 52%;
+  right: clamp(-280px, 34vw, -500px);
+  width: clamp(320px, 37vw, 720px);
+}
+
+.linkContact {
+  top: 64%;
+  right: clamp(-280px, 34vw, -500px);
+  width: clamp(320px, 37vw, 720px);
+}
+
+/* Sign images */
+.img {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  pointer-events: none;
+}
+
+.imgHover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  opacity: 0;
+}
+
+/* Hover / focus: swap images */
+.link:hover .imgDefault,
+.link:focus-visible .imgDefault {
+  opacity: 0;
+}
+
+.link:hover .imgHover,
+.link:focus-visible .imgHover {
+  opacity: 1;
+}
+
+/* Screen reader only */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Mobile ─────────────────────────────────────── */
+@media (max-width: 768px) {
+  .roadSign {
+    right: 0;
+    top: 4px;
+    width: clamp(160px, 46vw, 240px);
+  }
+}

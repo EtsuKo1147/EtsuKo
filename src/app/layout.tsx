@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Geist } from 'next/font/google'
+import { Geist, Intel_One_Mono } from 'next/font/google'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import './globals.css'
@@ -9,8 +9,14 @@ const geist = Geist({
   variable: '--font-geist',
 })
 
+const intelMono = Intel_One_Mono({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-intel-mono',
+})
+
 export const metadata: Metadata = {
-  title: 'Freesh — Portfolio',
+  title: 'Etsu — Portfolio',
   description: 'Designer & Developer portfolio',
 }
 
@@ -20,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${geist.variable} h-full`}>
+    <html lang="en" className={`${geist.variable} ${intelMono.variable} h-full`}>
       <body className="min-h-full flex flex-col">
         <Header />
         {children}

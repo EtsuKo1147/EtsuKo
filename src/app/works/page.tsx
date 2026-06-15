@@ -1,7 +1,7 @@
 import { works } from '@/data/works'
 import Link from 'next/link'
 
-export const metadata = { title: 'Works — Freesh' }
+export const metadata = { title: 'Works — Etsu.' }
 
 export default function WorksPage() {
   return (

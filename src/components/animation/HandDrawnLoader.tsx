@@ -3,6 +3,7 @@
 import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import Image from 'next/image'
 import gsap from 'gsap'
+import LoadingTypewriter from './LoadingTypewriter'
 
 // 仪表盘 loading 时长
 const DASHBOARD_LOADING_MS = 2000
@@ -285,7 +286,7 @@ export default function HandDrawnLoader({
     tl.set(transitionCoverRef.current, { autoAlpha: 0 }, 4.0)
 
     // 2.4s: 通知 HOME 在黑场下面提前显示
-    tl.call(() => { onRevealRef.current?.() }, undefined, 2.4)
+    tl.call(() => { onRevealRef.current?.() }, undefined, 5.6)
 
     // 2.6s → 3.5s: loaderBackdrop 白底淡出（0.9s）
     tl.to(loaderBackdropRef.current,   { autoAlpha: 0, duration: 0.9 }, 2.6)
@@ -431,6 +432,8 @@ export default function HandDrawnLoader({
           zIndex: 1,
         }}
       >
+        <LoadingTypewriter />
+
         {/* 头盔居中，视觉上稍微往上 */}
         <div
           style={{

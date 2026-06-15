@@ -1,57 +1,45 @@
 <!-- BEGIN:nextjs-agent-rules -->
+
 # This is NOT the Next.js you know
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+This version has breaking changes — APIs, conventions, and file structure may differ from older Next.js knowledge. Before changing Next.js-specific code, check the local guide in `node_modules/next/dist/docs/` when necessary. Heed deprecation notices.
+
 <!-- END:nextjs-agent-rules -->
-# Project Rules  /  项目规则
 
-## Language / 语言
+# Project Rules / 项目规则
 
-- Always reply to the user in Chinese.
-- 始终用中文回复用户。
+## 1. Language / 语言
 
-- Explanations should be beginner-friendly.
-- 解释要适合初学者理解，不要写得太复杂。
-
----
-
-## Project Root / 项目根目录
-
-- The project root is `/Users/freesh/new-portfolio`.
-- 当前项目根目录是 `/Users/freesh/new-portfolio`。
-
-- Never operate outside `/Users/freesh/new-portfolio`.
-- 不允许在 `/Users/freesh/new-portfolio` 之外操作。
-
-- Before running any command, confirm `pwd` is `/Users/freesh/new-portfolio`.
-- 执行任何命令前，必须确认当前路径 `pwd` 是 `/Users/freesh/new-portfolio`。
+* Always reply to the user in Chinese.
+* 始终用中文回复用户。
+* Explanations should be beginner-friendly.
+* 解释要适合初学者理解，不要写得太复杂。
 
 ---
 
-## Scope Control / 操作范围控制
+## 2. Project Root / 项目根目录
 
-- Do not scan the whole computer.
-- 不要扫描整台电脑。
-
-- Do not read, search, index, or modify files outside this project root.
-- 不要读取、搜索、索引或修改项目根目录之外的文件。
-
-- Do not inspect parent directories such as `/Users/freesh`.
-- 不要检查上级目录，例如 `/Users/freesh`。
-
-- Do not open unrelated folders or old portfolio projects.
-- 不要打开无关文件夹，也不要打开旧作品集项目。
-
-- Only inspect files that are directly relevant to the current task.
-- 只查看和当前任务直接相关的文件。
+* The project root is the directory that contains this rules file, `package.json`, and the main Next.js app.
+* 项目根目录是包含本规则文件、`package.json` 和 Next.js 主项目代码的目录。
+* Do not assume any fixed absolute path such as `/Users/.../...`.
+* 不要写死或假设任何电脑绝对路径。
+* Before running commands, confirm the current directory with `pwd`.
+* 执行命令前，先用 `pwd` 确认当前位置。
+* Never operate outside the project root.
+* 不要在项目根目录之外操作。
 
 ---
 
-## Forbidden Directories / 禁止读取的目录
+## 3. Scope Control / 操作范围
 
-Never read, search, list, scan, or modify these directories:
+* Do not scan the whole computer.
+* 不要扫描整台电脑。
+* Do not inspect parent directories or unrelated projects.
+* 不要查看上级目录或无关项目。
+* Only read or edit files directly related to the current task.
+* 只读取或修改和当前任务直接相关的文件。
 
-不要读取、搜索、列出、扫描或修改以下目录：
+Do not read, search, list, scan, or modify these directories:
 
 ```text
 node_modules/
@@ -69,3 +57,110 @@ public/raw/
 public/backup/
 public/archive/
 public/large-assets/
+```
+
+---
+
+## 4. Before Editing / 修改前规则
+
+Before editing code, explain in Chinese:
+
+1. What you plan to change
+2. Which files you will modify
+3. Why this change is needed
+
+修改代码前，必须先用中文说明：
+
+1. 准备改什么
+2. 会改哪些文件
+3. 为什么这样改
+
+Keep changes minimal and focused.
+修改要小而精准，不要顺手重构无关代码。
+
+---
+
+## 5. Command Rules / 命令规则
+
+Do not run these commands unless the user explicitly approves:
+
+```bash
+rm -rf
+git reset --hard
+git clean -fd
+git push --force
+npm install
+npm uninstall
+npm update
+pnpm install
+yarn install
+```
+
+* Do not install, remove, or update dependencies without permission.
+* 未经允许，不要安装、删除或更新依赖。
+* If a command may modify `package.json`, lockfiles, or `node_modules`, ask first.
+* 如果命令可能修改 `package.json`、lockfile 或 `node_modules`，必须先询问用户。
+
+---
+
+## 6. Git / Git 规则
+
+* Do not run `git push` unless the user asks.
+* 不要执行 `git push`，除非用户明确要求。
+* Do not delete user changes.
+* 不要删除用户已有修改。
+* Before risky Git operations, explain what will happen.
+* 执行有风险的 Git 操作前，先解释会发生什么。
+
+---
+
+## 7. Next.js / Next.js 规则
+
+* Respect the existing App Router structure.
+* 尊重现有 App Router 结构。
+* Do not convert Server Components to Client Components unless required.
+* 不要随意把 Server Component 改成 Client Component。
+* Add `"use client"` only when client-side hooks, browser APIs, animations, or event handlers are needed.
+* 只有需要 hooks、浏览器 API、动画或事件处理时，才添加 `"use client"`。
+
+---
+
+## 8. Styling and Animation / 样式与动效
+
+* Follow the existing styling approach.
+* 遵守项目现有样式写法。
+* Do not introduce new styling systems or animation libraries without permission.
+* 不要擅自引入新的样式方案或动效库。
+* Prefer CSS, existing CSS modules, and existing animation utilities.
+* 优先使用 CSS、现有 CSS Module 和项目已有动效工具。
+* Do not add WebGL, Three.js, p5.js, Matter.js, or other heavy libraries unless approved.
+* 未经允许，不要添加 WebGL、Three.js、p5.js、Matter.js 等重型库。
+
+---
+
+## 9. Verification / 检查
+
+After changes, run the smallest relevant check when possible:
+
+```bash
+npm run lint
+npm run build
+npm run dev
+```
+
+* Do not claim success unless the check actually passed.
+* 检查没有通过时，不要声称成功。
+* If a check fails, explain the error in beginner-friendly Chinese.
+* 如果检查失败，用适合初学者理解的中文解释。
+
+---
+
+## 10. Core Principle / 核心原则
+
+Work carefully, locally, and minimally.
+
+操作必须谨慎、本地化、最小化。
+
+Do only what the user asked.
+
+只做用户要求的事情，不要擅自扩大任务范围。

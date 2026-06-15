@@ -1,0 +1,69 @@
+.typewriter {
+  --typewriter-top: clamp(24px, 5.56vh, 60px);
+  --typewriter-left: clamp(40px, 6.77vw, 130px);
+  --typewriter-width: clamp(360px, 26.04vw, 500px);
+  --typewriter-height: clamp(60px, 8.8vh, 95px);
+  --typewriter-font-size: clamp(12px, 0.83vw, 16px);
+  --typewriter-line-height: calc(var(--typewriter-height) / 3);
+
+  position: absolute;
+  top: var(--typewriter-top);
+  left: var(--typewriter-left);
+  width: var(--typewriter-width);
+  height: var(--typewriter-height);
+  overflow: hidden;
+  z-index: 10;
+  pointer-events: none;
+
+  font-family: var(--font-intel-mono), "Courier New", monospace;
+  font-size: var(--typewriter-font-size);
+  line-height: var(--typewriter-line-height);
+  color: #111111;
+  letter-spacing: 0.01em;
+}
+
+.inner {
+  width: 100%;
+}
+
+.line {
+  display: block;
+  white-space: pre;
+  height: var(--typewriter-line-height);
+}
+
+.cursor {
+  display: inline;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .typewriter {
+    --typewriter-width: min(360px, calc(100vw - 24px));
+    --typewriter-height: 52px;
+    --typewriter-font-size: 12px;
+    --typewriter-line-height: 13px;
+
+    top: 13px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: var(--typewriter-width);
+    height: var(--typewriter-height);
+    font-size: var(--typewriter-font-size);
+    line-height: var(--typewriter-line-height);
+  }
+
+  .line {
+    height: var(--typewriter-line-height);
+  }
+}
