@@ -323,20 +323,28 @@
 
   .visualStage {
     left: 0;
-    bottom: 16vh;
+    bottom: 12vh;
     width: 100vw;
-    height: 60svh;
+    height: 58svh;
   }
 
   .frameGroup {
-    left: 2vw;
-    top: 22%;
-    width: 78%;
+    left: -15%;
+    top: 38%;
+    width: 130%;
   }
 
   .motorcycle {
-    left: 5%;
-    top: 0%;
+    left: 10%;
+    top: 60%;
     width: 90%;
   }
+
+  .arrowBelt {
+    top: 30%;
+    left: 15%;
+    width: 120px;
+    height: 45px;
+  }
+
 }

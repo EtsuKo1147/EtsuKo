@@ -339,8 +339,8 @@ export default function HandDrawnLoader({
     // 1.4s: transitionCoverRef 已全黑，安全切换到内部层
     tl.set(interiorLayerRef.current,   { autoAlpha: 1 }, 1.4)
 
-    // 1.45s: 通知 HOME 在黑场下面提前显示
-    tl.call(() => { onRevealRef.current?.() }, undefined, 1.45)
+    // 4.3s: 在 mobile 内部 visor 打开过程中触发主页 reveal，让 HomeHero 动画挂到 visor 打开阶段
+    tl.call(() => { onRevealRef.current?.() }, undefined, 3.9)
 
     // 1.45s → 2.1s: loaderBackdrop 白底淡出（0.65s）
     tl.to(loaderBackdropRef.current,   { autoAlpha: 0, duration: 0.65 }, 1.45)

@@ -8,7 +8,7 @@ const LINES = [
   '> Loading profile...',
   '> Loading selected works...',
   '',
-  '>  [ Logo Design / VI Design / Illustration ]',
+  '> [ Logo Design / VI Design / Illustration ]',
   '> [ Poster / Banner / Photography / Web Design ]',
   '',
   '> Welcome to my portfolio.',

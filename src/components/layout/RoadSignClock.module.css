@@ -106,8 +106,8 @@
 
 @media (max-width: 768px) {
   .timeOverlay {
-    top: 35%;
-    left: 5%;
-    font-size: 40pt;
+    top: 14%;
+    left: 4%;
+    font-size: 60pt;
   }
 }
