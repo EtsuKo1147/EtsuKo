@@ -58,6 +58,14 @@ export default function HomeHero({ revealed = false }: HomeHeroProps) {
               <img src="/home/line-1.svg" alt="" className={styles.lineFrame} />
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/home/line-2.svg" alt="" className={styles.lineFrame} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/home/line-3.svg" alt="" className={styles.lineFrame} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/home/line-4.svg" alt="" className={styles.lineFrame} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/home/line-5.svg" alt="" className={styles.lineFrame} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/home/line-6.svg" alt="" className={styles.lineFrame} />
             </div>
           </div>
           <Image
@@ -84,6 +92,22 @@ export default function HomeHero({ revealed = false }: HomeHeroProps) {
         </div>
 
         <div ref={motorcycleRef} className={styles.motorcycle}>
+          <div className={styles.tailFx} aria-hidden="true">
+            <div className={styles.tailSprite}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/home/tail-1.svg" alt="" className={styles.tailFrame} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/home/tail-2.svg" alt="" className={styles.tailFrame} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/home/tail-3.svg" alt="" className={styles.tailFrame} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/home/tail-4.svg" alt="" className={styles.tailFrame} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/home/tail-5.svg" alt="" className={styles.tailFrame} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/home/tail-6.svg" alt="" className={styles.tailFrame} />
+            </div>
+          </div>
           <Image
             src="/home/hero-motorcycle.svg"
             alt="Motorcycle illustration"

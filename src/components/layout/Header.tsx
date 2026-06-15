@@ -12,6 +12,7 @@ export default function Header() {
   const pathname = usePathname()
   const asideRef = useRef<HTMLElement>(null)
   const navRef = useRef<HTMLElement>(null)
+  const clockRef = useRef<HTMLDivElement>(null)
 
   const handleHomeClick = (event: MouseEvent<HTMLAnchorElement>) => {
     if (pathname !== '/') {
@@ -30,12 +31,13 @@ export default function Header() {
       if (!root || !navRef.current) return
 
       const links = Array.from(navRef.current.querySelectorAll('a'))
+      const items = [clockRef.current, ...links].filter(Boolean)
 
-      gsap.killTweensOf(links)
+      gsap.killTweensOf(items)
 
       gsap.set(root, { visibility: 'hidden' })
 
-      gsap.set(links, {
+      gsap.set(items, {
         x: '120vw',
         transition: 'none',
       })
@@ -45,16 +47,16 @@ export default function Header() {
 
       gsap.set(root, { visibility: 'visible' })
 
-      gsap.to(links, {
+      gsap.to(items, {
         x: 0,
         duration: 0.6,
         stagger: 0.15,
         ease: 'back.out(1.3)',
         overwrite: true,
         onComplete: () => {
-          gsap.set(links, { clearProps: 'transform' })
+          gsap.set(items, { clearProps: 'transform' })
           requestAnimationFrame(() => {
-            gsap.set(links, { clearProps: 'transition' })
+            gsap.set(items, { clearProps: 'transition' })
           })
         },
       })
@@ -80,12 +82,13 @@ export default function Header() {
 
   return (
     <aside ref={asideRef} className={styles.roadSign} aria-label="Main navigation">
+      <div className={styles.roadSignGroup}>
 
-      {/* Layer 1: clock sign with live time overlay */}
-      <RoadSignClock className={styles.clock} />
+        {/* Layer 1: clock sign with live time overlay */}
+        <RoadSignClock className={styles.clock} clockRef={clockRef} />
 
-      {/* Layer 2: nav signs */}
-      <nav ref={navRef} className={styles.nav} aria-label="Primary navigation">
+        {/* Layer 2: nav signs */}
+        <nav ref={navRef} className={styles.nav} aria-label="Primary navigation">
 
         <Link
           className={`${styles.link} ${styles.linkHome}`}
@@ -123,7 +126,8 @@ export default function Header() {
           <span className={styles.srOnly}>CONTACT</span>
         </Link>
 
-      </nav>
+        </nav>
+      </div>
     </aside>
   )
 }

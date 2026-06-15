@@ -1,5 +1,14 @@
+@font-face {
+  font-family: 'DS-Digital';
+  src: url('/fonts/DS-DIGIB.TTF') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 .wrap {
   position: relative;
+  isolation: isolate;
 }
 
 .image {
@@ -7,28 +16,98 @@
   width: 100%;
   height: auto;
   user-select: none;
+  position: relative;
+  z-index: 1;
 }
 
 .timeOverlay {
   position: absolute;
-  top: 42%;
-  left: 8%;
-  transform: rotate(-5.87deg);
+  top: 13%;
+  left: 5%;
+  z-index: 5;
+  transform: rotate(-5.87deg) skewX(-6deg);
   transform-origin: left center;
-  font-family: var(--font-intel-mono), "Courier New", monospace;
-  font-size: clamp(10px, 1.1vw, 15px);
+  font-family: 'DS-Digital', var(--font-intel-mono), "Courier New", "Menlo", "Monaco", "SFMono-Regular", monospace;
+  font-size: 60pt;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
   line-height: 1;
-  color: #111111;
-  letter-spacing: 0.05em;
-  pointer-events: none;
+  color: #111;
   white-space: nowrap;
+  pointer-events: none;
   user-select: none;
+}
+
+.dateOverlay {
+  position: absolute;
+  top: 11%;
+  left: 11%;
+  z-index: 8;
+  transform: rotate(-5.87deg) skewX(-6deg);
+  transform-origin: left center;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 10pt;
+  font-weight: 550;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  color: #111;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
+.tickerOverlay {
+  position: absolute;
+  top: 35%;
+  left: 0%;
+  width: 55%;
+  z-index: 9;
+  transform: rotate(-5.87deg) skewX(-6deg);
+  transform-origin: left center;
+  pointer-events: none;
+  user-select: none;
+}
+
+.tickerViewport {
+  width: 100%;
+  height: 14pt;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.tickerTrack {
+  display: flex;
+  width: max-content;
+  animation: clockTickerScroll 15s linear infinite;
+  will-change: transform;
+}
+
+.tickerText {
+  flex: 0 0 auto;
+  padding-right: 2em;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 9pt;
+  font-weight: 550;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: #111;
+  white-space: nowrap;
+}
+
+@keyframes clockTickerScroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 @media (max-width: 768px) {
   .timeOverlay {
-    top: 40%;
-    left: 6%;
-    font-size: 8px;
+    top: 35%;
+    left: 5%;
+    font-size: 40pt;
   }
 }
