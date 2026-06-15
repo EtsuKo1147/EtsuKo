@@ -108,14 +108,22 @@ export default function HomeHero({ revealed = false }: HomeHeroProps) {
               <img src="/home/tail-6.svg" alt="" className={styles.tailFrame} />
             </div>
           </div>
-          <Image
-            src="/home/hero-motorcycle.svg"
-            alt="Motorcycle illustration"
-            width={980}
-            height={720}
-            priority
-            className={styles.motorcycleImage}
-          />
+          <div className={styles.motorcycleSprite}>
+            <div className={styles.motorcycleSpriteTrack}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/home/hero-motorcycle-1.webp" alt="" className={styles.motorcycleFrame} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/home/hero-motorcycle-2.webp" alt="" className={styles.motorcycleFrame} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/home/hero-motorcycle-3.webp" alt="" className={styles.motorcycleFrame} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/home/hero-motorcycle-4.webp" alt="" className={styles.motorcycleFrame} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/home/hero-motorcycle-5.webp" alt="" className={styles.motorcycleFrame} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/home/hero-motorcycle-6.webp" alt="" className={styles.motorcycleFrame} />
+            </div>
+          </div>
         </div>
       </div>
     </section>

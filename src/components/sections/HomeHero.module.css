@@ -123,6 +123,61 @@
   display: block;
 }
 
+/* ── Motorcycle Sprite ───────────────────────────── */
+
+.motorcycleSprite {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  aspect-ratio: 980 / 720;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.motorcycleSpriteTrack {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  width: 600%;
+  height: 100%;
+  animation: motorcycleSpriteFlip 0.75s steps(1, end) infinite;
+}
+
+.motorcycleFrame {
+  flex: 0 0 calc(100% / 6);
+  width: calc(100% / 6);
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+}
+
+@keyframes motorcycleSpriteFlip {
+  0%, 16.666% {
+    transform: translateX(0);
+  }
+
+  16.667%, 33.333% {
+    transform: translateX(-16.6667%);
+  }
+
+  33.334%, 50% {
+    transform: translateX(-33.3333%);
+  }
+
+  50.001%, 66.666% {
+    transform: translateX(-50%);
+  }
+
+  66.667%, 83.333% {
+    transform: translateX(-66.6667%);
+  }
+
+  83.334%, 100% {
+    transform: translateX(-83.3333%);
+  }
+}
+
 /* ── Tail FX ─────────────────────────────────────── */
 
 .tailFx {
