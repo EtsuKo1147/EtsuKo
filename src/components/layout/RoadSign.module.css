@@ -30,7 +30,7 @@
   .roadSign {
     --road-sign-scale: 0.55;
     right: 50px;
-    top: -150px;
+    top: -100px;
     transform: none;
   }
 }
