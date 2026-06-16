@@ -42,7 +42,7 @@
 .dateOverlay {
   position: absolute;
   top: 11%;
-  left: 11%;
+  left: 9%;
   z-index: 8;
   transform: rotate(-5.87deg) skewX(-6deg);
   transform-origin: left center;
@@ -110,4 +110,27 @@
     left: 4%;
     font-size: 60pt;
   }
+  .bunny {
+    width: 68px;
+    left: 52px;
+    top: -52px;
+  }
+}
+
+.bunny {
+  position: absolute;
+  width: 90px;
+  left: 240px;
+  top: -90px;
+  z-index: 10;
+  pointer-events: auto;
+  cursor: pointer;
+  user-select: none;
+  transform-origin: 50% 88%;
+}
+
+.bunny img {
+  display: block;
+  width: 100%;
+  height: auto;
 }

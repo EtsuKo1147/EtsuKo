@@ -31,9 +31,11 @@ function buildClockInfo(date: Date): string {
 type RoadSignClockProps = {
   className?: string
   clockRef?: Ref<HTMLDivElement>
+  bunnyRef?: Ref<HTMLDivElement>
+  onBunnyPointerEnter?: () => void
 }
 
-export default function RoadSignClock({ className, clockRef }: RoadSignClockProps) {
+export default function RoadSignClock({ className, clockRef, bunnyRef, onBunnyPointerEnter }: RoadSignClockProps) {
   const [time, setTime] = useState<string | null>(null)
   const [clockInfo, setClockInfo] = useState<string | null>(null)
 
@@ -74,6 +76,10 @@ export default function RoadSignClock({ className, clockRef }: RoadSignClockProp
             </span>
           </div>
         </div>
+      </div>
+      <div ref={bunnyRef} className={styles.bunny} aria-hidden="true" onPointerEnter={onBunnyPointerEnter}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/road-sign/clock-rabbit.svg" alt="" draggable={false} />
       </div>
     </div>
   )
