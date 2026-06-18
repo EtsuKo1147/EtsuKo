@@ -83,7 +83,6 @@ export default function HandDrawnLoader({
   const [hintDismissed,   setHintDismissed]   = useState(false)
   const [viewportSize,    setViewportSize]    = useState({ width: 0, height: 0 })
   const [cursorPositionReady, setCursorPositionReady] = useState(false)
-  const [homeRevealed, setHomeRevealed] = useState(false)
 
   const onCompleteRef      = useRef(onComplete)
   const onRevealRef        = useRef(onReveal)
@@ -158,11 +157,6 @@ export default function HandDrawnLoader({
 
   useEffect(() => { onCompleteRef.current = onComplete }, [onComplete])
   useEffect(() => { onRevealRef.current = onReveal },     [onReveal])
-
-  const revealHome = () => {
-    setHomeRevealed(true)
-    onRevealRef.current?.()
-  }
 
   // viewport 监听（useLayoutEffect 确保首帧前拿到真实尺寸）
   useLayoutEffect(() => {
@@ -292,7 +286,7 @@ export default function HandDrawnLoader({
     tl.set(transitionCoverRef.current, { autoAlpha: 0 }, 4.0)
 
     // 2.4s: 通知 HOME 在黑场下面提前显示
-    tl.call(revealHome, undefined, 5.6)
+    tl.call(() => onRevealRef.current?.(), undefined, 5.6)
 
     // 2.6s → 3.5s: loaderBackdrop 白底淡出（0.9s）
     tl.to(loaderBackdropRef.current,   { autoAlpha: 0, duration: 0.9 }, 2.6)
@@ -346,7 +340,7 @@ export default function HandDrawnLoader({
     tl.set(interiorLayerRef.current,   { autoAlpha: 1 }, 1.4)
 
     // 4.3s: 在 mobile 内部 visor 打开过程中触发主页 reveal，让 HomeHero 动画挂到 visor 打开阶段
-    tl.call(revealHome, undefined, 3.9)
+    tl.call(() => onRevealRef.current?.(), undefined, 3.9)
 
     // 1.45s → 2.1s: loaderBackdrop 白底淡出（0.65s）
     tl.to(loaderBackdropRef.current,   { autoAlpha: 0, duration: 0.65 }, 1.45)
@@ -409,7 +403,7 @@ export default function HandDrawnLoader({
         zIndex: 9999,
         opacity: fading ? 0 : 1,
         transition: `opacity ${FADE_MS}ms ease`,
-        pointerEvents: fading || homeRevealed ? 'none' : 'all',
+        pointerEvents: fading ? 'none' : 'all',
         cursor: showCursorStyle ? 'none' : 'default',
       }}
     >

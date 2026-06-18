@@ -73,12 +73,6 @@ export default function HomeHero({ revealed = false }: HomeHeroProps) {
   useEffect(() => {
     const hero = heroRef.current
     if (!hero) return
-    const isMobile = window.matchMedia('(max-width: 768px)').matches
-
-    if (isMobile) {
-      // Temporary diagnostic: skip mobile Hero scroll updates.
-      return
-    }
 
     let frame = 0
 

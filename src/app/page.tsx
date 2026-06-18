@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
-import ScrollDebugOverlay from '@/components/debug/ScrollDebugOverlay'
 import HomeEntryScrollController from '@/components/sections/HomeEntryScrollController'
 import HomeHero from '@/components/sections/HomeHero'
 import HomeSelectedWorks from '@/components/sections/HomeSelectedWorks'
@@ -45,12 +44,11 @@ export default function HomePage() {
           }}
         />
       )}
-      {/* Temporary diagnostic: remove main overflowX hidden to test touch scrolling. */}
+      {/* Keep main free of overflowX hidden; it can break touch scrolling on mobile browsers. */}
       <main style={{ visibility: homeRevealed ? 'visible' : 'hidden' }}>
         <HomeHero revealed={homeRevealed} />
         <HomeSelectedWorks />
       </main>
-      <ScrollDebugOverlay />
     </>
   )
 }

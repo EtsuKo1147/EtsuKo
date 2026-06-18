@@ -465,42 +465,4 @@
     font-size: clamp(17px, 5vw, 24px);
   }
 
-  /* Temporary diagnostic: reduce mobile Hero animation load. */
-  .lineSprite,
-  .motorcycleSpriteTrack,
-  .tailSprite,
-  .arrowCell,
-  .profileCaret {
-    animation: none;
-  }
-
-  /* Temporary diagnostic: make mobile Hero visual layers touch-transparent. */
-  .hero,
-  .visualStage,
-  .frameGroup,
-  .frameMask,
-  .lineSprite,
-  .lineFrame,
-  .motionFrame,
-  .motorcycleScrollLayer,
-  .motorcycleMotion,
-  .motorcycle,
-  .motorcycleSprite,
-  .motorcycleSpriteTrack,
-  .motorcycleFrame,
-  .tailFx,
-  .tailSprite,
-  .tailFrame,
-  .arrowBelt,
-  .arrowSkew,
-  .arrowGrid,
-  .arrowCell,
-  .transitionArea,
-  .profileText,
-  .profileMeasure,
-  .profileTyped {
-    pointer-events: none;
-    touch-action: pan-y;
-  }
-
 }

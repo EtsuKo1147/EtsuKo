@@ -3,9 +3,6 @@
 import { useLayoutEffect } from 'react'
 
 export default function HomeEntryScrollController() {
-  // Temporary diagnostic: disable entry scroll reset.
-  return null
-
   useLayoutEffect(() => {
     const originalScrollRestoration = history.scrollRestoration
     const hasHashTarget = window.location.hash.length > 1

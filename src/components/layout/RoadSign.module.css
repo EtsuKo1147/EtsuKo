@@ -37,20 +37,11 @@
   .roadSignGroup {
     pointer-events: none;
   }
-}
 
-/* Temporary diagnostic: make the mobile RoadSign fully touch-transparent. */
-@media (max-width: 768px) and (hover: none) {
-  .roadSign,
-  .roadSign *,
-  .roadSignSlide,
-  .roadSignGroup,
-  .clock,
-  .nav,
-  .img,
-  .compactButton,
-  .collapseControlIcon {
-    pointer-events: none !important;
+  .link,
+  .compactToggle,
+  .collapseControl {
+    touch-action: pan-y;
   }
 }
 
