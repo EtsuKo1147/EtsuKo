@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
+import ScrollDebugOverlay from '@/components/debug/ScrollDebugOverlay'
 import HomeEntryScrollController from '@/components/sections/HomeEntryScrollController'
 import HomeHero from '@/components/sections/HomeHero'
 import HomeSelectedWorks from '@/components/sections/HomeSelectedWorks'
@@ -48,6 +49,7 @@ export default function HomePage() {
         <HomeHero revealed={homeRevealed} />
         <HomeSelectedWorks />
       </main>
+      <ScrollDebugOverlay />
     </>
   )
 }
