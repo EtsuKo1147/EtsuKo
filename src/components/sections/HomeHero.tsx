@@ -73,6 +73,12 @@ export default function HomeHero({ revealed = false }: HomeHeroProps) {
   useEffect(() => {
     const hero = heroRef.current
     if (!hero) return
+    const isMobile = window.matchMedia('(max-width: 768px)').matches
+
+    if (isMobile) {
+      // Temporary diagnostic: skip mobile Hero scroll updates.
+      return
+    }
 
     let frame = 0
 
@@ -82,9 +88,8 @@ export default function HomeHero({ revealed = false }: HomeHeroProps) {
       const travel = Math.max(hero.offsetHeight - window.innerHeight, 1)
       const progress = Math.min(Math.max(-rect.top / travel, 0), 1)
       const profileProgress = Math.min(Math.max((progress - 0.34) / 0.36, 0), 1)
-      const isMobile = window.matchMedia('(max-width: 768px)').matches
-      const motorX = progress * window.innerWidth * (isMobile ? 0.44 : 0.52)
-      const motorY = progress * window.innerHeight * (isMobile ? 0.7 : 0.88)
+      const motorX = progress * window.innerWidth * 0.52
+      const motorY = progress * window.innerHeight * 0.88
       const motorRotate = progress * 2
       const profileOffset = (1 - profileProgress) * 18
       const nextProfileCharCount = Math.round(profileProgress * PROFILE_TYPEWRITER_TOTAL)
