@@ -1,0 +1,276 @@
+/* Selected Works Section */
+
+.section {
+  position: relative;
+  min-height: 100vh;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(90px, 10vh, 140px) clamp(32px, 5vw, 96px);
+}
+
+/* ── 卡片区域 ── */
+
+.cardArea {
+  position: relative;
+  width: min(62vw, 1240px);
+  max-width: calc(100vw - clamp(64px, 10vw, 192px));
+  z-index: 2;
+}
+
+.cardLink {
+  position: relative;
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* 后方错位描边层 */
+.cardShadow {
+  position: absolute;
+  inset: 0;
+  border: 3px solid #000;
+  border-radius: 16px;
+  transform: translate(10px, 10px);
+  z-index: 0;
+  background: transparent;
+}
+
+/* 主卡片 */
+.card {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: row;
+  background: #fff;
+  border: 3px solid #000;
+  border-radius: 16px;
+  overflow: hidden;
+  min-height: clamp(360px, 32vw, 540px);
+  transition: transform 0.18s ease;
+}
+
+.cardLink:hover .card {
+  transform: translate(-2px, -2px);
+}
+
+.cardLink:hover .cardShadow {
+  transform: translate(12px, 12px);
+}
+
+/* 封面图区域 */
+.cardCover {
+  flex: 0 0 58%;
+  position: relative;
+  overflow: hidden;
+  background: #f0f0f0;
+  border-right: 3px solid #000;
+}
+
+.cardCoverImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* 文字内容区域 */
+.cardContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(24px, 3vw, 48px);
+  gap: 12px;
+}
+
+.cardLabel {
+  font-size: clamp(9px, 0.7vw, 11px);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #000;
+  opacity: 0.5;
+}
+
+.cardNumber {
+  font-size: clamp(56px, 6vw, 96px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: #000;
+  display: block;
+}
+
+.cardTitle {
+  font-size: clamp(13px, 1.1vw, 18px);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #000;
+  margin: 0;
+}
+
+.cardTags {
+  font-size: clamp(10px, 0.8vw, 12px);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: #000;
+  opacity: 0.6;
+  margin: 0;
+}
+
+.cardBtn {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: clamp(10px, 0.85vw, 13px);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 2px solid #000;
+  border-radius: 4px;
+  padding: 8px 16px;
+  align-self: flex-start;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.cardLink:hover .cardBtn {
+  background: #000;
+  color: #fff;
+}
+
+/* ── 插画层（absolute 定位） ── */
+
+.illus {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+  z-index: 3;
+}
+
+/* 左侧探出角色 */
+.illusLeft {
+  left: -4%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: clamp(100px, 10vw, 180px);
+  height: auto;
+}
+
+/* 顶部偏左小角色 */
+.illusTopLeft {
+  top: -2%;
+  left: clamp(60px, 8vw, 160px);
+  width: clamp(80px, 8vw, 140px);
+  height: auto;
+}
+
+/* 顶部中间探头 */
+.illusTopCenter {
+  top: -3%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: clamp(80px, 8vw, 140px);
+  height: auto;
+}
+
+/* 右上角小狗 */
+.illusTopRight {
+  top: -2%;
+  right: clamp(48px, 8vw, 160px);
+  width: clamp(80px, 7vw, 130px);
+  height: auto;
+}
+
+/* 左下角小狗 */
+.illusBottomLeft {
+  bottom: -2%;
+  left: clamp(40px, 4vw, 100px);
+  width: clamp(90px, 9vw, 160px);
+  height: auto;
+}
+
+/* 底部中间探出角色 */
+.illusBottomCenter {
+  bottom: -3%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: clamp(80px, 8vw, 140px);
+  height: auto;
+}
+
+/* 右下角大脸角色 */
+.illusBottomRight {
+  bottom: -3%;
+  right: clamp(48px, 8vw, 160px);
+  width: clamp(100px, 10vw, 180px);
+  height: auto;
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .section {
+    padding: 60px 16px 80px;
+    min-height: auto;
+    align-items: flex-start;
+    padding-top: 80px;
+  }
+
+  .cardArea {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .card {
+    flex-direction: column;
+    min-height: auto;
+  }
+
+  .cardCover {
+    flex: none;
+    height: clamp(180px, 50vw, 260px);
+    border-right: none;
+    border-bottom: 3px solid #000;
+  }
+
+  .cardContent {
+    padding: 20px;
+    gap: 8px;
+  }
+
+  .cardNumber {
+    font-size: 48px;
+  }
+
+  /* 手机端隐藏边缘插画，防止溢出 */
+  .illusLeft,
+  .illusTopRight,
+  .illusBottomRight {
+    display: none;
+  }
+
+  .illusTopLeft {
+    top: -1%;
+    left: 12px;
+    width: 60px;
+  }
+
+  .illusTopCenter {
+    top: -1%;
+    width: 60px;
+  }
+
+  .illusBottomLeft {
+    bottom: -1%;
+    left: 8px;
+    width: 64px;
+  }
+
+  .illusBottomCenter {
+    bottom: -1%;
+    width: 64px;
+  }
+}

@@ -35,7 +35,12 @@ type RoadSignClockProps = {
   onBunnyPointerEnter?: () => void
 }
 
-export default function RoadSignClock({ className, clockRef, bunnyRef, onBunnyPointerEnter }: RoadSignClockProps) {
+export default function RoadSignClock({
+  className,
+  clockRef,
+  bunnyRef,
+  onBunnyPointerEnter,
+}: RoadSignClockProps) {
   const [time, setTime] = useState<string | null>(null)
   const [clockInfo, setClockInfo] = useState<string | null>(null)
 
@@ -51,33 +56,40 @@ export default function RoadSignClock({ className, clockRef, bunnyRef, onBunnyPo
   }, [])
 
   return (
-    <div ref={clockRef} className={`${className ?? ''} ${styles.wrap}`}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        className={styles.image}
-        src="/road-sign/clock-sign.svg"
-        alt=""
-        draggable={false}
-      />
-      {time !== null && (
-        <div className={styles.timeOverlay}>{time}</div>
-      )}
-      {clockInfo !== null && (
-        <div className={styles.dateOverlay}>{clockInfo}</div>
-      )}
-      <div className={styles.tickerOverlay} aria-hidden="true">
-        <div className={styles.tickerViewport}>
-          <div className={styles.tickerTrack}>
-            <span className={styles.tickerText}>
-              ETSU&apos;s portfolio / logo design / VI design / illustration / poster / banner / photography / web design_
-            </span>
-            <span className={styles.tickerText}>
-              ETSU&apos;s portfolio / logo design / VI design / illustration / poster / banner / photography / web design_
-            </span>
+    <div className={`${className ?? ''} ${styles.wrap}`}>
+      <div ref={clockRef} className={styles.clockFace}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          className={styles.image}
+          src="/road-sign/clock-sign.svg"
+          alt=""
+          draggable={false}
+        />
+        {time !== null && (
+          <div className={styles.timeOverlay}>{time}</div>
+        )}
+        {clockInfo !== null && (
+          <div className={styles.dateOverlay}>{clockInfo}</div>
+        )}
+        <div className={styles.tickerOverlay} aria-hidden="true">
+          <div className={styles.tickerViewport}>
+            <div className={styles.tickerTrack}>
+              <span className={styles.tickerText}>
+                ETSU&apos;s portfolio / logo design / VI design / illustration / poster / banner / photography / web design_
+              </span>
+              <span className={styles.tickerText}>
+                ETSU&apos;s portfolio / logo design / VI design / illustration / poster / banner / photography / web design_
+              </span>
+            </div>
           </div>
         </div>
       </div>
-      <div ref={bunnyRef} className={styles.bunny} aria-hidden="true" onPointerEnter={onBunnyPointerEnter}>
+      <div
+        ref={bunnyRef}
+        className={styles.bunny}
+        aria-hidden="true"
+        onPointerEnter={onBunnyPointerEnter}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/road-sign/clock-rabbit.svg" alt="" draggable={false} />
       </div>

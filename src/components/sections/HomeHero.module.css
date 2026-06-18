@@ -1,9 +1,15 @@
 /* Hero section — motorcycle & motion frame */
 
 .hero {
+  --hero-scroll-progress: 0;
+  --profile-reveal-progress: 0;
+  --motor-x: 0px;
+  --motor-y: 0px;
+  --motor-rotate: 0deg;
+  --profile-offset: 18px;
   position: relative;
-  min-height: 100svh;
-  overflow: hidden;
+  min-height: 205svh;
+  overflow: visible;
   background: #ffffff;
   color: #000;
   padding-right: clamp(230px, 24vw, 410px);
@@ -25,9 +31,11 @@
 .visualStage {
   position: absolute;
   left: 4vw;
-  bottom: clamp(28px, 4vh, 56px);
+  top: calc(100svh - min(68vh, 720px) - clamp(28px, 4vh, 56px));
   width: min(64vw, 1300px);
   height: min(68vh, 720px);
+  z-index: 2;
+  pointer-events: none;
 }
 
 .frameGroup {
@@ -107,12 +115,28 @@
 /* ── Motorcycle ──────────────────────────────────── */
 
 .motorcycle {
+  position: relative;
+  width: 100%;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.motorcycleScrollLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.motorcycleMotion {
   position: absolute;
   left: 20%;
   top: -10%;
   width: 87%;
   z-index: 3;
   pointer-events: none;
+  transform: translate(var(--motor-x), var(--motor-y)) rotate(var(--motor-rotate));
+  transform-origin: 62% 52%;
 }
 
 .motorcycleImage {
@@ -309,9 +333,79 @@
   }
 }
 
+/* ── Transition Profile Text ─────────────────────── */
+
+.transitionArea {
+  position: absolute;
+  left: 0;
+  top: 104svh;
+  width: 100%;
+  min-height: 78svh;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.profileText {
+  position: absolute;
+  left: clamp(100px, 16vw, 400px);
+  top: clamp(150px, 30vh, 300px);
+  width: min(46vw, 640px);
+  min-height: 250px;
+  color: #000;
+  font-family: var(--font-intel-mono), 'Courier New', monospace;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: 0;
+  z-index: 1;
+  opacity: var(--profile-reveal-progress);
+  transform: translateY(var(--profile-offset));
+}
+
+.profileMeasure {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.profileTyped {
+  position: absolute;
+  inset: 0;
+}
+
+.profileKicker,
+.profileCopy {
+  margin: 0;
+  max-width: 100%;
+}
+
+.profileKicker {
+  margin-bottom: 0.2em;
+  font-size: clamp(22px, 2vw, 36px);
+}
+
+.profileCopy {
+  font-size: clamp(18px, 2vw, 34px);
+}
+
+.profileCaret {
+  display: inline-block;
+  margin-left: 0.15em;
+  animation: typeCaretBlink 0.8s steps(1, end) infinite;
+}
+
+@keyframes typeCaretBlink {
+  0%, 48% {
+    opacity: 1;
+  }
+
+  49%, 100% {
+    opacity: 0;
+  }
+}
+
 /* ── Mobile ─────────────────────────────────────── */
 @media (max-width: 768px) {
   .hero {
+    min-height: 190svh;
     padding-right: 0;
   }
 
@@ -323,7 +417,7 @@
 
   .visualStage {
     left: 0;
-    bottom: 12vh;
+    top: 30svh;
     width: 100vw;
     height: 58svh;
   }
@@ -335,6 +429,10 @@
   }
 
   .motorcycle {
+    width: 100%;
+  }
+
+  .motorcycleMotion {
     left: 10%;
     top: 60%;
     width: 90%;
@@ -345,6 +443,26 @@
     left: 15%;
     width: 120px;
     height: 45px;
+  }
+
+  .transitionArea {
+    top: 104svh;
+    min-height: 68svh;
+  }
+
+  .profileText {
+    left: 24px;
+    top: 12svh;
+    width: calc(100vw - 48px);
+    min-height: 220px;
+  }
+
+  .profileKicker {
+    font-size: 20px;
+  }
+
+  .profileCopy {
+    font-size: clamp(17px, 5vw, 24px);
   }
 
 }

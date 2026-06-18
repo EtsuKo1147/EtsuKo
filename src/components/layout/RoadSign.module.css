@@ -3,32 +3,20 @@
 /* Outer shell: fixed positioning only, no scale */
 .roadSign {
   position: fixed;
-  top: 50%;
+  top: 60%;
   right: clamp(16px, 2.2vw, 48px);
   width: 340px;
-  height: 680px;
+  height: 750px;
   z-index: 50;
   pointer-events: none;
   visibility: hidden;
   transform: translateY(-50%);
-  --road-sign-scale: 0.82;
-}
-
-@media (min-width: 1440px) {
-  .roadSign {
-    --road-sign-scale: 0.9;
-  }
-}
-
-@media (min-width: 1600px) {
-  .roadSign {
-    --road-sign-scale: 1.45;
-  }
+  --road-sign-scale: 1;
+  overflow: visible;
 }
 
 @media (max-width: 768px) {
   .roadSign {
-    --road-sign-scale: 0.55;
     right: 50px;
     top: -100px;
     transform: none;
@@ -42,6 +30,7 @@
   height: 680px;
   transform: scale(var(--road-sign-scale));
   transform-origin: right center;
+  pointer-events: auto;
 }
 
 /* Clock sign — fixed position in design canvas */
@@ -51,7 +40,6 @@
   right: 0px;
   width: 600px;
   height: auto;
-  z-index: 2;
   pointer-events: none;
   display: block;
   user-select: none;
@@ -62,6 +50,7 @@
   position: absolute;
   inset: 0;
   z-index: 3;
+  pointer-events: none;
 }
 
 /* Individual sign links */
@@ -147,4 +136,70 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* ── Road Sign Slide Wrapper ─────────────────────── */
+
+.roadSignSlide {
+  width: 100%;
+  height: 100%;
+  will-change: transform;
+}
+
+/* ── Compact Toggle ──────────────────────────────── */
+
+.compactToggle {
+  position: absolute;
+  top: -75px;
+  left: 203px;
+  width: 124px;
+  z-index: 10;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  user-select: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  transform-origin: 18% 8%;
+  will-change: transform, opacity;
+}
+
+.compactButton {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: none;
+  height: auto;
+  filter: drop-shadow(2px 3px 0 rgba(0, 0, 0, 0.22));
+  pointer-events: none;
+}
+
+.collapseControl {
+  position: absolute;
+  top: 560px;
+  left: 200px;
+  width: 132px;
+  height: 54px;
+  z-index: 4;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  user-select: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  transform-origin: 50% 0%;
+  will-change: transform, opacity;
+}
+
+.collapseControlIcon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+  user-select: none;
 }

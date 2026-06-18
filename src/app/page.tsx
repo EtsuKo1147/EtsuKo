@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
+import HomeEntryScrollController from '@/components/sections/HomeEntryScrollController'
 import HomeHero from '@/components/sections/HomeHero'
+import HomeSelectedWorks from '@/components/sections/HomeSelectedWorks'
 
 const HandDrawnLoader = dynamic(
   () => import('@/components/animation/HandDrawnLoader'),
@@ -32,6 +34,7 @@ export default function HomePage() {
 
   return (
     <>
+      <HomeEntryScrollController />
       {!loaderDone && (
         <HandDrawnLoader
           onReveal={revealHome}
@@ -41,8 +44,9 @@ export default function HomePage() {
           }}
         />
       )}
-      <main style={{ visibility: homeRevealed ? 'visible' : 'hidden' }}>
+      <main style={{ visibility: homeRevealed ? 'visible' : 'hidden', overflowX: 'hidden' }}>
         <HomeHero revealed={homeRevealed} />
+        <HomeSelectedWorks />
       </main>
     </>
   )

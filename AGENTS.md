@@ -164,3 +164,7 @@ Work carefully, locally, and minimally.
 Do only what the user asked.
 
 只做用户要求的事情，不要擅自扩大任务范围。
+
+## UI/UX discussion and technical planning
+
+When the user asks to discuss UI/UX, layout, interaction, animation, responsive behavior, or technical implementation strategy, answer from both design and technical-planning perspectives, but do not write code, modify files, or run commands unless the user explicitly asks to implement.

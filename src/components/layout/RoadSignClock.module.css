@@ -8,7 +8,12 @@
 
 .wrap {
   position: relative;
-  isolation: isolate;
+}
+
+.clockFace {
+  position: relative;
+  width: 100%;
+  z-index: 1;
 }
 
 .image {
@@ -23,7 +28,7 @@
 .timeOverlay {
   position: absolute;
   top: 13%;
-  left: 5%;
+  left: 7%;
   z-index: 5;
   transform: rotate(-5.87deg) skewX(-6deg);
   transform-origin: left center;
@@ -60,7 +65,7 @@
 .tickerOverlay {
   position: absolute;
   top: 35%;
-  left: 0%;
+  left: 1%;
   width: 55%;
   z-index: 9;
   transform: rotate(-5.87deg) skewX(-6deg);
@@ -104,27 +109,14 @@
   }
 }
 
-@media (max-width: 768px) {
-  .timeOverlay {
-    top: 14%;
-    left: 4%;
-    font-size: 60pt;
-  }
-  .bunny {
-    width: 68px;
-    left: 52px;
-    top: -52px;
-  }
-}
-
 .bunny {
   position: absolute;
   width: 90px;
   left: 240px;
   top: -90px;
-  z-index: 10;
-  pointer-events: auto;
-  cursor: pointer;
+  z-index: 20;
+  pointer-events: none;
+  cursor: default;
   user-select: none;
   transform-origin: 50% 88%;
 }
