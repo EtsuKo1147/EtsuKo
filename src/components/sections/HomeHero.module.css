@@ -474,4 +474,33 @@
     animation: none;
   }
 
+  /* Temporary diagnostic: make mobile Hero visual layers touch-transparent. */
+  .hero,
+  .visualStage,
+  .frameGroup,
+  .frameMask,
+  .lineSprite,
+  .lineFrame,
+  .motionFrame,
+  .motorcycleScrollLayer,
+  .motorcycleMotion,
+  .motorcycle,
+  .motorcycleSprite,
+  .motorcycleSpriteTrack,
+  .motorcycleFrame,
+  .tailFx,
+  .tailSprite,
+  .tailFrame,
+  .arrowBelt,
+  .arrowSkew,
+  .arrowGrid,
+  .arrowCell,
+  .transitionArea,
+  .profileText,
+  .profileMeasure,
+  .profileTyped {
+    pointer-events: none;
+    touch-action: pan-y;
+  }
+
 }
