@@ -39,6 +39,27 @@
   }
 }
 
+@media (max-width: 768px) and (hover: none) {
+  .roadSign,
+  .roadSign *,
+  .roadSignSlide,
+  .roadSignGroup,
+  .clock,
+  .nav,
+  .img,
+  .compactButton,
+  .collapseControlIcon {
+    pointer-events: none !important;
+  }
+
+  .link,
+  .compactToggle,
+  .collapseControl {
+    pointer-events: auto !important;
+    touch-action: pan-y;
+  }
+}
+
 /* Clock sign — fixed position in design canvas */
 .clock {
   position: absolute;

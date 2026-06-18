@@ -354,6 +354,7 @@ export default function Header() {
 
   const handleCollapseControlClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation()
+    clearCollapseControlTimer()
     if (!roadSignReadyRef.current) return
     if (roadSignStateRef.current !== 'expanded') return
     collapseRoadSignItems({ controlExitDelay: 0.14 })
@@ -512,6 +513,9 @@ export default function Header() {
       bunnyReadyRef.current = true
       roadSignReadyRef.current = true
       roadSignStateRef.current = 'expanded'
+      if (!canUseHover()) {
+        showCollapseControl()
+      }
       window.addEventListener('scroll', onScroll, { passive: true })
       return () => {
         window.removeEventListener('scroll', onScroll)
