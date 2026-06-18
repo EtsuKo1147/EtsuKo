@@ -93,7 +93,7 @@ export default function Header() {
       && Number(gsap.getProperty(control, 'scaleY')) > 0.95
     if (isVisible) {
       gsap.set(control, { pointerEvents: 'auto' })
-      if (autoHide) {
+      if (autoHide && canUseHover()) {
         collapseControlTimerRef.current = window.setTimeout(() => {
           hideCollapseControl()
         }, 1300)
@@ -123,7 +123,7 @@ export default function Header() {
       overwrite: true,
     })
 
-    if (autoHide) {
+    if (autoHide && canUseHover()) {
       collapseControlTimerRef.current = window.setTimeout(() => {
         hideCollapseControl()
       }, 1300)
@@ -301,7 +301,7 @@ export default function Header() {
             clearProps: 'transform,transition,willChange',
           })
           roadSignStateRef.current = 'expanded'
-          showCollapseControl({ autoHide: true })
+          showCollapseControl({ autoHide: canUseHover() })
         })
       },
     })
@@ -330,7 +330,7 @@ export default function Header() {
     }
 
     if (!canUseHover() && roadSignStateRef.current === 'expanded') {
-      showCollapseControl({ autoHide: true })
+      showCollapseControl()
     }
   }
 
