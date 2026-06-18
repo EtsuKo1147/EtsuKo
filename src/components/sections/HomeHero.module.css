@@ -465,4 +465,13 @@
     font-size: clamp(17px, 5vw, 24px);
   }
 
+  /* Temporary diagnostic: reduce mobile Hero animation load. */
+  .lineSprite,
+  .motorcycleSpriteTrack,
+  .tailSprite,
+  .arrowCell,
+  .profileCaret {
+    animation: none;
+  }
+
 }
