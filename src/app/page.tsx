@@ -45,7 +45,8 @@ export default function HomePage() {
           }}
         />
       )}
-      <main style={{ visibility: homeRevealed ? 'visible' : 'hidden', overflowX: 'hidden' }}>
+      {/* Temporary diagnostic: remove main overflowX hidden to test touch scrolling. */}
+      <main style={{ visibility: homeRevealed ? 'visible' : 'hidden' }}>
         <HomeHero revealed={homeRevealed} />
         <HomeSelectedWorks />
       </main>
