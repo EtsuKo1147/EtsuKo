@@ -26,8 +26,9 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${geist.variable} ${intelMono.variable} h-full`}>
-      <body className="min-h-full flex flex-col">
+    // Temporary diagnostic: use natural document scrolling.
+    <html lang="en" className={`${geist.variable} ${intelMono.variable}`}>
+      <body>
         <Header />
         {children}
         <Footer />
