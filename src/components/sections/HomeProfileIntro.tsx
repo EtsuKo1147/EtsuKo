@@ -2,12 +2,10 @@ import styles from './HomeProfileIntro.module.css'
 
 const profileLines = [
   '> Profile',
-  'A visual designer interested',
-  'in web design, graphic design,',
+  'A visual designer interested in web design,',
   'illustration and photography.',
-  'Currently exploring AI-assisted',
-  'workflows in design, creating bold,',
-  'playful visuals and interactive works.',
+  'Currently exploring AI-assisted workflows in design,',
+  'creating bold, playful visuals and interactive works.',
 ]
 
 export default function HomeProfileIntro() {
@@ -19,7 +17,7 @@ export default function HomeProfileIntro() {
 
           return (
             <p
-              key={line}
+              key={`${index}-${line}`}
               id={isTitle ? 'home-profile-title' : undefined}
               className={`${styles.lineMask}${isTitle ? ` ${styles.kicker}` : ''}`}
             >

@@ -95,8 +95,8 @@ export default function HomeHero({ revealed = false }: HomeHeroProps) {
       const progress = Math.min(Math.max(-rect.top / travel, 0), 1)
       const motorY = progress * 34
       const minimapX = progress * -2
-      const minimapY = progress * -32
-      const minimapRotate = progress * -45
+      const minimapY = progress * -5
+      const minimapRotate = progress * -75
       const motorRotate = progress * 0.3
 
       hero.style.setProperty('--hero-scroll-progress', progress.toFixed(3))
@@ -106,7 +106,7 @@ export default function HomeHero({ revealed = false }: HomeHeroProps) {
       hero.style.setProperty('--motor-y', `${motorY.toFixed(2)}px`)
       hero.style.setProperty('--minimap-x', `${minimapX.toFixed(2)}px`)
       hero.style.setProperty('--minimap-y', `${minimapY.toFixed(2)}px`)
-      hero.style.setProperty('--minimap-rotate', `${minimapRotate.toFixed(45)}deg`)
+      hero.style.setProperty('--minimap-rotate', `${minimapRotate.toFixed(2)}deg`)
       hero.style.setProperty('--motor-rotate', `${motorRotate.toFixed(2)}deg`)
     }
 

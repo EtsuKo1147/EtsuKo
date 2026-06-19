@@ -4,6 +4,7 @@
   min-height: 100svh;
   display: flex;
   align-items: center;
+  justify-content: center;
   padding: clamp(104px, 18svh, 220px) clamp(24px, 10vw, 180px) clamp(72px, 12svh, 150px);
   background: transparent;
   color: #000000;
@@ -11,23 +12,24 @@
 }
 
 .copyBlock {
-  width: min(860px, 78vw);
+  width: min(980px, 78vw);
   font-family: var(--font-intel-mono), 'Courier New', monospace;
   font-weight: 800;
-  line-height: 1.04;
+  line-height: 1.16;
   letter-spacing: 0;
+  text-align: left;
 }
-
 .lineMask {
   display: block;
   margin: 0;
   overflow: hidden;
-  font-size: clamp(28px, 5vw, 82px);
+  font-size: clamp(15px, 2.5vw, 30px);
+  white-space: normal;
 }
 
 .kicker {
-  margin-bottom: 0.18em;
-  font-size: clamp(18px, 2.4vw, 36px);
+  margin-bottom: 0.42em;
+  font-size: clamp(16px, 1.05vw, 22px);
 }
 
 .lineMask span {
@@ -41,8 +43,6 @@
 .lineMask:nth-child(3) span { animation-delay: 0.28s; }
 .lineMask:nth-child(4) span { animation-delay: 0.38s; }
 .lineMask:nth-child(5) span { animation-delay: 0.48s; }
-.lineMask:nth-child(6) span { animation-delay: 0.58s; }
-.lineMask:nth-child(7) span { animation-delay: 0.68s; }
 
 @keyframes profileLineReveal {
   to {
@@ -61,7 +61,8 @@
   }
 
   .lineMask {
-    font-size: clamp(26px, 8vw, 44px);
+    font-size: clamp(15px, 4vw, 44px);
+    white-space: normal;
   }
 
   .kicker {

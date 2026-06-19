@@ -1,276 +1,299 @@
-/* Selected Works Section */
+/* Selected Works — static console preview */
 
 .section {
   position: relative;
-  min-height: 100vh;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: clamp(90px, 10vh, 140px) clamp(32px, 5vw, 96px);
+  min-height: 100svh;
+  background: #ffffff;
+  padding: 0;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
-/* ── 卡片区域 ── */
-
-.cardArea {
-  position: relative;
-  width: min(62vw, 1240px);
-  max-width: calc(100vw - clamp(64px, 10vw, 192px));
+.consoleLayout {
+  position: absolute;
+  inset: 0;
   z-index: 2;
+  width: 100%;
+  min-height: 100%;
 }
 
-.cardLink {
-  position: relative;
-  display: block;
-  text-decoration: none;
-  color: inherit;
-}
-
-/* 后方错位描边层 */
-.cardShadow {
+.consoleStage {
   position: absolute;
-  inset: 0;
-  border: 3px solid #000;
-  border-radius: 16px;
-  transform: translate(10px, 10px);
-  z-index: 0;
-  background: transparent;
+  left: 50%;
+  bottom: 0;
+  z-index: 2;
+  width: min(85vw, 1646px);
+  aspect-ratio: 1646.17 / 994.5;
+  transform: translateX(-50%);
 }
 
-/* 主卡片 */
-.card {
-  position: relative;
+.doodle {
+  position: absolute;
   z-index: 1;
-  display: flex;
-  flex-direction: row;
-  background: #fff;
-  border: 3px solid #000;
-  border-radius: 16px;
-  overflow: hidden;
-  min-height: clamp(360px, 32vw, 540px);
-  transition: transform 0.18s ease;
+  display: block;
+  width: clamp(45px, 7vw, 190px);
+  height: auto;
+  cursor: pointer;
+  pointer-events: auto;
+  user-select: none;
+  transform-origin: 50% 72%;
+  will-change: transform;
 }
 
-.cardLink:hover .card {
-  transform: translate(-2px, -2px);
+.doodleOne {
+  left: clamp(8px, 3vw, 50px);
+  bottom: clamp(90px, 21vh, 180px);
 }
 
-.cardLink:hover .cardShadow {
-  transform: translate(12px, 12px);
+.doodleTwo {
+  right: clamp(20px, 3vw, 130px);
+  bottom: clamp(60px, 27vh, 260px);
 }
 
-/* 封面图区域 */
-.cardCover {
-  flex: 0 0 58%;
-  position: relative;
-  overflow: hidden;
-  background: #f0f0f0;
-  border-right: 3px solid #000;
+.doodleSpin {
+  animation: doodleSpin 0.58s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.cardCoverImg {
+.doodleSpringBack {
+  animation: doodleSpringBack 0.82s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.screenViewport {
   position: absolute;
-  inset: 0;
+  left: 13%;
+  top: 3%;
+  width: 75%;
+  height: 59%;
+  z-index: 1;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.previewImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
 
-/* 文字内容区域 */
-.cardContent {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: clamp(24px, 3vw, 48px);
-  gap: 12px;
-}
-
-.cardLabel {
-  font-size: clamp(9px, 0.7vw, 11px);
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #000;
-  opacity: 0.5;
-}
-
-.cardNumber {
-  font-size: clamp(56px, 6vw, 96px);
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: -0.03em;
-  color: #000;
-  display: block;
-}
-
-.cardTitle {
-  font-size: clamp(13px, 1.1vw, 18px);
-  font-weight: 900;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #000;
-  margin: 0;
-}
-
-.cardTags {
-  font-size: clamp(10px, 0.8vw, 12px);
-  font-weight: 400;
-  letter-spacing: 0.04em;
-  color: #000;
-  opacity: 0.6;
-  margin: 0;
-}
-
-.cardBtn {
-  display: inline-block;
-  margin-top: 8px;
-  font-size: clamp(10px, 0.85vw, 13px);
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  border: 2px solid #000;
-  border-radius: 4px;
-  padding: 8px 16px;
-  align-self: flex-start;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.cardLink:hover .cardBtn {
-  background: #000;
-  color: #fff;
-}
-
-/* ── 插画层（absolute 定位） ── */
-
-.illus {
+.consoleShell {
   position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  display: block;
   pointer-events: none;
   user-select: none;
-  z-index: 3;
 }
 
-/* 左侧探出角色 */
-.illusLeft {
-  left: -4%;
-  top: 50%;
-  transform: translateY(-50%);
-  width: clamp(100px, 10vw, 180px);
-  height: auto;
+.joystick {
+  position: absolute;
+  left: 9.5%;
+  top: 63%;
+  width: 8%;
+  z-index: 4;
+  display: block;
+  pointer-events: none;
+  user-select: none;
 }
 
-/* 顶部偏左小角色 */
-.illusTopLeft {
-  top: -2%;
-  left: clamp(60px, 8vw, 160px);
-  width: clamp(80px, 8vw, 140px);
-  height: auto;
+.controlButton {
+  position: absolute;
+  z-index: 6;
+  width: 10.7%;
+  aspect-ratio: 1 / 1;
+  display: block;
+  border: 0;
+  padding: 0;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  cursor: pointer;
+  pointer-events: auto;
+  user-select: none;
+  appearance: none;
 }
 
-/* 顶部中间探头 */
-.illusTopCenter {
-  top: -3%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: clamp(80px, 8vw, 140px);
-  height: auto;
+.buttonUp {
+  left: 66%;
+  top: 70%;
+  background-image: url('/works-console/button-up-default.svg');
 }
 
-/* 右上角小狗 */
-.illusTopRight {
-  top: -2%;
-  right: clamp(48px, 8vw, 160px);
-  width: clamp(80px, 7vw, 130px);
-  height: auto;
+.buttonUp:hover {
+  background-image: url('/works-console/button-up-hover.svg');
 }
 
-/* 左下角小狗 */
-.illusBottomLeft {
-  bottom: -2%;
-  left: clamp(40px, 4vw, 100px);
-  width: clamp(90px, 9vw, 160px);
-  height: auto;
+.buttonUp:active {
+  background-image: url('/works-console/button-up-pressed.svg');
 }
 
-/* 底部中间探出角色 */
-.illusBottomCenter {
-  bottom: -3%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: clamp(80px, 8vw, 140px);
-  height: auto;
+.buttonDown {
+  left: 79%;
+  top: 70%;
+  background-image: url('/works-console/button-down-default.svg');
 }
 
-/* 右下角大脸角色 */
-.illusBottomRight {
-  bottom: -3%;
-  right: clamp(48px, 8vw, 160px);
-  width: clamp(100px, 10vw, 180px);
-  height: auto;
+.buttonDown:hover {
+  background-image: url('/works-console/button-down-hover.svg');
 }
 
-/* ── Mobile ── */
+.buttonDown:active {
+  background-image: url('/works-console/button-down-pressed.svg');
+}
+
+.viewProjectLink {
+  position: absolute;
+  left: 42.2%;
+  top: 76.5%;
+  width: 17.2%;
+  aspect-ratio: 283.57 / 83.16;
+  z-index: 5;
+  display: block;
+  line-height: 0;
+  text-decoration: none;
+  background-image: url('/works-console/button-view-default.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  user-select: none;
+}
+
+.viewProjectLink:hover {
+  background-image: url('/works-console/button-view-hover.svg');
+}
+
+.viewProjectLink:active {
+  background-image: url('/works-console/button-view-pressed.svg');
+}
+
+.workMeta {
+  position: absolute;
+  left: clamp(10px, 2vw, 96px);
+  right: auto;
+  top: 10%;
+  z-index: 4;
+  width: clamp(150px, 13vw, 260px);
+  font-family: var(--font-intel-mono), 'Courier New', monospace;
+  color: #000000;
+}
+
+.metaEyebrow {
+  margin: 0 0 14px;
+  font-size: clamp(9px, 0.62vw, 12px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.46;
+}
+
+.workTitle {
+  margin: 0 0 12px;
+  font-size: clamp(24px, 2.35vw, 44px);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: 0;
+}
+
+.workCategory {
+  margin: 0;
+  font-size: clamp(10px, 0.72vw, 14px);
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  opacity: 0.62;
+}
+
+@media (max-width: 1024px) {
+  .consoleStage {
+    width: min(92vw, 980px);
+  }
+
+  .workMeta {
+    left: clamp(16px, 3.5vw, 40px);
+    right: auto;
+    top: 30%;
+    width: clamp(132px, 18vw, 210px);
+  }
+}
+
 @media (max-width: 768px) {
   .section {
-    padding: 60px 16px 80px;
-    min-height: auto;
-    align-items: flex-start;
-    padding-top: 80px;
+    min-height: 92svh;
   }
 
-  .cardArea {
-    width: 100%;
-    max-width: 100%;
+  .consoleStage {
+    width: 118vw;
   }
 
-  .card {
-    flex-direction: column;
-    min-height: auto;
+  .workMeta {
+    left: 24px;
+    right: auto;
+    top: 9%;
+    width: min(58vw, 240px);
   }
 
-  .cardCover {
-    flex: none;
-    height: clamp(180px, 50vw, 260px);
-    border-right: none;
-    border-bottom: 3px solid #000;
+  .metaEyebrow {
+    margin-bottom: 10px;
+    font-size: 9px;
   }
 
-  .cardContent {
-    padding: 20px;
-    gap: 8px;
+  .workTitle {
+    font-size: clamp(22px, 7vw, 34px);
   }
 
-  .cardNumber {
-    font-size: 48px;
+  .workCategory {
+    font-size: 10px;
+  }
+}
+
+@keyframes doodleSpin {
+  0% {
+    transform: rotate(0deg) scale(1);
   }
 
-  /* 手机端隐藏边缘插画，防止溢出 */
-  .illusLeft,
-  .illusTopRight,
-  .illusBottomRight {
-    display: none;
+  38% {
+    transform: rotate(260deg) scale(1.08);
   }
 
-  .illusTopLeft {
-    top: -1%;
-    left: 12px;
-    width: 60px;
+  62% {
+    transform: rotate(382deg) scale(0.96);
   }
 
-  .illusTopCenter {
-    top: -1%;
-    width: 60px;
+  78% {
+    transform: rotate(348deg) scale(1.03);
   }
 
-  .illusBottomLeft {
-    bottom: -1%;
-    left: 8px;
-    width: 64px;
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+@keyframes doodleSpringBack {
+  0% {
+    transform: rotate(18deg) scale(1.04);
   }
 
-  .illusBottomCenter {
-    bottom: -1%;
-    width: 64px;
+  24% {
+    transform: rotate(-14deg) scale(0.98);
+  }
+
+  44% {
+    transform: rotate(10deg) scale(1.02);
+  }
+
+  62% {
+    transform: rotate(-6deg) scale(0.99);
+  }
+
+  78% {
+    transform: rotate(3deg) scale(1.01);
+  }
+
+  100% {
+    transform: rotate(0deg) scale(1);
   }
 }

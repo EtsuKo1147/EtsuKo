@@ -30,7 +30,7 @@
   height: 680px;
   transform: scale(var(--road-sign-scale));
   transform-origin: right center;
-  pointer-events: auto;
+  pointer-events: none;
 }
 
 @media (max-width: 768px) {
