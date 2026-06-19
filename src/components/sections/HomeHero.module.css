@@ -2,16 +2,24 @@
 
 .hero {
   --hero-scroll-progress: 0;
-  --profile-reveal-progress: 0;
-  --motor-x: 0px;
-  --motor-y: 0px;
+  --frame-x: 0%;
+  --frame-y: 0%;
+  --motor-x: 0%;
+  --motor-y: 0%;
+  --minimap-x: 0px;
+  --minimap-y: 0px;
+  --minimap-rotate: 0deg;
   --motor-rotate: 0deg;
-  --profile-offset: 18px;
+  --hero-stage-top: calc(100svh - min(68vh, 720px) - clamp(28px, 4vh, 56px));
   position: relative;
-  min-height: 205svh;
-  overflow: visible;
+  width: 100%;
+  max-width: 100%;
+  min-height: 142svh;
+  overflow-x: clip;
+  overflow-y: visible;
   background: #ffffff;
   color: #000;
+  padding-top: var(--hero-stage-top);
   padding-right: clamp(230px, 24vw, 410px);
 }
 
@@ -29,64 +37,112 @@
 }
 
 .visualStage {
-  position: absolute;
-  left: 4vw;
-  top: calc(100svh - min(68vh, 720px) - clamp(28px, 4vh, 56px));
-  width: min(64vw, 1300px);
+  position: sticky;
+  top: var(--hero-stage-top);
+  margin-left: 0;
+  width: 100%;
+  max-width: 100%;
   height: min(68vh, 720px);
   z-index: 2;
+  overflow-x: clip;
+  overflow-y: visible;
   pointer-events: none;
+}
+
+.heroScene {
+  position: absolute;
+  left: 38%;
+  top: 30%;
+  width: min(86vw, 1755px);
+  aspect-ratio: 16 / 9;
+  z-index: 1;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  transform-origin: center center;
 }
 
 .frameGroup {
   position: absolute;
-  left: -110px;
-  top: -25%;
-  width: 110%;
-  aspect-ratio: 16 / 9;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   z-index: 1;
   overflow: hidden;
   contain: paint;
+  container-type: inline-size;
+  translate: var(--frame-x) var(--frame-y);
 }
 
-.motionFrame {
-  z-index: 2;
-  object-fit: contain;
-  pointer-events: none;
-}
-
-/* ── Frame Mask + Line Animation ────────────────── */
-
-.frameMask {
-  position: absolute;
-  top: 2%;
-  left: 18%;
-  right: 18%;
-  bottom: 6%;
-  z-index: 0;
-  overflow: hidden;
-  clip-path: polygon(0% 0%, 100% 16%, 100% 100%, 0% 86%);
-  pointer-events: none;
-}
-
-.lineSprite {
+.frameSprite {
   position: absolute;
   inset: 0;
   display: flex;
   width: 600%;
   height: 100%;
-  animation: lineSpriteFlip 1s steps(1, end) infinite;
+  z-index: 1;
+  animation: heroFrameSpriteFlip 1s steps(1, end) infinite;
+  pointer-events: none;
 }
 
-.lineFrame {
+.heroFrame {
   flex: 0 0 calc(100% / 6);
   width: calc(100% / 6);
   height: 100%;
   object-fit: contain;
+  display: block;
   pointer-events: none;
 }
 
-@keyframes lineSpriteFlip {
+.minimap {
+  position: absolute;
+  left: 20%;
+  top: 10%;
+  width: 11%;
+  aspect-ratio: 1 / 1;
+  z-index: 3;
+  pointer-events: none;
+  transform: translate(var(--minimap-x), var(--minimap-y)) rotate(var(--minimap-rotate));
+}
+
+.minimapBase {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.minimapDot {
+  position: absolute;
+  left: 65%;
+  top: 62%;
+  width: 9%;
+  aspect-ratio: 1 / 1;
+  border-radius: 999px;
+  background: #10ff23;
+  box-shadow: 0 0 0 rgba(16, 255, 35, 0.56);
+  transform: translate(-50%, -50%);
+  animation: minimapDotPulse 1.25s ease-in-out infinite;
+}
+
+.timerReadout {
+  position: absolute;
+  left: 52%;
+  top: 11%;
+  width: 12%;
+  z-index: 4;
+  color: #ffffff;
+  font-family: var(--font-intel-mono), 'Courier New', monospace;
+  font-size: clamp(5px,1.4cqw, 25px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+  text-align: center;
+  white-space: nowrap;
+  transform: rotate(6deg);
+  pointer-events: none;
+}
+
+@keyframes heroFrameSpriteFlip {
   0%, 16.666% {
     transform: translateX(0);
   }
@@ -112,11 +168,25 @@
   }
 }
 
+@keyframes minimapDotPulse {
+  0%, 100% {
+    opacity: 0.7;
+    transform: translate(-50%, -50%) scale(0.9);
+    box-shadow: 0 0 0 rgba(16, 255, 35, 0.22);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.18);
+    box-shadow: 0 0 18px rgba(16, 255, 35, 0.72);
+  }
+}
+
 /* ── Motorcycle ──────────────────────────────────── */
 
 .motorcycle {
   position: relative;
-  width: 100%;
+  width: 105%;
   z-index: 3;
   pointer-events: none;
 }
@@ -130,9 +200,9 @@
 
 .motorcycleMotion {
   position: absolute;
-  left: 20%;
-  top: -10%;
-  width: 87%;
+  left: 35%;
+  top: 20%;
+  width: 64%;
   z-index: 3;
   pointer-events: none;
   transform: translate(var(--motor-x), var(--motor-y)) rotate(var(--motor-rotate));
@@ -260,21 +330,36 @@
 
 /* ── Arrow Belt ──────────────────────────────────── */
 
-.arrowBelt {
+.arrowLayer {
   position: absolute;
-  top: -28%;
-  left: 40%;
-  width: clamp(180px, 20vw, 300px);
-  height: clamp(70px, 10vw, 100px);
+  inset: 0;
   z-index: 2;
-  overflow: hidden;
-  clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
   pointer-events: none;
   transform: translateX(-120vw);
 }
 
-.visualStage.revealed .arrowBelt {
+.visualStage.revealed .arrowLayer {
   transform: translateX(0);
+}
+
+.arrowBelt {
+  position: absolute;
+  width: 16%;
+  height: 10%;
+  z-index: 2;
+  overflow: hidden;
+  clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+  pointer-events: none;
+}
+
+.arrowBeltLeft {
+  left: 24%;
+  top: 3%;
+}
+
+.arrowBeltRight {
+  right: 19.5%;
+  top: 12%;
 }
 
 .arrowSkew {
@@ -305,7 +390,7 @@
   width: 100%;
   height: 100%;
   opacity: 0;
-  background-image: url('/home/arrow.svg');
+  background-image: url('/hero/ui/arrow.svg');
   background-repeat: no-repeat;
   background-position: center;
   background-size: 83% auto;
@@ -333,79 +418,12 @@
   }
 }
 
-/* ── Transition Profile Text ─────────────────────── */
-
-.transitionArea {
-  position: absolute;
-  left: 0;
-  top: 104svh;
-  width: 100%;
-  min-height: 78svh;
-  z-index: 20;
-  pointer-events: none;
-}
-
-.profileText {
-  position: absolute;
-  left: clamp(100px, 16vw, 400px);
-  top: clamp(150px, 30vh, 300px);
-  width: min(46vw, 640px);
-  min-height: 250px;
-  color: #000;
-  font-family: var(--font-intel-mono), 'Courier New', monospace;
-  font-weight: 800;
-  line-height: 1.08;
-  letter-spacing: 0;
-  z-index: 1;
-  opacity: var(--profile-reveal-progress);
-  transform: translateY(var(--profile-offset));
-}
-
-.profileMeasure {
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.profileTyped {
-  position: absolute;
-  inset: 0;
-}
-
-.profileKicker,
-.profileCopy {
-  margin: 0;
-  max-width: 100%;
-}
-
-.profileKicker {
-  margin-bottom: 0.2em;
-  font-size: clamp(22px, 2vw, 36px);
-}
-
-.profileCopy {
-  font-size: clamp(18px, 2vw, 34px);
-}
-
-.profileCaret {
-  display: inline-block;
-  margin-left: 0.15em;
-  animation: typeCaretBlink 0.8s steps(1, end) infinite;
-}
-
-@keyframes typeCaretBlink {
-  0%, 48% {
-    opacity: 1;
-  }
-
-  49%, 100% {
-    opacity: 0;
-  }
-}
-
 /* ── Mobile ─────────────────────────────────────── */
 @media (max-width: 768px) {
   .hero {
-    min-height: 190svh;
+    --hero-stage-top: 30svh;
+    min-height: 138svh;
+    padding-top: var(--hero-stage-top);
     padding-right: 0;
   }
 
@@ -416,16 +434,23 @@
   }
 
   .visualStage {
-    left: 0;
-    top: 30svh;
-    width: 100vw;
+    top: var(--hero-stage-top);
+    margin-left: 0;
+    width: 100%;
+    max-width: 100%;
     height: 58svh;
   }
 
+  .heroScene {
+    left: 48%;
+    top: 70%;
+    width: 130vw;
+  }
+
   .frameGroup {
-    left: -15%;
-    top: 38%;
-    width: 130%;
+    inset: 0;
+    width: 100%;
+    height: 100%;
   }
 
   .motorcycle {
@@ -433,36 +458,24 @@
   }
 
   .motorcycleMotion {
-    left: 10%;
-    top: 60%;
-    width: 90%;
+    left: 19%;
+    top: 28%;
+    width: 69%;
   }
 
   .arrowBelt {
-    top: 30%;
-    left: 15%;
-    width: 120px;
-    height: 45px;
+    width: 15%;
+    height: 12%;
   }
 
-  .transitionArea {
-    top: 104svh;
-    min-height: 68svh;
+  .arrowBeltLeft {
+    left: 23%;
+    top: 2%;
   }
 
-  .profileText {
-    left: 24px;
-    top: 12svh;
-    width: calc(100vw - 48px);
-    min-height: 220px;
-  }
-
-  .profileKicker {
-    font-size: 20px;
-  }
-
-  .profileCopy {
-    font-size: clamp(17px, 5vw, 24px);
+  .arrowBeltRight {
+    right: 20%;
+    top: 10.5%;
   }
 
 }

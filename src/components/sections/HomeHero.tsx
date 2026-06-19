@@ -1,37 +1,17 @@
 'use client'
 
-import { useRef, useEffect, useState } from 'react'
-import Image from 'next/image'
+import { useRef, useEffect } from 'react'
 import gsap from 'gsap'
 import styles from './HomeHero.module.css'
 
 type HomeHeroProps = { revealed?: boolean }
 
-const PROFILE_TITLE = '> Profile'
-const PROFILE_COPY =
-  'A visual designer interested in web design, graphic design, illustration and photography. Currently exploring AI-assisted workflows in design, creating bold, playful visuals and interactive works.'
-const PROFILE_TYPEWRITER_GAP = 1
-const PROFILE_TYPEWRITER_TOTAL =
-  PROFILE_TITLE.length + PROFILE_TYPEWRITER_GAP + PROFILE_COPY.length
-
 export default function HomeHero({ revealed = false }: HomeHeroProps) {
   const heroRef = useRef<HTMLElement>(null)
   const frameGroupRef = useRef<HTMLDivElement>(null)
   const motorcycleIntroRef = useRef<HTMLDivElement>(null)
-  const arrowBeltRef  = useRef<HTMLDivElement>(null)
-  const [profileCharCount, setProfileCharCount] = useState(0)
-
-  const titleCharCount = Math.min(profileCharCount, PROFILE_TITLE.length)
-  const copyCharCount = Math.max(
-    0,
-    Math.min(PROFILE_COPY.length, profileCharCount - PROFILE_TITLE.length - PROFILE_TYPEWRITER_GAP)
-  )
-  const displayedProfileTitle = PROFILE_TITLE.slice(0, titleCharCount)
-  const displayedProfileCopy = PROFILE_COPY.slice(0, copyCharCount)
-  const showProfileCaret = profileCharCount > 0
-  const showTitleCaret =
-    showProfileCaret && profileCharCount <= PROFILE_TITLE.length + PROFILE_TYPEWRITER_GAP
-  const showCopyCaret = showProfileCaret && !showTitleCaret
+  const arrowLayerRef = useRef<HTMLDivElement>(null)
+  const timerRef = useRef<HTMLDivElement>(null)
 
   // Set hidden start positions only on first visit (loader is covering the screen)
   useEffect(() => {
@@ -45,7 +25,7 @@ export default function HomeHero({ revealed = false }: HomeHeroProps) {
     if (!revealed) return
     const frameGroup = frameGroupRef.current
     const motorcycleIntro = motorcycleIntroRef.current
-    const arrowBelt = arrowBeltRef.current
+    const arrowLayer = arrowLayerRef.current
 
     gsap.fromTo(
       frameGroup,
@@ -60,13 +40,45 @@ export default function HomeHero({ revealed = false }: HomeHeroProps) {
     )
 
     gsap.fromTo(
-      arrowBelt,
+      arrowLayer,
       { x: '-120vw' },
       { x: 0, duration: 1.5, delay: 0.4, ease: 'power3.out' }
     )
 
     return () => {
-      gsap.killTweensOf([frameGroup, motorcycleIntro, arrowBelt])
+      gsap.killTweensOf([frameGroup, motorcycleIntro, arrowLayer])
+    }
+  }, [revealed])
+
+  useEffect(() => {
+    const timer = timerRef.current
+    if (!timer || !revealed) {
+      if (timer) timer.textContent = '00:00.000'
+      return
+    }
+
+    let frame = 0
+    const start = performance.now()
+
+    const tick = (now: number) => {
+      const elapsed = Math.max(0, Math.floor(now - start))
+      const minutes = Math.floor(elapsed / 60000)
+      const seconds = Math.floor((elapsed % 60000) / 1000)
+      const milliseconds = elapsed % 1000
+
+      const minuteText = String(minutes).padStart(2, '0')
+      const secondText = String(seconds).padStart(2, '0')
+      const millisecondText = String(milliseconds).padStart(3, '0')
+
+      timer.textContent = `${minuteText}:${secondText}.${millisecondText}`
+      frame = window.requestAnimationFrame(tick)
+    }
+
+    timer.textContent = '00:00.000'
+    frame = window.requestAnimationFrame(tick)
+
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame)
     }
   }, [revealed])
 
@@ -81,22 +93,21 @@ export default function HomeHero({ revealed = false }: HomeHeroProps) {
       const rect = hero.getBoundingClientRect()
       const travel = Math.max(hero.offsetHeight - window.innerHeight, 1)
       const progress = Math.min(Math.max(-rect.top / travel, 0), 1)
-      const profileProgress = Math.min(Math.max((progress - 0.34) / 0.36, 0), 1)
-      const motorX = progress * window.innerWidth * 0.52
-      const motorY = progress * window.innerHeight * 0.88
-      const motorRotate = progress * 2
-      const profileOffset = (1 - profileProgress) * 18
-      const nextProfileCharCount = Math.round(profileProgress * PROFILE_TYPEWRITER_TOTAL)
+      const motorY = progress * 34
+      const minimapX = progress * -2
+      const minimapY = progress * -32
+      const minimapRotate = progress * -45
+      const motorRotate = progress * 0.3
 
       hero.style.setProperty('--hero-scroll-progress', progress.toFixed(3))
-      hero.style.setProperty('--profile-reveal-progress', profileProgress.toFixed(3))
-      hero.style.setProperty('--motor-x', `${motorX.toFixed(1)}px`)
-      hero.style.setProperty('--motor-y', `${motorY.toFixed(1)}px`)
+      hero.style.setProperty('--frame-x', '0px')
+      hero.style.setProperty('--frame-y', '0px')
+      hero.style.setProperty('--motor-x', '0px')
+      hero.style.setProperty('--motor-y', `${motorY.toFixed(2)}px`)
+      hero.style.setProperty('--minimap-x', `${minimapX.toFixed(2)}px`)
+      hero.style.setProperty('--minimap-y', `${minimapY.toFixed(2)}px`)
+      hero.style.setProperty('--minimap-rotate', `${minimapRotate.toFixed(45)}deg`)
       hero.style.setProperty('--motor-rotate', `${motorRotate.toFixed(2)}deg`)
-      hero.style.setProperty('--profile-offset', `${profileOffset.toFixed(1)}px`)
-      setProfileCharCount((current) =>
-        current === nextProfileCharCount ? current : nextProfileCharCount
-      )
     }
 
     const requestUpdate = () => {
@@ -120,104 +131,101 @@ export default function HomeHero({ revealed = false }: HomeHeroProps) {
       <div className={styles.brandVertical}>ETSU.</div>
 
       <div className={`${styles.visualStage}${revealed ? ` ${styles.revealed}` : ''}`}>
-        <div ref={frameGroupRef} className={styles.frameGroup}>
-          <div className={styles.frameMask} aria-hidden="true">
-            <div className={styles.lineSprite}>
+        <div className={styles.heroScene}>
+          <div ref={frameGroupRef} className={styles.frameGroup}>
+            <div className={styles.frameSprite} aria-hidden="true">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/home/line-1.svg" alt="" className={styles.lineFrame} />
+              <img src="/hero/frame/hero-frame-01.svg" alt="" className={styles.heroFrame} />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/home/line-2.svg" alt="" className={styles.lineFrame} />
+              <img src="/hero/frame/hero-frame-02.svg" alt="" className={styles.heroFrame} />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/home/line-3.svg" alt="" className={styles.lineFrame} />
+              <img src="/hero/frame/hero-frame-03.svg" alt="" className={styles.heroFrame} />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/home/line-4.svg" alt="" className={styles.lineFrame} />
+              <img src="/hero/frame/hero-frame-04.svg" alt="" className={styles.heroFrame} />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/home/line-5.svg" alt="" className={styles.lineFrame} />
+              <img src="/hero/frame/hero-frame-05.svg" alt="" className={styles.heroFrame} />
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/home/line-6.svg" alt="" className={styles.lineFrame} />
+              <img src="/hero/frame/hero-frame-06.svg" alt="" className={styles.heroFrame} />
             </div>
-          </div>
-          <Image
-            src="/home/hero-motion-frame.svg"
-            alt=""
-            fill
-            priority
-            className={styles.motionFrame}
-          />
-        </div>
 
-        <div ref={arrowBeltRef} className={styles.arrowBelt}>
-          <div className={styles.arrowSkew}>
-          <div className={styles.arrowGrid} aria-hidden="true">
-            <span className={styles.arrowCell} />
-            <span className={styles.arrowCell} />
-            <span className={styles.arrowCell} />
-            <span className={styles.arrowCell} />
-            <span className={styles.arrowCell} />
-            <span className={styles.arrowCell} />
-            <span className={styles.arrowCell} />
-          </div>
-          </div>
-        </div>
+            <div className={styles.minimap} aria-hidden="true">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/hero/ui/minimap-base.svg" alt="" className={styles.minimapBase} />
+              <span className={styles.minimapDot} />
+            </div>
 
-        <div className={styles.motorcycleScrollLayer}>
-          <div className={styles.motorcycleMotion}>
-            <div ref={motorcycleIntroRef} className={styles.motorcycle}>
-              <div className={styles.tailFx} aria-hidden="true">
-                <div className={styles.tailSprite}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/home/tail-1.svg" alt="" className={styles.tailFrame} />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/home/tail-2.svg" alt="" className={styles.tailFrame} />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/home/tail-3.svg" alt="" className={styles.tailFrame} />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/home/tail-4.svg" alt="" className={styles.tailFrame} />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/home/tail-5.svg" alt="" className={styles.tailFrame} />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/home/tail-6.svg" alt="" className={styles.tailFrame} />
+            <div ref={timerRef} className={styles.timerReadout} aria-label="Homepage timer">
+              00:00.000
+            </div>
+
+            <div ref={arrowLayerRef} className={styles.arrowLayer}>
+              <div className={`${styles.arrowBelt} ${styles.arrowBeltLeft}`}>
+                <div className={styles.arrowSkew}>
+                  <div className={styles.arrowGrid} aria-hidden="true">
+                    <span className={styles.arrowCell} />
+                    <span className={styles.arrowCell} />
+                    <span className={styles.arrowCell} />
+                    <span className={styles.arrowCell} />
+                    <span className={styles.arrowCell} />
+                    <span className={styles.arrowCell} />
+                    <span className={styles.arrowCell} />
+                  </div>
                 </div>
               </div>
-              <div className={styles.motorcycleSprite}>
-                <div className={styles.motorcycleSpriteTrack}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/home/hero-motorcycle-1.webp" alt="" className={styles.motorcycleFrame} />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/home/hero-motorcycle-2.webp" alt="" className={styles.motorcycleFrame} />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/home/hero-motorcycle-3.webp" alt="" className={styles.motorcycleFrame} />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/home/hero-motorcycle-4.webp" alt="" className={styles.motorcycleFrame} />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/home/hero-motorcycle-5.webp" alt="" className={styles.motorcycleFrame} />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/home/hero-motorcycle-6.webp" alt="" className={styles.motorcycleFrame} />
+
+              <div className={`${styles.arrowBelt} ${styles.arrowBeltRight}`}>
+                <div className={styles.arrowSkew}>
+                  <div className={styles.arrowGrid} aria-hidden="true">
+                    <span className={styles.arrowCell} />
+                    <span className={styles.arrowCell} />
+                    <span className={styles.arrowCell} />
+                    <span className={styles.arrowCell} />
+                    <span className={styles.arrowCell} />
+                    <span className={styles.arrowCell} />
+                    <span className={styles.arrowCell} />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div className={styles.transitionArea}>
-        <div
-          className={styles.profileText}
-          aria-label={`${PROFILE_TITLE} ${PROFILE_COPY}`}
-        >
-          <div className={styles.profileMeasure} aria-hidden="true">
-            <p className={styles.profileKicker}>{PROFILE_TITLE}</p>
-            <p className={styles.profileCopy}>{PROFILE_COPY}</p>
-          </div>
-          <div className={styles.profileTyped}>
-            <p className={styles.profileKicker} aria-hidden={titleCharCount === 0}>
-              {displayedProfileTitle}
-              {showTitleCaret && <span className={styles.profileCaret}>_</span>}
-            </p>
-            <p className={styles.profileCopy} aria-hidden={copyCharCount === 0}>
-              {displayedProfileCopy}
-              {showCopyCaret && <span className={styles.profileCaret}>_</span>}
-            </p>
+          <div className={styles.motorcycleScrollLayer}>
+            <div className={styles.motorcycleMotion}>
+              <div ref={motorcycleIntroRef} className={styles.motorcycle}>
+                <div className={styles.tailFx} aria-hidden="true">
+                  <div className={styles.tailSprite}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/home/tail-1.svg" alt="" className={styles.tailFrame} />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/home/tail-2.svg" alt="" className={styles.tailFrame} />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/home/tail-3.svg" alt="" className={styles.tailFrame} />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/home/tail-4.svg" alt="" className={styles.tailFrame} />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/home/tail-5.svg" alt="" className={styles.tailFrame} />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/home/tail-6.svg" alt="" className={styles.tailFrame} />
+                  </div>
+                </div>
+                <div className={styles.motorcycleSprite}>
+                  <div className={styles.motorcycleSpriteTrack}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/home/hero-motorcycle-1.webp" alt="" className={styles.motorcycleFrame} />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/home/hero-motorcycle-2.webp" alt="" className={styles.motorcycleFrame} />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/home/hero-motorcycle-3.webp" alt="" className={styles.motorcycleFrame} />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/home/hero-motorcycle-4.webp" alt="" className={styles.motorcycleFrame} />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/home/hero-motorcycle-5.webp" alt="" className={styles.motorcycleFrame} />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/home/hero-motorcycle-6.webp" alt="" className={styles.motorcycleFrame} />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

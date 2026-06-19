@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import HomeEntryScrollController from '@/components/sections/HomeEntryScrollController'
 import HomeHero from '@/components/sections/HomeHero'
+import HomeProfileIntro from '@/components/sections/HomeProfileIntro'
 import HomeSelectedWorks from '@/components/sections/HomeSelectedWorks'
 
 const HandDrawnLoader = dynamic(
@@ -47,6 +48,7 @@ export default function HomePage() {
       {/* Keep main free of overflowX hidden; it can break touch scrolling on mobile browsers. */}
       <main style={{ visibility: homeRevealed ? 'visible' : 'hidden' }}>
         <HomeHero revealed={homeRevealed} />
+        <HomeProfileIntro />
         <HomeSelectedWorks />
       </main>
     </>

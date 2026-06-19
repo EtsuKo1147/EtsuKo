@@ -1,0 +1,70 @@
+.profileIntro {
+  position: relative;
+  z-index: 4;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  padding: clamp(104px, 18svh, 220px) clamp(24px, 10vw, 180px) clamp(72px, 12svh, 150px);
+  background: transparent;
+  color: #000000;
+  overflow-x: clip;
+}
+
+.copyBlock {
+  width: min(860px, 78vw);
+  font-family: var(--font-intel-mono), 'Courier New', monospace;
+  font-weight: 800;
+  line-height: 1.04;
+  letter-spacing: 0;
+}
+
+.lineMask {
+  display: block;
+  margin: 0;
+  overflow: hidden;
+  font-size: clamp(28px, 5vw, 82px);
+}
+
+.kicker {
+  margin-bottom: 0.18em;
+  font-size: clamp(18px, 2.4vw, 36px);
+}
+
+.lineMask span {
+  display: block;
+  transform: translateY(110%);
+  animation: profileLineReveal 0.92s cubic-bezier(.16, 1, .3, 1) forwards;
+}
+
+.lineMask:nth-child(1) span { animation-delay: 0.08s; }
+.lineMask:nth-child(2) span { animation-delay: 0.18s; }
+.lineMask:nth-child(3) span { animation-delay: 0.28s; }
+.lineMask:nth-child(4) span { animation-delay: 0.38s; }
+.lineMask:nth-child(5) span { animation-delay: 0.48s; }
+.lineMask:nth-child(6) span { animation-delay: 0.58s; }
+.lineMask:nth-child(7) span { animation-delay: 0.68s; }
+
+@keyframes profileLineReveal {
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .profileIntro {
+    min-height: 92svh;
+    padding: 104px 24px 80px;
+  }
+
+  .copyBlock {
+    width: 100%;
+  }
+
+  .lineMask {
+    font-size: clamp(26px, 8vw, 44px);
+  }
+
+  .kicker {
+    font-size: clamp(18px, 6vw, 26px);
+  }
+}
