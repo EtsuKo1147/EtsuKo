@@ -53,6 +53,7 @@ export default function Header() {
   const roadSignGroupRef = useRef<HTMLDivElement>(null)
   const collapseControlRef = useRef<HTMLButtonElement>(null)
   const collapseControlTimerRef = useRef<number | null>(null)
+  const roadSignItemsTlRef = useRef<gsap.core.Timeline | gsap.core.Tween | null>(null)
   const roadSignStateRef = useRef<RoadSignState>('expanded')
   const [isRoadSignCollapsed, setIsRoadSignCollapsed] = useState(false)
 
@@ -62,6 +63,43 @@ export default function Header() {
     if (collapseControlTimerRef.current === null) return
     window.clearTimeout(collapseControlTimerRef.current)
     collapseControlTimerRef.current = null
+  }
+
+  const killRoadSignItemsTimeline = () => {
+    roadSignItemsTlRef.current?.kill()
+    roadSignItemsTlRef.current = null
+  }
+
+  const forceHideCollapseControl = () => {
+    const control = collapseControlRef.current
+    clearCollapseControlTimer()
+    if (!control) return
+    gsap.killTweensOf(control)
+    gsap.set(control, {
+      autoAlpha: 0,
+      visibility: 'hidden',
+      opacity: 0,
+      y: -8,
+      scaleX: 0.98,
+      scaleY: 0.08,
+      pointerEvents: 'none',
+    })
+  }
+
+  const forceHideCompactToggle = () => {
+    const compact = compactToggleRef.current
+    if (!compact) return
+    gsap.killTweensOf(compact)
+    gsap.set(compact, {
+      autoAlpha: 0,
+      visibility: 'hidden',
+      opacity: 0,
+      scale: 0.22,
+      x: 10,
+      y: 86,
+      rotate: -14,
+      pointerEvents: 'none',
+    })
   }
 
   const hideCollapseControl = () => {
@@ -147,26 +185,13 @@ export default function Header() {
     addBunnySquash(tl, bunny, isMobile)
   }
 
-  const hideCompactToggle = () => {
-    const compact = compactToggleRef.current
-    if (!compact) return
-    gsap.killTweensOf(compact)
-    gsap.to(compact, {
-      autoAlpha: 0,
-      scale: 0.22,
-      x: 10,
-      y: 86,
-      rotate: -14,
-      duration: 0.18,
-      ease: 'back.in(2)',
-      pointerEvents: 'none',
-      overwrite: true,
-    })
-  }
-
   const showCompactToggle = () => {
     const compact = compactToggleRef.current
     if (!compact) return
+    if (roadSignStateRef.current !== 'collapsed') {
+      forceHideCompactToggle()
+      return
+    }
     gsap.killTweensOf(compact)
     gsap.set(compact, {
       transformOrigin: '18% 8%',
@@ -238,13 +263,16 @@ export default function Header() {
 
   const collapseRoadSignItems = ({ controlExitDelay = 0 } = {}) => {
     if (roadSignStateRef.current === 'collapsed' || roadSignStateRef.current === 'collapsing') return
+    killRoadSignItemsTimeline()
     roadSignStateRef.current = 'collapsing'
     setRoadSignCollapsedState(true)
-    hideCollapseControl()
+    forceHideCollapseControl()
+    forceHideCompactToggle()
 
     const items = getRoadSignItems()
     if (!items.length) {
       window.setTimeout(() => {
+        if (roadSignStateRef.current !== 'collapsing') return
         roadSignStateRef.current = 'collapsed'
         showCompactToggle()
       }, controlExitDelay * 1000)
@@ -253,6 +281,7 @@ export default function Header() {
     const reversedItems = [...items].reverse()
     gsap.killTweensOf(items)
     const tl = gsap.timeline({ delay: controlExitDelay })
+    roadSignItemsTlRef.current = tl
     reversedItems.forEach((item, index) => {
       tl.to(
         item,
@@ -262,6 +291,8 @@ export default function Header() {
     })
     tl.call(() => {
       requestAnimationFrame(() => {
+        if (roadSignStateRef.current !== 'collapsing') return
+        roadSignItemsTlRef.current = null
         roadSignStateRef.current = 'collapsed'
         showCompactToggle()
       })
@@ -270,16 +301,17 @@ export default function Header() {
 
   const expandRoadSignItems = () => {
     if (roadSignStateRef.current === 'expanded' || roadSignStateRef.current === 'expanding') return
+    killRoadSignItemsTimeline()
     roadSignStateRef.current = 'expanding'
     setRoadSignCollapsedState(false)
-    hideCollapseControl()
+    forceHideCollapseControl()
+    forceHideCompactToggle()
 
     const items = getRoadSignItems()
     if (!items.length) {
       roadSignStateRef.current = 'expanded'
       return
     }
-    hideCompactToggle()
     if (roadSignSlideRef.current) {
       gsap.set(roadSignSlideRef.current, { x: 0 })
     }
@@ -289,7 +321,7 @@ export default function Header() {
       willChange: 'transform',
       force3D: true,
     })
-    gsap.to(items, {
+    roadSignItemsTlRef.current = gsap.to(items, {
       x: 0,
       duration: 0.78,
       stagger: 0.08,
@@ -297,6 +329,7 @@ export default function Header() {
       overwrite: true,
       onComplete: () => {
         requestAnimationFrame(() => {
+          roadSignItemsTlRef.current = null
           gsap.set(items, {
             clearProps: 'transform,transition,willChange',
           })
@@ -529,6 +562,7 @@ export default function Header() {
         if (collapseControlEl) {
           gsap.killTweensOf(collapseControlEl)
         }
+        killRoadSignItemsTimeline()
         cleanupRoadSignScale()
         clearCollapseControlTimer()
       }
@@ -554,6 +588,7 @@ export default function Header() {
         if (collapseControlEl) {
           gsap.killTweensOf(collapseControlEl)
         }
+        killRoadSignItemsTimeline()
         cleanupRoadSignScale()
         clearCollapseControlTimer()
       }
@@ -581,6 +616,7 @@ export default function Header() {
       if (collapseControlEl) {
         gsap.killTweensOf(collapseControlEl)
       }
+      killRoadSignItemsTimeline()
       cleanupRoadSignScale()
       clearCollapseControlTimer()
     }

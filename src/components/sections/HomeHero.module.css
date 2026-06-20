@@ -51,9 +51,9 @@
 
 .heroScene {
   position: absolute;
-  left: 41.5%;
+  left: 40.5%;
   top: 30%;
-  width: min(86vw, 1755px);
+  width: min(84vw, 1755px);
   aspect-ratio: 16 / 9;
   z-index: 1;
   pointer-events: none;
