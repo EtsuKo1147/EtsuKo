@@ -5,20 +5,17 @@ import Image from 'next/image'
 import gsap from 'gsap'
 import LoadingTypewriter from './LoadingTypewriter'
 
-// 仪表盘 loading 时长
-const DASHBOARD_LOADING_MS = 2000
+// 仪表盘数字 loading 时长
+const DASHBOARD_PROGRESS_MS = 1000
 
-// 头盔动画时间线
-const HELMET_START_MS    = DASHBOARD_LOADING_MS       // 2000ms
-const HELMET_DURATION_MS = 2000
-const EYES_OPEN_MS       = HELMET_START_MS + 1200     // 3200ms
-const OPEN_HOLD_MS       = 500
+// 外部头盔时间线：数字、visor、眼睛、手套分段出现，避免同一刻挤在一起
+const HELMET_START_MS    = 800
+const HELMET_DURATION_MS = 900
+const EYES_OPEN_MS       = 1200
+const READY_START_MS     = 1900
 
-// 进入 ready 的时间
-const READY_START_MS = HELMET_START_MS + HELMET_DURATION_MS + OPEN_HOLD_MS  // 5500ms
-
-// 点击进入主页淡出时长（手机端 fallback）
-const FADE_MS = 800
+// 点击进入主页的稳定重叠转场时长
+const FADE_MS = 3500
 
 // 响应式基准（1920×1080 设计稿）
 const HELMET_BASE_WIDTH        = 380
@@ -44,7 +41,7 @@ const DESKTOP_HAND_STAGE_TOP    = 750
 const DESKTOP_HAND_STAGE_WIDTH  = 760
 const DESKTOP_HAND_ASPECT_RATIO = '985 / 1550'
 
-// 桌面端 GSAP 位移常量（CSS px）
+// 桌面端内部 visor 打开位移，点击后会压缩到 3.5s 内完成
 const DESKTOP_HAND_ENTRY_Y       = 420
 const DESKTOP_VISOR_PUSH_Y       = -486
 const DESKTOP_VISOR_EXIT_EXTRA_Y = -810
@@ -55,7 +52,7 @@ const DESKTOP_HAND_EXIT_X        = 1200
 const MOBILE_INTERIOR_STAGE_WIDTH  = 1170
 const MOBILE_INTERIOR_STAGE_HEIGHT = 2532
 
-// 手机端 GSAP 位移常量（CSS px）
+// 手机端内部 visor 打开位移，保留原资产坐标逻辑，只缩短时间
 const MOBILE_HAND_ENTRY_Y       = 320
 const MOBILE_VISOR_PUSH_Y       = -680
 const MOBILE_VISOR_EXIT_EXTRA_Y = -980
@@ -173,7 +170,7 @@ export default function HandDrawnLoader({
     const start = performance.now()
     let raf: number
     function tick(now: number) {
-      const progress = Math.min(100, Math.round((now - start) / DASHBOARD_LOADING_MS * 100))
+      const progress = Math.min(100, Math.round((now - start) / DASHBOARD_PROGRESS_MS * 100))
       setLoadingProgress(progress)
       if (progress < 100) raf = requestAnimationFrame(tick)
     }
@@ -254,120 +251,82 @@ export default function HandDrawnLoader({
     }
   }, [])
 
-  function runDesktopInteriorTimeline() {
+  function runStableInteriorTimeline() {
+    const activeStageRef = isDesktopInteriorTransition
+      ? desktopInteriorStageRef.current
+      : mobileInteriorStageRef.current
+    const activePushGroupRef = isDesktopInteriorTransition
+      ? desktopVisorPushGroupRef.current
+      : mobileVisorPushGroupRef.current
+    const activeHandRef = isDesktopInteriorTransition
+      ? interiorHandRef.current
+      : mobileHandRef.current
+    const activeVisorTopRef = isDesktopInteriorTransition
+      ? internalVisorTopRef.current
+      : mobileVisorTopRef.current
+    const activeHelmetBottomRef = isDesktopInteriorTransition
+      ? internalHelmetBottomRef.current
+      : mobileHelmetBottomRef.current
+    const visorPushY = isDesktopInteriorTransition
+      ? DESKTOP_VISOR_PUSH_Y
+      : MOBILE_VISOR_PUSH_Y
+    const visorExitExtraY = isDesktopInteriorTransition
+      ? DESKTOP_VISOR_EXIT_EXTRA_Y
+      : MOBILE_VISOR_EXIT_EXTRA_Y
+    const bottomExitY = isDesktopInteriorTransition
+      ? DESKTOP_BOTTOM_EXIT_Y
+      : MOBILE_BOTTOM_EXIT_Y
+    const handExitX = isDesktopInteriorTransition
+      ? DESKTOP_HAND_EXIT_X
+      : MOBILE_HAND_EXIT_X
+
     const tl = gsap.timeline({
       defaults: { ease: 'power2.inOut' },
       onComplete: () => { onCompleteRef.current() },
     })
     exitTimelineRef.current = tl
 
-    // 初始状态
-    tl.set(transitionCoverRef.current,         { opacity: 0, yPercent: 0 })
-    tl.set(loaderBackdropRef.current,          { autoAlpha: 1 })
-    tl.set(externalVisualRef.current,          { opacity: 1 })
-    tl.set(interiorLayerRef.current,           { autoAlpha: 0 })
-    tl.set(interiorDarkRef.current,            { autoAlpha: 1 })
-    tl.set(desktopInteriorStageRef.current,    { autoAlpha: 1 })
-    tl.set(mobileInteriorStageRef.current,     { autoAlpha: 0 })
-    tl.set(desktopVisorPushGroupRef.current,   { x: 0, y: 0 })
-    tl.set(interiorHandRef.current,            { autoAlpha: 0, x: 0, y: DESKTOP_HAND_ENTRY_Y })
-    tl.set(internalVisorTopRef.current,        { x: 0, y: 0 })
-    tl.set(internalHelmetBottomRef.current,    { x: 0, y: 0 })
-
-    // 0s → 2.2s: transitionCoverRef 渐变为全黑，外部视觉层淡出
-    tl.to(transitionCoverRef.current,  { opacity: 1, duration: 2.2, ease: 'power2.in' }, 0)
-    tl.to(externalVisualRef.current,   { opacity: 0, duration: 2.2 }, 0)
-
-    // 2.2s: transitionCoverRef 已全黑，安全切换到内部层
-    tl.set(interiorLayerRef.current,   { autoAlpha: 1 }, 2.2)
-
-    // 2.35s → 4.0s: transitionCoverRef 柔边向下退出（1.65s）
-    tl.to(transitionCoverRef.current,  { yPercent: 100, duration: 1.65 }, 2.35)
-    tl.set(transitionCoverRef.current, { autoAlpha: 0 }, 4.0)
-
-    // 2.4s: 通知 HOME 在黑场下面提前显示
-    tl.call(() => onRevealRef.current?.(), undefined, 5.6)
-
-    // 2.6s → 3.5s: loaderBackdrop 白底淡出（0.9s）
-    tl.to(loaderBackdropRef.current,   { autoAlpha: 0, duration: 0.9 }, 2.6)
-
-    // 3.4s → 5.0s: interiorDark 淡出（1.6s）
-    tl.to(interiorDarkRef.current,     { autoAlpha: 0, duration: 1.6 }, 3.4)
-
-    // 4.0s → 4.8s: hand 从下方进场（stage px）
-    tl.to(interiorHandRef.current,     { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power2.out' }, 4.0)
-
-    // 4.8s → 6.8s: desktopVisorPushGroupRef 整体上移（hand + visor-top 同步，2.0s）
-    tl.to(desktopVisorPushGroupRef.current, { y: DESKTOP_VISOR_PUSH_Y, duration: 2.0 }, 4.8)
-
-    // 5.2s → 8.0s: helmet bottom 向下移出（2.8s）
-    tl.to(internalHelmetBottomRef.current, { y: DESKTOP_BOTTOM_EXIT_Y, duration: 2.8, ease: 'power2.in' }, 5.2)
-
-    // 6.8s → 7.4s: hand 往右出屏并淡出（0.6s）
-    tl.to(interiorHandRef.current,     { x: DESKTOP_HAND_EXIT_X, autoAlpha: 0, duration: 0.6, ease: 'power2.in' }, 6.8)
-
-    // 6.8s → 8.0s: visor-top 继续向上移出（基于 group 已移动后的位置，1.2s）
-    tl.to(internalVisorTopRef.current, { y: DESKTOP_VISOR_EXIT_EXTRA_Y, duration: 1.2, ease: 'power2.in' }, 6.8)
-
-    // 8.0s: onComplete 由 timeline onComplete 回调触发
-  }
-
-  function runMobileInteriorTimeline() {
-    const tl = gsap.timeline({
-      defaults: { ease: 'power2.inOut' },
-      onComplete: () => { onCompleteRef.current() },
-    })
-    exitTimelineRef.current = tl
-
-    // 初始状态
-    tl.set(transitionCoverRef.current,       { opacity: 0, yPercent: 0, autoAlpha: 1 })
+    tl.set(transitionCoverRef.current,       { autoAlpha: 0, xPercent: -120, yPercent: 0 })
     tl.set(loaderBackdropRef.current,        { autoAlpha: 1 })
-    tl.set(externalVisualRef.current,        { opacity: 1 })
-    tl.set(interiorLayerRef.current,         { autoAlpha: 0 })
-    tl.set(interiorDarkRef.current,          { autoAlpha: 1 })
-    tl.set(desktopInteriorStageRef.current,  { autoAlpha: 0 })
-    tl.set(mobileInteriorStageRef.current,   { autoAlpha: 1 })
+    tl.set(externalVisualRef.current,        { autoAlpha: 1, filter: 'brightness(1)' })
+    tl.set(interiorLayerRef.current,         { autoAlpha: 1 })
+    tl.set(interiorDarkRef.current,          { autoAlpha: 0 })
+    tl.set(desktopInteriorStageRef.current,  { autoAlpha: 0, scale: 1 })
+    tl.set(mobileInteriorStageRef.current,   { autoAlpha: 0, scale: 1 })
+    tl.set(desktopVisorPushGroupRef.current, { x: 0, y: 0 })
     tl.set(mobileVisorPushGroupRef.current,  { x: 0, y: 0 })
+    tl.set(interiorHandRef.current,          { autoAlpha: 0, x: 0, y: DESKTOP_HAND_ENTRY_Y })
     tl.set(mobileHandRef.current,            { autoAlpha: 0, x: 0, y: MOBILE_HAND_ENTRY_Y })
+    tl.set(internalVisorTopRef.current,      { x: 0, y: 0 })
+    tl.set(internalHelmetBottomRef.current,  { x: 0, y: 0 })
     tl.set(mobileVisorTopRef.current,        { x: 0, y: 0 })
     tl.set(mobileHelmetBottomRef.current,    { x: 0, y: 0 })
 
-    // 0s → 1.4s: transitionCoverRef 变黑，外部视觉层淡出
-    tl.to(transitionCoverRef.current,  { opacity: 1, duration: 1.4, ease: 'power2.in' }, 0)
-    tl.to(externalVisualRef.current,   { opacity: 0, duration: 1.4 }, 0)
+    // 内部 visor 立即接上外部 helmet；黑幕不再参与切换。
+    tl.fromTo(
+      activeStageRef,
+      { autoAlpha: 0, scale: 1.012, filter: 'brightness(1.35)' },
+      { autoAlpha: 1, scale: 1, filter: 'brightness(1)', duration: 1.0, ease: 'power2.out' },
+      0,
+    )
+    tl.to(loaderBackdropRef.current, { autoAlpha: 0, duration: 1.2 }, 0)
+    tl.to(externalVisualRef.current, { autoAlpha: 0, filter: 'brightness(1.22)', duration: 0.85 }, 0.35)
+    tl.to(activeHandRef, { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power2.out' }, 0.65)
+    tl.to(activePushGroupRef, { y: visorPushY, duration: 1.6 }, 1.05)
+    tl.to(activeHelmetBottomRef, { y: bottomExitY, duration: 1.3, ease: 'power2.in' }, 1.65)
+    tl.fromTo(
+      transitionCoverRef.current,
+      { autoAlpha: 0, xPercent: -120 },
+      { autoAlpha: 0.62, xPercent: 120, duration: 1.2, ease: 'power2.out' },
+      0.55,
+    )
+    tl.call(() => onRevealRef.current?.(), undefined, 1.55)
+    tl.to(activeHandRef, { x: handExitX, autoAlpha: 0, duration: 0.7, ease: 'power2.in' }, 2.65)
+    tl.to(activeVisorTopRef, { y: visorExitExtraY, duration: 0.7, ease: 'power2.in' }, 2.65)
+    tl.to(transitionCoverRef.current, { autoAlpha: 0, duration: 0.2 }, 1.75)
+    tl.to(interiorLayerRef.current,   { autoAlpha: 0, duration: 0.15 }, 3.35)
 
-    // 1.4s: transitionCoverRef 已全黑，安全切换到内部层
-    tl.set(interiorLayerRef.current,   { autoAlpha: 1 }, 1.4)
-
-    // 4.3s: 在 mobile 内部 visor 打开过程中触发主页 reveal，让 HomeHero 动画挂到 visor 打开阶段
-    tl.call(() => onRevealRef.current?.(), undefined, 3.9)
-
-    // 1.45s → 2.1s: loaderBackdrop 白底淡出（0.65s）
-    tl.to(loaderBackdropRef.current,   { autoAlpha: 0, duration: 0.65 }, 1.45)
-
-    // 1.55s → 2.8s: transitionCoverRef 柔边向下退出（1.25s）
-    tl.to(transitionCoverRef.current,  { yPercent: 100, duration: 1.25 }, 1.55)
-    tl.set(transitionCoverRef.current, { autoAlpha: 0 }, 2.8)
-
-    // 2.4s → 4.0s: interiorDark 淡出（1.6s）
-    tl.to(interiorDarkRef.current,     { autoAlpha: 0, duration: 1.6 }, 2.4)
-
-    // 2.8s → 3.5s: hand 从下方进场（stage px）
-    tl.to(mobileHandRef.current,       { autoAlpha: 1, y: 0, duration: 0.7, ease: 'power2.out' }, 2.8)
-
-    // 3.5s → 5.1s: mobileVisorPushGroupRef 整体上移（hand + visor-top 同步，1.6s）
-    tl.to(mobileVisorPushGroupRef.current, { y: MOBILE_VISOR_PUSH_Y, duration: 1.6 }, 3.5)
-
-    // 4.0s → 6.0s: mobile helmet bottom 向下移出（2.0s）
-    tl.to(mobileHelmetBottomRef.current, { y: MOBILE_BOTTOM_EXIT_Y, duration: 2.0, ease: 'power2.in' }, 4.0)
-
-    // 5.1s → 5.6s: hand 往右出屏并淡出（0.5s）
-    tl.to(mobileHandRef.current,       { x: MOBILE_HAND_EXIT_X, autoAlpha: 0, duration: 0.5, ease: 'power2.in' }, 5.1)
-
-    // 5.1s → 6.0s: visor-top 继续向上移出（基于 group 已移动后的位置，0.9s）
-    tl.to(mobileVisorTopRef.current,   { y: MOBILE_VISOR_EXIT_EXTRA_Y, duration: 0.9, ease: 'power2.in' }, 5.1)
-
-    // 6.0s: onComplete 由 timeline onComplete 回调触发
+    // 3.5s: onComplete 由 timeline onComplete 回调触发
   }
 
   function handleHelmetClick() {
@@ -378,17 +337,9 @@ export default function HandDrawnLoader({
     setShowClickHint(false)
     setHintDismissed(true)
     hintDismissedRef.current = true
-    setCursorPositionReady(false)
     setPhase('pressed')
-    setVisorUp(false)
 
-    if (isDesktopInteriorTransition) {
-      // 桌面端：GSAP interior timeline
-      runDesktopInteriorTimeline()
-    } else {
-      // 手机端：GSAP mobile interior timeline
-      runMobileInteriorTimeline()
-    }
+    runStableInteriorTimeline()
   }
 
   // 只在 ready / pressed 且 cursorPositionReady 时显示手套
@@ -467,7 +418,7 @@ export default function HandDrawnLoader({
                   pointerEvents: 'none',
                   transform: 'none',
                   opacity: eyeState === 'closed' ? 1 : 0,
-                  transition: 'opacity 150ms',
+                  transition: 'opacity 200ms',
                 }}
                 unoptimized
               />
@@ -481,7 +432,7 @@ export default function HandDrawnLoader({
                   pointerEvents: 'none',
                   transform: 'none',
                   opacity: eyeState === 'open' ? 1 : 0,
-                  transition: 'opacity 150ms',
+                  transition: 'opacity 200ms',
                 }}
                 unoptimized
               />
@@ -968,18 +919,19 @@ export default function HandDrawnLoader({
         </div>
       </div>
 
-      {/* 统一过渡黑幕，贯穿整个桌面端退出转场（zIndex 最高） */}
+      {/* 轻微玻璃扫光，给进入 visor 的瞬间一点仪式感，避免黑场 */}
       <div
         ref={transitionCoverRef}
         style={{
           position: 'absolute',
           left: 0,
-          top: '-30vh',
+          top: 0,
           width: '100%',
-          height: '160vh',
+          height: '100%',
           zIndex: 3,
           pointerEvents: 'none',
-          background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, #000 18%, #000 100%)',
+          background: 'linear-gradient(105deg, transparent 0%, rgba(255, 255, 255, 0) 38%, rgba(255, 255, 255, 0.58) 50%, rgba(110, 255, 219, 0.2) 56%, rgba(255, 255, 255, 0) 68%, transparent 100%)',
+          mixBlendMode: 'screen',
           opacity: 0,
           transform: 'translate3d(0, 0, 0)',
           willChange: 'transform, opacity',

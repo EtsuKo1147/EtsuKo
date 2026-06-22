@@ -18,8 +18,8 @@ const LINES = [
 ]
 
 const FULL_TEXT = LINES.join('\n')
-const CHAR_MS = 16
-const NEWLINE_MS = 80
+const CHAR_MS = 8
+const NEWLINE_MS = 52
 
 export default function LoadingTypewriter() {
   const [pos, setPos] = useState(0)
