@@ -6,6 +6,7 @@ import HomeEntryScrollController from '@/components/sections/HomeEntryScrollCont
 import HomeHero from '@/components/sections/HomeHero'
 import HomeCursorLayer from '@/components/sections/HomeCursorLayer'
 import HomeGameJourney from '@/components/sections/HomeGameJourney'
+import HomeAboutSection from '@/components/sections/HomeAboutSection'
 import {
   getHomeCharacterById,
   type HomeCharacterId,
@@ -63,6 +64,7 @@ export default function HomePage() {
           selectedCharacterId={selectedCharacterId}
           onSelectCharacter={setSelectedCharacterId}
         />
+        <HomeAboutSection />
       </main>
       <HomeCursorLayer character={selectedCharacter} enabled={homeRevealed} />
     </>

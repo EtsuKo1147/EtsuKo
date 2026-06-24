@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import HomeCharacterSelect from './HomeCharacterSelect'
 import {
   cartridgeShell,
@@ -12,6 +12,34 @@ import {
 import styles from './HomeGameJourney.module.css'
 
 const worksConsole = '/home/character-stage/works-console'
+
+const selectedWorks = [
+  {
+    title: 'Selected Works 1',
+    category: 'Branding / Web Design',
+    preview: `${worksConsole}/previews/work-01.svg`,
+  },
+  {
+    title: 'Selected Works 2',
+    category: 'Graphic Design / Visual Identity',
+    preview: `${worksConsole}/previews/work-02.svg`,
+  },
+  {
+    title: 'Selected Works 3',
+    category: 'Poster / Illustration',
+    preview: `${worksConsole}/previews/work-03.svg`,
+  },
+  {
+    title: 'Selected Works 4',
+    category: 'Photography / Retouching',
+    preview: `${worksConsole}/previews/work-04.svg`,
+  },
+  {
+    title: 'Selected Works 5',
+    category: 'Web Design / Interaction',
+    preview: `${worksConsole}/previews/work-05.svg`,
+  },
+]
 
 type HomeGameJourneyProps = {
   selectedCharacterId: HomeCharacterId
@@ -43,16 +71,19 @@ export default function HomeGameJourney({
       const rect = journey.getBoundingClientRect()
       const travel = Math.max(journey.offsetHeight - window.innerHeight, 1)
       const progress = clamp(-rect.top / travel)
-      const assistExitProgress = range(progress, 0.2, 0.35)
-      const cursorExitProgress = range(progress, 0.2, 0.4)
-      const metaExitProgress = range(progress, 0.38, 0.52)
-      const cartridgeEnterProgress = range(progress, 0.35, 0.58)
-      const cardToLabelProgress = range(progress, 0.62, 0.75)
-      const cartridgeLockProgress = range(progress, 0.58, 0.68)
-      const labelOpacity = range(progress, 0.64, 0.75)
-      const cartridgeOpacity = range(progress, 0.35, 0.44)
-      const consoleEnterProgress = range(progress, 0.82, 0.92)
-      const cartridgeSlotProgress = range(progress, 0.92, 1)
+      const storyProgress = clamp(progress / 0.72)
+      const assistExitProgress = range(storyProgress, 0.2, 0.35)
+      const cursorExitProgress = range(storyProgress, 0.2, 0.4)
+      const metaExitProgress = range(storyProgress, 0.38, 0.52)
+      const cartridgeEnterProgress = range(storyProgress, 0.35, 0.58)
+      const cardToLabelProgress = range(storyProgress, 0.62, 0.75)
+      const cartridgeLockProgress = range(storyProgress, 0.58, 0.68)
+      const labelOpacity = range(storyProgress, 0.64, 0.75)
+      const cartridgeOpacity = range(storyProgress, 0.35, 0.44)
+      const consoleEnterProgress = range(storyProgress, 0.82, 0.92)
+      const cartridgeSlotProgress = range(storyProgress, 0.92, 1)
+      const isCharacterInteractive = storyProgress < 0.45
+      const isConsoleInteractive = storyProgress >= 0.82 && progress < 0.78
       const consoleWidth =
         window.innerWidth <= 640
           ? window.innerWidth * 1.52
@@ -74,11 +105,11 @@ export default function HomeGameJourney({
       const cartridgeWidth =
         baseCartridgeWidth +
         (slotCartridgeWidth - baseCartridgeWidth) * cartridgeSlotProgress
-      const cartridgeScale = 0.9 + cartridgeEnterProgress * 0.1
       const cartridgeClipBottom = cartridgeSlotProgress * 46
       const consoleY = (1 - consoleEnterProgress) * window.innerHeight * 1.05
+      const cartridgeScale = 0.9 + cartridgeEnterProgress * 0.1
 
-      journey.style.setProperty('--character-stage-progress', progress.toFixed(4))
+      journey.style.setProperty('--character-stage-progress', storyProgress.toFixed(4))
       journey.style.setProperty(
         '--character-title-opacity',
         String(1 - assistExitProgress),
@@ -117,6 +148,16 @@ export default function HomeGameJourney({
       journey.style.setProperty('--shared-cartridge-clip-bottom', `${cartridgeClipBottom}%`)
       journey.style.setProperty('--shared-label-opacity', String(labelOpacity))
       journey.style.setProperty('--game-console-y', `${consoleY.toFixed(2)}px`)
+      journey.style.setProperty(
+        '--character-select-pointer-events',
+        isCharacterInteractive ? 'auto' : 'none',
+      )
+      journey.style.setProperty(
+        '--game-console-pointer-events',
+        isConsoleInteractive ? 'auto' : 'none',
+      )
+      journey.dataset.characterInteractive = String(isCharacterInteractive)
+      journey.dataset.consoleInteractive = String(isConsoleInteractive)
     }
 
     const requestUpdate = () => {
@@ -147,7 +188,10 @@ export default function HomeGameJourney({
       ref={journeyRef}
       className={styles.journey}
       aria-label="Character to works game journey"
+      data-character-interactive="true"
+      data-console-interactive="false"
     >
+      <GameJourneyChrome />
       <GameConsoleLayer />
       <SharedCartridgeLayer selectedCharacterId={selectedCharacterId} />
       <HomeCharacterSelect
@@ -155,6 +199,43 @@ export default function HomeGameJourney({
         onSelectCharacter={onSelectCharacter}
       />
     </section>
+  )
+}
+
+function GameJourneyChrome() {
+  return (
+    <div className={styles.gameChrome} aria-hidden="true">
+      <div className={styles.bgGrid} />
+      <div className={styles.bgNoise} />
+      <svg
+        className={styles.bgSlash}
+        viewBox="0 0 2560 1219"
+        preserveAspectRatio="none"
+      >
+        <g stroke="currentColor" strokeWidth="1.5" opacity="0.1">
+          <path d="M-80 180 L760 -60" />
+          <path d="M-80 215 L790 -45" />
+          <path d="M2640 1040 L1820 1280" />
+          <path d="M2640 1080 L1850 1300" />
+        </g>
+        <g fill="currentColor" opacity="0.07">
+          <polygon points="110,840 420,840 370,900 60,900" />
+        </g>
+      </svg>
+      <div className={styles.bgWatermark}>04</div>
+      <div className={styles.scanline} />
+      <span className={`${styles.frameTick} ${styles.frameTickTl}`} />
+      <span className={`${styles.frameTick} ${styles.frameTickTr}`} />
+      <span className={`${styles.frameTick} ${styles.frameTickBl}`} />
+      <span className={`${styles.frameTick} ${styles.frameTickBr}`} />
+      <span className={`${styles.hudTag} ${styles.hudTagPrimary}`}>
+        SYS / CHARACTER SELECT
+      </span>
+      <span className={`${styles.hudTag} ${styles.hudTagSecondary}`}>
+        MODE / DESIGN · STABLE
+      </span>
+      <div className={styles.vignette} />
+    </div>
   )
 }
 
@@ -194,22 +275,103 @@ function SharedCartridgeLayer({
 
 function GameConsoleLayer() {
   return (
-    <div className={styles.gameConsoleLayer} aria-hidden="true">
-      <div className={styles.gameConsoleStage}>
-        <div className={styles.gameConsoleScreen}>
+    <div className={styles.gameConsoleLayer}>
+      <GameConsoleTop />
+    </div>
+  )
+}
+
+function GameConsoleTop() {
+  const [hasStarted, setHasStarted] = useState(false)
+  const [selectedWorkIndex, setSelectedWorkIndex] = useState(0)
+  const [isGlitching, setIsGlitching] = useState(false)
+  const glitchTimeoutRef = useRef<number | null>(null)
+  const selectedWork = selectedWorks[selectedWorkIndex]
+
+  useEffect(() => {
+    return () => {
+      if (glitchTimeoutRef.current) {
+        window.clearTimeout(glitchTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  const triggerScreenGlitch = () => {
+    setIsGlitching(true)
+
+    if (glitchTimeoutRef.current) {
+      window.clearTimeout(glitchTimeoutRef.current)
+    }
+
+    glitchTimeoutRef.current = window.setTimeout(() => {
+      setIsGlitching(false)
+      glitchTimeoutRef.current = null
+    }, 360)
+  }
+
+  const showNextWork = () => {
+    triggerScreenGlitch()
+
+    if (!hasStarted) {
+      setHasStarted(true)
+      return
+    }
+
+    setSelectedWorkIndex((currentIndex) =>
+      currentIndex === selectedWorks.length - 1 ? 0 : currentIndex + 1,
+    )
+  }
+
+  return (
+    <div className={styles.gameConsoleStage}>
+      <div
+        className={`${styles.gameConsoleScreen} ${
+          isGlitching ? styles.gameConsoleScreenGlitching : ''
+        }`}
+      >
+        {hasStarted ? (
+          <div className={styles.workScreen}>
+            <img
+              key={selectedWork.preview}
+              src={selectedWork.preview}
+              alt=""
+              className={styles.workPreviewImage}
+              draggable={false}
+              aria-hidden="true"
+            />
+            <div className={styles.workScreenMeta}>
+              <p className={styles.workScreenEyebrow}>Selected Works</p>
+              <p className={styles.workScreenTitle}>{selectedWork.title}</p>
+              <p className={styles.workScreenCategory}>{selectedWork.category}</p>
+            </div>
+          </div>
+        ) : (
           <div className={styles.startScreen}>
             <p className={styles.bootText}>Character loaded</p>
             <p className={styles.startTitle}>Press Start</p>
             <p className={styles.startHint}>Try me</p>
           </div>
-        </div>
-        <img
-          src={`${worksConsole}/gameplayer.svg`}
-          alt=""
-          className={styles.gameConsoleImage}
-          draggable={false}
-        />
+        )}
+        <div className={styles.screenFx} aria-hidden="true" />
+        <div className={styles.screenGreenScanline} aria-hidden="true" />
+        <div className={styles.screenGlitch} aria-hidden="true" />
       </div>
+      <img
+        src={`${worksConsole}/gameplayer.svg`}
+        alt=""
+        className={styles.gameConsoleImage}
+        draggable={false}
+      />
+      <button
+        type="button"
+        className={styles.joystickButton}
+        aria-label={
+          hasStarted
+            ? `Show next work, current work is ${selectedWork.title}`
+            : 'Start selected works preview'
+        }
+        onClick={showNextWork}
+      />
     </div>
   )
 }
