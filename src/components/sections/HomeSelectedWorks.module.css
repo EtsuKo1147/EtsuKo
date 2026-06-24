@@ -1,70 +1,38 @@
-/* Selected Works — static console preview */
-
 .section {
+  --works-progress: 0;
+  --cartridge-insert-y: -82svh;
+  --cartridge-insert-scale: 0.92;
   position: relative;
-  min-height: 100svh;
+  min-height: 250svh;
   background: #ffffff;
-  padding: 0;
+  color: #000000;
   overflow-x: clip;
-  overflow-y: visible;
 }
 
-.consoleLayout {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
+.stickyStage {
+  position: sticky;
+  top: 0;
   width: 100%;
-  min-height: 100%;
+  height: 100svh;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  font-family: var(--font-intel-mono), 'Courier New', monospace;
 }
 
 .consoleStage {
+  position: relative;
+  width: min(1920px, 96vw);
+  aspect-ratio: 1920 / 1080;
+}
+
+.screenLayer {
   position: absolute;
-  left: 50%;
-  bottom: 0;
+  left: 24%;
+  top: 12%;
   z-index: 2;
-  width: min(85vw, 1646px);
-  aspect-ratio: 1646.17 / 994.5;
-  transform: translateX(-50%);
-}
-
-.doodle {
-  position: absolute;
-  z-index: 1;
-  display: block;
-  width: clamp(45px, 7vw, 190px);
-  height: auto;
-  cursor: pointer;
-  pointer-events: auto;
-  user-select: none;
-  transform-origin: 50% 72%;
-  will-change: transform;
-}
-
-.doodleOne {
-  left: clamp(8px, 3vw, 50px);
-  bottom: clamp(90px, 21vh, 180px);
-}
-
-.doodleTwo {
-  right: clamp(20px, 3vw, 130px);
-  bottom: clamp(60px, 27vh, 260px);
-}
-
-.doodleSpin {
-  animation: doodleSpin 0.58s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.doodleSpringBack {
-  animation: doodleSpringBack 0.82s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.screenViewport {
-  position: absolute;
-  left: 13%;
-  top: 3%;
-  width: 75%;
-  height: 59%;
-  z-index: 1;
+  width: 58%;
+  height: 51%;
   overflow: hidden;
   background: #ffffff;
 }
@@ -72,127 +40,36 @@
 .previewImage {
   width: 100%;
   height: 100%;
+  display: block;
   object-fit: cover;
-  display: block;
-}
-
-.consoleShell {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  width: 100%;
-  height: 100%;
-  display: block;
-  pointer-events: none;
   user-select: none;
-}
-
-.joystick {
-  position: absolute;
-  left: 9.5%;
-  top: 63%;
-  width: 8%;
-  z-index: 4;
-  display: block;
-  pointer-events: none;
-  user-select: none;
-}
-
-.controlButton {
-  position: absolute;
-  z-index: 6;
-  width: 10.7%;
-  aspect-ratio: 1 / 1;
-  display: block;
-  border: 0;
-  padding: 0;
-  background-color: transparent;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-  cursor: pointer;
-  pointer-events: auto;
-  user-select: none;
-  appearance: none;
-}
-
-.buttonUp {
-  left: 66%;
-  top: 70%;
-  background-image: url('/works-console/button-up-default.svg');
-}
-
-.buttonUp:hover {
-  background-image: url('/works-console/button-up-hover.svg');
-}
-
-.buttonUp:active {
-  background-image: url('/works-console/button-up-pressed.svg');
-}
-
-.buttonDown {
-  left: 79%;
-  top: 70%;
-  background-image: url('/works-console/button-down-default.svg');
-}
-
-.buttonDown:hover {
-  background-image: url('/works-console/button-down-hover.svg');
-}
-
-.buttonDown:active {
-  background-image: url('/works-console/button-down-pressed.svg');
-}
-
-.viewProjectLink {
-  position: absolute;
-  left: 42.2%;
-  top: 76.5%;
-  width: 17.2%;
-  aspect-ratio: 283.57 / 83.16;
-  z-index: 5;
-  display: block;
-  line-height: 0;
-  text-decoration: none;
-  background-image: url('/works-console/button-view-default.svg');
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-  user-select: none;
-}
-
-.viewProjectLink:hover {
-  background-image: url('/works-console/button-view-hover.svg');
-}
-
-.viewProjectLink:active {
-  background-image: url('/works-console/button-view-pressed.svg');
 }
 
 .workMeta {
   position: absolute;
-  left: clamp(10px, 2vw, 96px);
-  right: auto;
-  top: 10%;
-  z-index: 4;
-  width: clamp(150px, 13vw, 260px);
-  font-family: var(--font-intel-mono), 'Courier New', monospace;
+  left: 24px;
+  top: 22px;
+  z-index: 2;
+  max-width: 260px;
   color: #000000;
+  text-align: left;
+  pointer-events: none;
 }
 
-.metaEyebrow {
-  margin: 0 0 14px;
-  font-size: clamp(9px, 0.62vw, 12px);
+.metaEyebrow,
+.bootText,
+.startHint {
+  margin: 0;
+  font-size: 0.72rem;
   font-weight: 800;
   line-height: 1;
-  letter-spacing: 0.18em;
   text-transform: uppercase;
-  opacity: 0.46;
+  opacity: 0.52;
 }
 
 .workTitle {
-  margin: 0 0 12px;
-  font-size: clamp(24px, 2.35vw, 44px);
+  margin: 12px 0 10px;
+  font-size: 2.25rem;
   font-weight: 900;
   line-height: 0.95;
   letter-spacing: 0;
@@ -200,29 +77,112 @@
 
 .workCategory {
   margin: 0;
-  font-size: clamp(10px, 0.72vw, 14px);
-  font-weight: 700;
-  line-height: 1.35;
-  letter-spacing: 0.02em;
-  opacity: 0.62;
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1.25;
+  opacity: 0.72;
 }
 
-@media (max-width: 1024px) {
-  .consoleStage {
-    width: min(92vw, 980px);
-  }
-
-  .workMeta {
-    left: clamp(16px, 3.5vw, 40px);
-    right: auto;
-    top: 30%;
-    width: clamp(132px, 18vw, 210px);
-  }
+.startScreen {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 18px;
+  padding: 32px;
+  text-align: center;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.05) 50%, transparent 50%) 0 0 / 100% 8px,
+    #ffffff;
 }
 
-@media (max-width: 768px) {
+.startTitle {
+  margin: 0;
+  font-size: 3.25rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.gameplayer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+.cartridgeMask {
+  position: absolute;
+  inset: 0 0 23.5%;
+  z-index: 3;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.cartridgeInsert {
+  position: absolute;
+  left: 50%;
+  top: 93.5%;
+  width: 14%;
+  aspect-ratio: 896.42 / 914.5;
+  transform: translateX(-50%) translateY(var(--cartridge-insert-y))
+    scale(var(--cartridge-insert-scale));
+  transform-origin: 50% 100%;
+  will-change: transform;
+}
+
+.cartridgeShell,
+.cartridgeLabel {
+  position: absolute;
+  display: block;
+  object-fit: contain;
+  user-select: none;
+}
+
+.cartridgeShell {
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+}
+
+.cartridgeLabel {
+  left: 50%;
+  top: 17.5%;
+  z-index: 2;
+  width: 72%;
+  transform: translateX(-50%);
+}
+
+.joystickButton {
+  position: absolute;
+  left: 18%;
+  top: 59%;
+  z-index: 5;
+  width: 15%;
+  height: 24%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  appearance: none;
+}
+
+.joystickButton:focus-visible {
+  outline: 3px solid #000000;
+  outline-offset: 6px;
+}
+
+@media (max-width: 960px) {
   .section {
-    min-height: 92svh;
+    min-height: 190svh;
   }
 
   .consoleStage {
@@ -230,70 +190,63 @@
   }
 
   .workMeta {
-    left: 24px;
-    right: auto;
-    top: 9%;
-    width: min(58vw, 240px);
-  }
-
-  .metaEyebrow {
-    margin-bottom: 10px;
-    font-size: 9px;
+    left: 16px;
+    top: 16px;
+    max-width: 220px;
   }
 
   .workTitle {
-    font-size: clamp(22px, 7vw, 34px);
+    font-size: 1.8rem;
+  }
+
+  .startTitle {
+    font-size: 2.4rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .section {
+    min-height: 175svh;
+  }
+
+  .consoleStage {
+    width: 152vw;
+  }
+
+  .screenLayer {
+    left: 24%;
+    top: 12%;
+    width: 58%;
+    height: 51%;
+  }
+
+  .workMeta {
+    left: 12px;
+    top: 12px;
+    max-width: 170px;
+  }
+
+  .metaEyebrow,
+  .bootText,
+  .startHint {
+    font-size: 0.62rem;
+  }
+
+  .workTitle {
+    margin: 8px 0 7px;
+    font-size: 1.35rem;
   }
 
   .workCategory {
-    font-size: 10px;
-  }
-}
-
-@keyframes doodleSpin {
-  0% {
-    transform: rotate(0deg) scale(1);
+    font-size: 0.68rem;
   }
 
-  38% {
-    transform: rotate(260deg) scale(1.08);
+  .startScreen {
+    gap: 12px;
+    padding: 20px;
   }
 
-  62% {
-    transform: rotate(382deg) scale(0.96);
-  }
-
-  78% {
-    transform: rotate(348deg) scale(1.03);
-  }
-
-  100% {
-    transform: rotate(360deg) scale(1);
-  }
-}
-
-@keyframes doodleSpringBack {
-  0% {
-    transform: rotate(18deg) scale(1.04);
-  }
-
-  24% {
-    transform: rotate(-14deg) scale(0.98);
-  }
-
-  44% {
-    transform: rotate(10deg) scale(1.02);
-  }
-
-  62% {
-    transform: rotate(-6deg) scale(0.99);
-  }
-
-  78% {
-    transform: rotate(3deg) scale(1.01);
-  }
-
-  100% {
-    transform: rotate(0deg) scale(1);
+  .startTitle {
+    font-size: 1.75rem;
   }
 }

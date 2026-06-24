@@ -1,0 +1,9 @@
+.homeMain {
+  cursor: auto;
+}
+
+:global(html.homeCustomCursorActive),
+:global(html.homeCustomCursorActive body),
+:global(html.homeCustomCursorActive *) {
+  cursor: none !important;
+}

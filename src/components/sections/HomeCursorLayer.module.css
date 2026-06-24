@@ -1,0 +1,32 @@
+.cursorLayer {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 2147483000;
+  width: 48px;
+  height: 48px;
+  pointer-events: none;
+  transform: translate3d(-100px, -100px, 0);
+  will-change: transform;
+}
+
+.cursorImage {
+  width: 48px;
+  height: 48px;
+  display: block;
+  object-fit: contain;
+  user-select: none;
+  animation: cursorEquip 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes cursorEquip {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

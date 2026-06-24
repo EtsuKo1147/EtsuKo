@@ -4,8 +4,13 @@ import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import HomeEntryScrollController from '@/components/sections/HomeEntryScrollController'
 import HomeHero from '@/components/sections/HomeHero'
-import HomeProfileIntro from '@/components/sections/HomeProfileIntro'
-import HomeSelectedWorks from '@/components/sections/HomeSelectedWorks'
+import HomeCursorLayer from '@/components/sections/HomeCursorLayer'
+import HomeGameJourney from '@/components/sections/HomeGameJourney'
+import {
+  getHomeCharacterById,
+  type HomeCharacterId,
+} from '@/components/sections/homeCharacterData'
+import styles from './page.module.css'
 
 const HandDrawnLoader = dynamic(
   () => import('@/components/animation/HandDrawnLoader'),
@@ -19,6 +24,9 @@ const shouldSkipHomeLoader = () =>
 export default function HomePage() {
   const [loaderDone,   setLoaderDone]   = useState(shouldSkipHomeLoader)
   const [homeRevealed, setHomeRevealed] = useState(shouldSkipHomeLoader)
+  const [selectedCharacterId, setSelectedCharacterId] =
+    useState<HomeCharacterId>('rider')
+  const selectedCharacter = getHomeCharacterById(selectedCharacterId)
 
   useEffect(() => {
     if (sessionStorage.getItem('skipHomeLoader') === '1') {
@@ -46,11 +54,17 @@ export default function HomePage() {
         />
       )}
       {/* Keep main free of overflowX hidden; it can break touch scrolling on mobile browsers. */}
-      <main style={{ visibility: homeRevealed ? 'visible' : 'hidden' }}>
+      <main
+        className={styles.homeMain}
+        style={{ visibility: homeRevealed ? 'visible' : 'hidden' }}
+      >
         <HomeHero revealed={homeRevealed} />
-        <HomeProfileIntro />
-        <HomeSelectedWorks />
+        <HomeGameJourney
+          selectedCharacterId={selectedCharacterId}
+          onSelectCharacter={setSelectedCharacterId}
+        />
       </main>
+      <HomeCursorLayer character={selectedCharacter} enabled={homeRevealed} />
     </>
   )
 }
