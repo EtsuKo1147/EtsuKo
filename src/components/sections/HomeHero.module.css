@@ -17,17 +17,18 @@
   min-height: 142svh;
   overflow-x: clip;
   overflow-y: visible;
-  background: #ffffff;
-  color: #000;
+  background: transparent;
+  color: var(--home-text-color, #363636);
   padding-top: var(--hero-stage-top);
   padding-right: clamp(230px, 24vw, 410px);
 }
 
 .brandVertical {
-  position: absolute;
+  position: fixed;
   left: clamp(6px, 1.2vw, 36px);
   top: clamp(6px, 1.2vw, 48px);
-  z-index: 6;
+  z-index: 20;
+  pointer-events: none;
   writing-mode: vertical-rl;
   text-orientation: mixed;
   font-weight: 900;
@@ -130,7 +131,7 @@
   top: 11%;
   width: 12%;
   z-index: 4;
-  color: #ffffff;
+  color: #E4E2E0;
   font-family: var(--font-intel-mono), 'Courier New', monospace;
   font-size: clamp(5px,1.4cqw, 25px);
   font-weight: 800;

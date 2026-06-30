@@ -9,6 +9,9 @@ import styles from './RoadSign.module.css'
 import RoadSignClock from './RoadSignClock'
 
 type RoadSignState = 'collapsed' | 'expanding' | 'expanded' | 'collapsing'
+type CollapseControlOptions = {
+  autoHide?: boolean
+}
 
 const ROAD_SIGN_DESIGN_HEIGHT = 750
 const ROAD_SIGN_DESIGN_WIDTH = 760
@@ -55,6 +58,8 @@ export default function Header() {
   const collapseControlTimerRef = useRef<number | null>(null)
   const roadSignItemsTlRef = useRef<gsap.core.Timeline | gsap.core.Tween | null>(null)
   const roadSignStateRef = useRef<RoadSignState>('expanded')
+  const showCollapseControlRef = useRef<(options?: CollapseControlOptions) => void>(() => {})
+  const handleRoadSignScrollRef = useRef<() => void>(() => {})
   const [isRoadSignCollapsed, setIsRoadSignCollapsed] = useState(false)
 
   const canUseHover = () => window.matchMedia('(hover: hover) and (pointer: fine)').matches
@@ -119,7 +124,7 @@ export default function Header() {
     })
   }
 
-  const showCollapseControl = ({ autoHide = false } = {}) => {
+  const showCollapseControl = ({ autoHide = false }: CollapseControlOptions = {}) => {
     const control = collapseControlRef.current
     if (!control) return
     if (!roadSignReadyRef.current) return
@@ -181,7 +186,7 @@ export default function Header() {
     bunnyLoopTlRef.current?.kill()
     bunnyLoopTlRef.current = null
     gsap.killTweensOf(bunny)
-    const tl = gsap.timeline({ onComplete: () => startBunnyLoopRef.current() })
+    const tl = gsap.timeline()
     addBunnySquash(tl, bunny, isMobile)
   }
 
@@ -367,6 +372,11 @@ export default function Header() {
     }
   }
 
+  useEffect(() => {
+    showCollapseControlRef.current = showCollapseControl
+    handleRoadSignScrollRef.current = handleRoadSignScroll
+  })
+
   const handleRoadSignPointerEnter = () => {
     if (!roadSignReadyRef.current) return
     if (!canUseHover()) return
@@ -458,12 +468,8 @@ export default function Header() {
     }
 
     const startBunnyLoop = () => {
-      const bunny = bunnyRef.current
-      if (!bunny || window.location.pathname !== '/') return
-      const isMobile = window.matchMedia('(max-width: 768px)').matches
       bunnyLoopTlRef.current?.kill()
-      bunnyLoopTlRef.current = gsap.timeline({ repeat: -1, repeatDelay: 2.08, delay: 4.5 })
-      addBunnySquash(bunnyLoopTlRef.current, bunny, isMobile)
+      bunnyLoopTlRef.current = null
     }
     startBunnyLoopRef.current = startBunnyLoop
 
@@ -512,7 +518,7 @@ export default function Header() {
           })
           roadSignReadyRef.current = true
           roadSignStateRef.current = 'expanded'
-          handleRoadSignScroll()
+          handleRoadSignScrollRef.current()
         },
       })
 
@@ -537,7 +543,7 @@ export default function Header() {
       if (scrollRafRef.current !== null) return
       scrollRafRef.current = window.requestAnimationFrame(() => {
         scrollRafRef.current = null
-        handleRoadSignScroll()
+        handleRoadSignScrollRef.current()
       })
     }
 
@@ -547,7 +553,7 @@ export default function Header() {
       roadSignReadyRef.current = true
       roadSignStateRef.current = 'expanded'
       if (!canUseHover()) {
-        showCollapseControl()
+        showCollapseControlRef.current()
       }
       window.addEventListener('scroll', onScroll, { passive: true })
       return () => {
@@ -575,7 +581,7 @@ export default function Header() {
       bunnyReadyRef.current = true
       roadSignReadyRef.current = true
       roadSignStateRef.current = 'expanded'
-      handleRoadSignScroll()
+      handleRoadSignScrollRef.current()
       return () => {
         window.removeEventListener('scroll', onScroll)
         if (scrollRafRef.current !== null) {

@@ -4,13 +4,7 @@ import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import HomeEntryScrollController from '@/components/sections/HomeEntryScrollController'
 import HomeHero from '@/components/sections/HomeHero'
-import HomeCursorLayer from '@/components/sections/HomeCursorLayer'
-import HomeGameJourney from '@/components/sections/HomeGameJourney'
-import HomeAboutSection from '@/components/sections/HomeAboutSection'
-import {
-  getHomeCharacterById,
-  type HomeCharacterId,
-} from '@/components/sections/homeCharacterData'
+import HomeMinimalIndex from '@/components/sections/HomeMinimalIndex'
 import styles from './page.module.css'
 
 const HandDrawnLoader = dynamic(
@@ -25,9 +19,7 @@ const shouldSkipHomeLoader = () =>
 export default function HomePage() {
   const [loaderDone,   setLoaderDone]   = useState(shouldSkipHomeLoader)
   const [homeRevealed, setHomeRevealed] = useState(shouldSkipHomeLoader)
-  const [selectedCharacterId, setSelectedCharacterId] =
-    useState<HomeCharacterId>('rider')
-  const selectedCharacter = getHomeCharacterById(selectedCharacterId)
+  const [isInverted, setIsInverted] = useState(false)
 
   useEffect(() => {
     if (sessionStorage.getItem('skipHomeLoader') === '1') {
@@ -56,17 +48,20 @@ export default function HomePage() {
       )}
       {/* Keep main free of overflowX hidden; it can break touch scrolling on mobile browsers. */}
       <main
-        className={styles.homeMain}
+        className={`${styles.homeMain} ${isInverted ? styles.homeMainInverted : ''}`}
         style={{ visibility: homeRevealed ? 'visible' : 'hidden' }}
       >
+        <button
+          type="button"
+          className={styles.invertToggle}
+          aria-pressed={isInverted}
+          onClick={() => setIsInverted((currentValue) => !currentValue)}
+        >
+          {isInverted ? 'Light' : 'Invert'}
+        </button>
         <HomeHero revealed={homeRevealed} />
-        <HomeGameJourney
-          selectedCharacterId={selectedCharacterId}
-          onSelectCharacter={setSelectedCharacterId}
-        />
-        <HomeAboutSection />
+        <HomeMinimalIndex />
       </main>
-      <HomeCursorLayer character={selectedCharacter} enabled={homeRevealed} />
     </>
   )
 }

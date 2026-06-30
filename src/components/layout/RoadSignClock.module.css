@@ -38,7 +38,7 @@
   letter-spacing: 0.01em;
   font-variant-numeric: tabular-nums;
   line-height: 1;
-  color: #111;
+  color: #363636;
   white-space: nowrap;
   pointer-events: none;
   user-select: none;
@@ -56,7 +56,7 @@
   font-weight: 550;
   letter-spacing: 0.04em;
   line-height: 1;
-  color: #111;
+  color: #363636;
   white-space: nowrap;
   pointer-events: none;
   user-select: none;
@@ -96,7 +96,7 @@
   font-weight: 550;
   letter-spacing: 0.02em;
   line-height: 1;
-  color: #111;
+  color: #363636;
   white-space: nowrap;
 }
 
@@ -115,8 +115,9 @@
   left: 240px;
   top: -90px;
   z-index: 20;
-  pointer-events: none;
-  cursor: default;
+  pointer-events: auto;
+  cursor: pointer;
+  touch-action: manipulation;
   user-select: none;
   transform-origin: 50% 88%;
 }

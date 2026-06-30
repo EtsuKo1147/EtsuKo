@@ -320,7 +320,7 @@ export default function HandDrawnLoader({
       { autoAlpha: 0.62, xPercent: 120, duration: 1.2, ease: 'power2.out' },
       0.55,
     )
-    tl.call(() => onRevealRef.current?.(), undefined, 1.55)
+    tl.call(() => onRevealRef.current?.(), undefined, 1.3)
     tl.to(activeHandRef, { x: handExitX, autoAlpha: 0, duration: 0.7, ease: 'power2.in' }, 2.65)
     tl.to(activeVisorTopRef, { y: visorExitExtraY, duration: 0.7, ease: 'power2.in' }, 2.65)
     tl.to(transitionCoverRef.current, { autoAlpha: 0, duration: 0.2 }, 1.75)
@@ -364,7 +364,7 @@ export default function HandDrawnLoader({
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundColor: '#ffffff',
+          backgroundColor: '#E4E2E0',
           zIndex: 0,
           pointerEvents: 'none',
         }}
@@ -665,7 +665,7 @@ export default function HandDrawnLoader({
               zIndex: 5,
               fontSize: `${loadingFontSize}px`,
               fontWeight: 900,
-              color: '#000000',
+              color: '#363636',
               fontFamily: '"Impact", "Arial Black", "Helvetica Neue", sans-serif',
               letterSpacing: '-0.02em',
               lineHeight: 1,

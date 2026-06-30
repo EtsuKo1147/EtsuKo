@@ -211,17 +211,17 @@ export default function HomeHero({ revealed = false }: HomeHeroProps) {
                 <div className={styles.motorcycleSprite}>
                   <div className={styles.motorcycleSpriteTrack}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/home/hero-motorcycle-1.webp" alt="" className={styles.motorcycleFrame} />
+                    <img src="/home/hero-motorcycle-1.svg" alt="" className={styles.motorcycleFrame} />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/home/hero-motorcycle-2.webp" alt="" className={styles.motorcycleFrame} />
+                    <img src="/home/hero-motorcycle-2.svg" alt="" className={styles.motorcycleFrame} />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/home/hero-motorcycle-3.webp" alt="" className={styles.motorcycleFrame} />
+                    <img src="/home/hero-motorcycle-3.svg" alt="" className={styles.motorcycleFrame} />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/home/hero-motorcycle-4.webp" alt="" className={styles.motorcycleFrame} />
+                    <img src="/home/hero-motorcycle-4.svg" alt="" className={styles.motorcycleFrame} />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/home/hero-motorcycle-5.webp" alt="" className={styles.motorcycleFrame} />
+                    <img src="/home/hero-motorcycle-5.svg" alt="" className={styles.motorcycleFrame} />
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/home/hero-motorcycle-6.webp" alt="" className={styles.motorcycleFrame} />
+                    <img src="/home/hero-motorcycle-6.svg" alt="" className={styles.motorcycleFrame} />
                   </div>
                 </div>
               </div>
