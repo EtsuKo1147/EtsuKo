@@ -4,6 +4,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import HomePhysicsFooter from './HomePhysicsFooter'
 import styles from './HomeMinimalIndex.module.css'
 
 const categories = ['all', 'web', 'graphic', 'photo', 'illustration', 'branding']
@@ -49,8 +50,11 @@ const works = [
 const profileCopy = {
   en: {
     lead: [
-      'A visual designer interested in web design, graphic design, illustration and photography.',
-      'Currently exploring AI-assisted workflows in design, creating bold, playful visuals and interactive works._',
+      'A visual designer interested in web design,',
+      'graphic design, illustration and photography.',
+      'Currently exploring AI-assisted workflows',
+      'in design, creating bold, playful visuals and',
+      'interactive works.',
     ],
     items: [
       {
@@ -65,26 +69,18 @@ const profileCopy = {
         label: 'Creative Skills',
         value: [
           'Web Design / UI Design',
-          'Graphic Design / Logo Design / Visual Identity Design',
-          'Poster Design / Banner Design',
-          'Illustration',
+          'Graphic Design / Logo Design / VI Design',
+          'Poster Design / Banner Design / Illustration',
           'Photography / Photo Retouching / Color Grading',
         ],
       },
       {
         label: 'Main Tools',
-        value: [
-          'Photoshop / Illustrator / Lightroom',
-          'Codex / Claude Code / ChatGPT',
-        ],
-      },
-      {
-        label: 'Also Used',
-        value: ['Figma / Premiere Pro / Seedance'],
+        value: ['Photoshop / Illustrator / Lightroom / Codex / Claude Code'],
       },
       {
         label: 'Hobbies & Interests',
-        value: ['Motorcycling / Drawing Action', 'Games / Board Games'],
+        value: ['Motorcycling / Drawing', 'Action Games / Board Games'],
       },
     ],
     languageLabel: 'Language',
@@ -92,13 +88,16 @@ const profileCopy = {
   },
   jp: {
     lead: [
-      '私はWebデザイン、グラフィックデザイン、イラスト、写真に興味を持つビジュアルデザイナーです。',
-      'デザインにおけるAIを活用したワークフローを探求しながら、大胆で遊び心のあるビジュアル表現やインタラクティブな作品を制作しています。',
+      '私はWebデザイン、グラフィックデザイン、イラスト、写真に',
+      '興味を持つビジュアルデザイナーです。',
+      'デザインにおけるAIを活用したワークフローを探求しながら、',
+      '大胆で遊び心のあるビジュアル表現や',
+      'インタラクティブな作品を制作しています。',
     ],
     items: [
       {
         label: '名　前',
-        value: ['胡越/Koetsu'],
+        value: ['胡 越 / Ko Etsu'],
       },
       {
         label: '学　歴',
@@ -109,21 +108,13 @@ const profileCopy = {
         value: [
           'Webデザイン / UIデザイン / グラフィックデザイン',
           'ロゴデザイン / ビジュアルアイデンティティデザイン',
-          'ポスターデザイン / バナーデザイン',
-          'イラストレーション',
+          'ポスターデザイン / バナーデザイン / イラストレーション',
           '写真撮影 / 写真レタッチ / カラーグレーディング',
         ],
       },
       {
         label: '主な使用ツール',
-        value: [
-          'Photoshop / Illustrator / Lightroom Codex /',
-          'Claude Code / ChatGPT',
-        ],
-      },
-      {
-        label: 'その他使用ツール',
-        value: ['Figma / Premiere Pro / Seedance'],
+        value: ['Photoshop / Illustrator / Lightroom / Codex / Claude Code'],
       },
       {
         label: '趣味・関心',
@@ -208,50 +199,59 @@ export default function HomeMinimalIndex() {
           </p>
         </div>
 
-        <div className={styles.profileBody}>
-          <figure className={styles.profileFigure} aria-hidden="true">
+        <div className={styles.profileArcade}>
+          <div className={styles.profileStage}>
             <img
               src="/home/character-stage/doodles/character-3.svg"
               alt=""
-              className={styles.profileDoodle}
+              className={styles.profileCharacter}
               draggable={false}
             />
-          </figure>
 
-          <div
-            className={`${styles.profileDetails} ${
-              profileLanguage === 'jp' ? styles.profileJapanese : ''
-            }`}
-          >
-            <dl className={styles.profileList}>
-              {profile.items.map((item) => (
-                <div key={item.label}>
-                  <dt>{item.label}</dt>
-                  <dd>
-                    {item.value.map((line) => (
-                      <span key={line}>
-                        {line}
-                        <br />
-                      </span>
+            <div className={styles.profileConsoleFrame}>
+              <img
+                src="/home/character-stage/doodles/new-gameplayer-2-02.svg"
+                alt=""
+                className={styles.profileConsole}
+                draggable={false}
+              />
+
+              <div className={styles.profileScreen} aria-live="polite">
+                <div
+                  key={profileLanguage}
+                  className={`${styles.profileScreenContent} ${
+                    profileLanguage === 'jp' ? styles.profileJapanese : ''
+                  }`}
+                >
+                  <dl className={styles.profileList}>
+                    {profile.items.map((item) => (
+                      <div key={item.label}>
+                        <dt>{item.label}</dt>
+                        <dd>
+                          {item.value.map((line) => (
+                            <span key={line}>{line}</span>
+                          ))}
+                        </dd>
+                      </div>
                     ))}
-                  </dd>
-                </div>
-              ))}
-            </dl>
+                  </dl>
 
-            <button
-              type="button"
-              className={styles.profileLanguage}
-              onClick={() =>
-                setProfileLanguage((currentLanguage) =>
-                  currentLanguage === 'en' ? 'jp' : 'en',
-                )
-              }
-            >
-              {profile.languageLabel}
-              <br />
-              {profile.languageSwitch}
-            </button>
+                  <button
+                    type="button"
+                    className={styles.profileLanguage}
+                    onClick={() =>
+                      setProfileLanguage((currentLanguage) =>
+                        currentLanguage === 'en' ? 'jp' : 'en',
+                      )
+                    }
+                  >
+                    {profile.languageLabel}
+                    <br />
+                    {profile.languageSwitch}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -282,6 +282,8 @@ export default function HomeMinimalIndex() {
           </a>
         </div>
       </section>
+
+      <HomePhysicsFooter />
     </section>
   )
 }

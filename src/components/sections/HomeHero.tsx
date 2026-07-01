@@ -128,8 +128,6 @@ export default function HomeHero({ revealed = false }: HomeHeroProps) {
 
   return (
     <section ref={heroRef} className={styles.hero}>
-      <div className={styles.brandVertical}>ETSU.</div>
-
       <div className={`${styles.visualStage}${revealed ? ` ${styles.revealed}` : ''}`}>
         <div className={styles.heroScene}>
           <div ref={frameGroupRef} className={styles.frameGroup}>

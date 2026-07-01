@@ -55,10 +55,9 @@ export default function HomePage() {
           type="button"
           className={styles.invertToggle}
           aria-pressed={isInverted}
+          aria-label={isInverted ? 'Switch to light mode' : 'Switch to dark mode'}
           onClick={() => setIsInverted((currentValue) => !currentValue)}
-        >
-          {isInverted ? 'Light' : 'Invert'}
-        </button>
+        />
         <HomeHero revealed={homeRevealed} />
         <HomeMinimalIndex />
       </main>

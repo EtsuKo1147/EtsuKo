@@ -33,32 +33,38 @@
 
 .invertToggle {
   position: fixed;
-  left: clamp(16px, 2vw, 28px);
-  bottom: clamp(16px, 2vw, 28px);
+  left: clamp(6px, 1.2vw, 36px);
+  top: clamp(6px, 1.2vw, 48px);
   z-index: 20;
-  min-height: 36px;
-  padding: 0 14px;
-  border: 1px solid rgba(var(--home-text-rgb), 0.32);
-  border-radius: 999px;
-  color: var(--home-button-text);
-  background: var(--home-button-bg);
-  font-family: var(--font-intel-mono), 'Courier New', monospace;
-  font-size: 0.72rem;
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: 0.08em;
-  text-transform: lowercase;
+  width: clamp(30px, 2.95vw, 46px);
+  aspect-ratio: 35.71 / 106.54;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: inherit;
+  background: transparent;
+  background-image: url('/home/character-stage/ui/turn-dark.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
   cursor: pointer;
   transition:
-    color 180ms ease,
-    background-color 180ms ease,
-    border-color 180ms ease,
-    opacity 180ms ease;
+    opacity 180ms ease,
+    transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.homeMainInverted .invertToggle {
+  background-image: url('/home/character-stage/ui/turn-light.svg');
 }
 
 .invertToggle:hover,
 .invertToggle:focus-visible {
-  opacity: 0.72;
+  opacity: 0.82;
+}
+
+.invertToggle:focus-visible {
+  outline: 2px solid rgba(var(--home-text-rgb), 0.5);
+  outline-offset: 4px;
 }
 
 :global(html.homeCustomCursorActive),
