@@ -2,21 +2,25 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Matter, { type Body, type Engine, type Runner } from 'matter-js'
 import styles from './HomePhysicsFooter.module.css'
 
 const footerItems = [
-  { src: '/footer/cartridge.svg', label: 'Cartridge', width: 230, aspect: '907.3 / 914.5' },
-  { src: '/footer/character-1.svg', label: 'Character one', width: 150, aspect: '486.5 / 522.3' },
-  { src: '/footer/character-2.svg', label: 'Character two', width: 150, aspect: '317.2 / 290.3' },
-  { src: '/footer/character-4.svg', label: 'Character four', width: 150, aspect: '526.8 / 511.6' },
-  { src: '/footer/doodle-03.svg', label: 'Doodle three', width: 220, aspect: '501.7 / 264.3' },
-  { src: '/footer/doodle-04.svg', label: 'Doodle four', width: 130, aspect: '186.4 / 237.4' },
-  { src: '/footer/doodle-05.svg', label: 'Doodle five', width: 145, aspect: '294.8 / 301' },
-  { src: '/footer/doodle-06.svg', label: 'Doodle six', width: 130, aspect: '417.5 / 515.2' },
-  { src: '/footer/doodle-08.svg', label: 'Doodle eight', width: 155, aspect: '331.2 / 271.7' },
+  { src: '/footer/cartridge.svg', label: 'Cartridge', width: 361.4, height: 361.3 },
+  { src: '/footer/character-1.svg', label: 'Character one', width: 486.5, height: 522.3 },
+  { src: '/footer/character-2.svg', label: 'Character two', width: 317.2, height: 290.3 },
+  { src: '/footer/character-4.svg', label: 'Character four', width: 526.8, height: 511.6 },
+  { src: '/footer/character-5.svg', label: 'Character five', width: 324.3, height: 320.8 },
+  { src: '/footer/doodle-03.svg', label: 'Doodle three', width: 501.7, height: 264.3 },
+  { src: '/footer/doodle-04.svg', label: 'Doodle four', width: 186.4, height: 237.4 },
+  { src: '/footer/doodle-05.svg', label: 'Doodle five', width: 294.8, height: 301 },
+  { src: '/footer/doodle-06.svg', label: 'Doodle six', width: 417.5, height: 515.2 },
+  { src: '/footer/doodle-07.svg', label: 'Doodle seven', width: 352.1, height: 290.2 },
+  { src: '/footer/doodle-08.svg', label: 'Doodle eight', width: 331.2, height: 271.7 },
 ] as const
+
+const FOOTER_ITEM_SCALE = 0.85
 
 type FooterPhysicsItem = {
   body: Body
@@ -34,7 +38,7 @@ type FooterPhysicsWorld = {
 
 type FooterItemStyle = React.CSSProperties & {
   '--pile-width': string
-  '--pile-aspect': string
+  '--pile-height': string
 }
 
 const clamp = (value: number, min: number, max: number) =>
@@ -46,12 +50,16 @@ export default function HomePhysicsFooter() {
   const stageRef = useRef<HTMLDivElement | null>(null)
   const itemRefs = useRef<Array<HTMLLIElement | null>>([])
   const worldRef = useRef<FooterPhysicsWorld | null>(null)
+  const [hasStarted, setHasStarted] = useState(false)
   const pointerRef = useRef({
     x: -9999,
     y: -9999,
     previousX: -9999,
     previousY: -9999,
     previousTime: 0,
+    lastMoveTime: 0,
+    isInside: false,
+    pointerType: '',
   })
 
   useEffect(() => {
@@ -64,7 +72,8 @@ export default function HomePhysicsFooter() {
 
     if (prefersReducedMotion) return
 
-    let isActive = false
+    let isWorldVisible = false
+    let hasTriggered = false
     let rebuildTimer = 0
 
     const destroyWorld = () => {
@@ -88,6 +97,39 @@ export default function HomePhysicsFooter() {
       })
     }
 
+    const stirNearbyItems = (
+      items: FooterPhysicsItem[],
+      localX: number,
+      localY: number,
+      velocityX: number,
+      velocityY: number,
+      radius: number,
+      strength = 1,
+    ) => {
+      items.forEach(({ body }) => {
+        const deltaX = body.position.x - localX
+        const deltaY = body.position.y - localY
+        const distance = Math.max(1, Math.hypot(deltaX, deltaY))
+
+        if (distance > radius) return
+
+        const falloff = (1 - distance / radius) ** 1.35
+        const normalX = Math.abs(deltaX) < 1 ? random(-1, 1) : deltaX / distance
+        const normalY = Math.abs(deltaY) < 1 ? random(-1, 1) : deltaY / distance
+
+        Matter.Body.setVelocity(body, {
+          x: body.velocity.x + (normalX * 12 * strength + velocityX * 0.2) * falloff,
+          y: body.velocity.y + (normalY * 12 * strength + velocityY * 0.2) * falloff,
+        })
+        Matter.Body.setAngularVelocity(
+          body,
+          body.angularVelocity +
+            (velocityX - velocityY) * 0.004 * falloff +
+            random(-0.06, 0.06) * strength,
+        )
+      })
+    }
+
     const createWorld = () => {
       destroyWorld()
 
@@ -97,26 +139,28 @@ export default function HomePhysicsFooter() {
 
       if (width <= 0 || height <= 0) return
 
-      const engine = Matter.Engine.create({ enableSleeping: true })
+      const engine = Matter.Engine.create({ enableSleeping: false })
       const runner = Matter.Runner.create()
       const thickness = Math.max(90, width * 0.08)
+      const floorInset = clamp(height * 0.065, 26, 48)
+      const floorTop = height - floorInset
 
       engine.gravity.x = 0
-      engine.gravity.y = 1.08
+      engine.gravity.y = 1.65
 
       const walls = [
-        Matter.Bodies.rectangle(width / 2, height + thickness / 2, width + thickness * 2, thickness, {
+        Matter.Bodies.rectangle(width / 2, floorTop + thickness / 2, width + thickness * 2, thickness, {
           isStatic: true,
-          friction: 0.92,
+          friction: 0.96,
           restitution: 0.08,
         }),
         Matter.Bodies.rectangle(-thickness / 2, height / 2, thickness, height * 2, {
           isStatic: true,
-          friction: 0.6,
+          friction: 0.72,
         }),
         Matter.Bodies.rectangle(width + thickness / 2, height / 2, thickness, height * 2, {
           isStatic: true,
-          friction: 0.6,
+          friction: 0.72,
         }),
       ]
 
@@ -130,24 +174,43 @@ export default function HomePhysicsFooter() {
         if (itemWidth <= 0 || itemHeight <= 0) return []
 
         const body = Matter.Bodies.rectangle(
-          random(width * 0.14, width * 0.86),
-          -height * 0.45 - index * 44 - random(0, height * 0.45),
-          itemWidth * 0.82,
-          itemHeight * 0.82,
+          random(width * 0.06, width * 0.94),
+          random(-height * 0.18, height * 0.05) - index * 34,
+          itemWidth * 0.96,
+          itemHeight * 0.96,
           {
             density: 0.0014,
-            friction: 0.78,
-            frictionAir: 0.025,
-            restitution: 0.28,
+            friction: 0.9,
+            frictionAir: 0.03,
+            restitution: 0.18,
           },
         )
 
         Matter.Body.setAngle(body, random(-0.9, 0.9))
+        Matter.Body.setVelocity(body, {
+          x: random(-1.8, 1.8),
+          y: random(10, 16),
+        })
 
         return [{ body, element, width: itemWidth, height: itemHeight }]
       })
 
       const sync = () => {
+        const pointer = pointerRef.current
+        const isRecentPointer = performance.now() - pointer.lastMoveTime < 1600
+
+        if (pointer.isInside && pointer.pointerType !== 'touch' && isRecentPointer) {
+          stirNearbyItems(
+            physicsItems,
+            pointer.x,
+            pointer.y,
+            0,
+            0,
+            clamp(width * 0.24, 220, 460),
+            0.26,
+          )
+        }
+
         syncItems(physicsItems)
       }
 
@@ -161,14 +224,16 @@ export default function HomePhysicsFooter() {
         sync,
       }
 
-      if (isActive) Matter.Runner.run(runner, engine)
+      syncItems(physicsItems)
+
+      if (hasTriggered && isWorldVisible) Matter.Runner.run(runner, engine)
     }
 
     const stirPile = (power = 1) => {
       const currentWorld = worldRef.current
       const bounds = stage.getBoundingClientRect()
 
-      if (!currentWorld || !isActive) return
+      if (!currentWorld || !hasTriggered || !isWorldVisible) return
 
       currentWorld.items.forEach(({ body }) => {
         const direction = body.position.x < bounds.width / 2 ? -1 : 1
@@ -185,11 +250,11 @@ export default function HomePhysicsFooter() {
     }
 
     const pushFromPointer = (event: PointerEvent) => {
-      if (isCoarsePointer) return
+      if (event.pointerType === 'touch') return
 
       const currentWorld = worldRef.current
 
-      if (!currentWorld || !isActive) return
+      if (!currentWorld || !hasTriggered || !isWorldVisible) return
 
       const bounds = stage.getBoundingClientRect()
       const now = performance.now()
@@ -199,7 +264,7 @@ export default function HomePhysicsFooter() {
       const velocityX = ((localX - pointerRef.current.previousX) / elapsed) * 16
       const velocityY = ((localY - pointerRef.current.previousY) / elapsed) * 16
       const speed = clamp(Math.hypot(velocityX, velocityY), 0, 120)
-      const radius = clamp(bounds.width * 0.16, 120, 240)
+      const radius = clamp(bounds.width * 0.25, 220, 480)
 
       pointerRef.current = {
         x: localX,
@@ -207,28 +272,16 @@ export default function HomePhysicsFooter() {
         previousX: localX,
         previousY: localY,
         previousTime: now,
+        lastMoveTime: now,
+        isInside: true,
+        pointerType: event.pointerType,
       }
 
-      currentWorld.items.forEach(({ body }) => {
-        const deltaX = body.position.x - localX
-        const deltaY = body.position.y - localY
-        const distance = Math.max(1, Math.hypot(deltaX, deltaY))
+      stirNearbyItems(currentWorld.items, localX, localY, velocityX, velocityY, radius, 1 + speed * 0.006)
+    }
 
-        if (distance > radius) return
-
-        const falloff = 1 - distance / radius
-        const normalX = deltaX / distance
-        const normalY = deltaY / distance
-
-        Matter.Body.setVelocity(body, {
-          x: body.velocity.x + (normalX * 8 + velocityX * 0.16) * falloff,
-          y: body.velocity.y + (normalY * 8 + velocityY * 0.16) * falloff,
-        })
-        Matter.Body.setAngularVelocity(
-          body,
-          body.angularVelocity + (velocityX - velocityY) * 0.003 * falloff + speed * 0.0012,
-        )
-      })
+    const handlePointerLeave = () => {
+      pointerRef.current.isInside = false
     }
 
     const handlePointerDown = (event: PointerEvent) => {
@@ -238,51 +291,73 @@ export default function HomePhysicsFooter() {
     }
 
     const scheduleRebuild = () => {
+      if (!hasTriggered) return
+
       window.clearTimeout(rebuildTimer)
       rebuildTimer = window.setTimeout(createWorld, 180)
     }
 
-    const intersectionObserver = new IntersectionObserver(
+    const startWorld = () => {
+      if (hasTriggered) return
+
+      hasTriggered = true
+      createWorld()
+      setHasStarted(true)
+    }
+
+    const worldVisibilityObserver = new IntersectionObserver(
       ([entry]) => {
-        isActive = entry.isIntersecting
+        isWorldVisible = entry.isIntersecting
 
         const currentWorld = worldRef.current
 
         if (!currentWorld) return
 
-        if (isActive) {
+        if (hasTriggered && isWorldVisible) {
           Matter.Runner.run(currentWorld.runner, currentWorld.engine)
         } else {
           Matter.Runner.stop(currentWorld.runner)
         }
       },
-      { rootMargin: '20% 0px' },
+      { rootMargin: '30% 0px 30% 0px' },
+    )
+    const triggerElement =
+      stage.closest('[data-contact-world]')?.querySelector('[data-physics-trigger]') ?? stage
+    const triggerObserver = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) startWorld()
+      },
+      {
+        rootMargin: '0px 0px -28% 0px',
+        threshold: 0.18,
+      },
     )
     const resizeObserver = new ResizeObserver(scheduleRebuild)
 
     stage.addEventListener('pointermove', pushFromPointer)
+    stage.addEventListener('pointerleave', handlePointerLeave)
     stage.addEventListener('pointerdown', handlePointerDown)
-    intersectionObserver.observe(stage)
+    worldVisibilityObserver.observe(stage)
+    triggerObserver.observe(triggerElement)
     resizeObserver.observe(stage)
-    createWorld()
 
     return () => {
       window.clearTimeout(rebuildTimer)
       stage.removeEventListener('pointermove', pushFromPointer)
+      stage.removeEventListener('pointerleave', handlePointerLeave)
       stage.removeEventListener('pointerdown', handlePointerDown)
-      intersectionObserver.disconnect()
+      worldVisibilityObserver.disconnect()
+      triggerObserver.disconnect()
       resizeObserver.disconnect()
       destroyWorld()
     }
   }, [])
 
   return (
-    <footer className={styles.footer} aria-label="Interactive footer">
-      <div className={styles.header}>
-        <p className={styles.eyebrow}>Selected footer</p>
-        <p className={styles.note}>stir</p>
-      </div>
-
+    <footer
+      className={`${styles.footer} ${hasStarted ? styles.footerStarted : ''}`}
+      aria-label="Interactive footer"
+    >
       <div ref={stageRef} className={styles.stage}>
         <button type="button" className={styles.stirButton}>
           stir
@@ -297,8 +372,8 @@ export default function HomePhysicsFooter() {
               key={item.src}
               style={
                 {
-                  '--pile-width': `${item.width}px`,
-                  '--pile-aspect': item.aspect,
+                  '--pile-width': `${item.width * FOOTER_ITEM_SCALE}px`,
+                  '--pile-height': `${item.height * FOOTER_ITEM_SCALE}px`,
                 } as FooterItemStyle
               }
             >
@@ -306,6 +381,11 @@ export default function HomePhysicsFooter() {
             </li>
           ))}
         </ul>
+      </div>
+
+      <div className={styles.footerMeta} aria-label="Footer credits">
+        <p>Designed &amp; Built by ETSU.</p>
+        <p>&copy; 2026</p>
       </div>
     </footer>
   )

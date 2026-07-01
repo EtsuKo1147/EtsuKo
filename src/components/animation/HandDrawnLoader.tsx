@@ -364,7 +364,7 @@ export default function HandDrawnLoader({
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundColor: '#E4E2E0',
+          backgroundColor: '#faf9f6',
           zIndex: 0,
           pointerEvents: 'none',
         }}
@@ -409,7 +409,7 @@ export default function HandDrawnLoader({
             {/* Layer 1: 眼睛，两张叠放，opacity 切换 */}
             <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
               <Image
-                src="/loading/eyes-closed.png"
+                src="/loading/eyes-closed.svg"
                 alt=""
                 fill
                 sizes="(max-width: 768px) 62vw, 380px"
@@ -423,7 +423,7 @@ export default function HandDrawnLoader({
                 unoptimized
               />
               <Image
-                src="/loading/eyes-open.png"
+                src="/loading/eyes-open.svg"
                 alt=""
                 fill
                 sizes="(max-width: 768px) 62vw, 380px"
@@ -451,7 +451,7 @@ export default function HandDrawnLoader({
               }}
             >
               <Image
-                src="/loading/helmet-visor.png"
+                src="/loading/helmet-visor.svg"
                 alt=""
                 fill
                 sizes="(max-width: 768px) 62vw, 380px"
@@ -463,7 +463,7 @@ export default function HandDrawnLoader({
             {/* Layer 3: Shell，始终可见 */}
             <div style={{ position: 'absolute', inset: 0, zIndex: 3 }}>
               <Image
-                src="/loading/helmet-shell.png"
+                src="/loading/helmet-shell.svg"
                 alt=""
                 fill
                 sizes="(max-width: 768px) 62vw, 380px"
@@ -690,7 +690,7 @@ export default function HandDrawnLoader({
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={cursorPressed ? '/loading/glove-cursor-pressed.png' : '/loading/glove-cursor.png'}
+              src={cursorPressed ? '/loading/glove-cursor-pressed.svg' : '/loading/glove-cursor.svg'}
               alt=""
               style={{
                 width: '100%',
@@ -700,7 +700,7 @@ export default function HandDrawnLoader({
             />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/loading/click-helmet-hint.png"
+              src="/loading/click-helmet-hint.svg"
               alt=""
               style={{
                 position: 'absolute',

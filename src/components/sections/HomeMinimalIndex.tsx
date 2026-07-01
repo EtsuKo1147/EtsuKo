@@ -256,34 +256,36 @@ export default function HomeMinimalIndex() {
         </div>
       </section>
 
-      <section className={styles.contactSection} aria-labelledby="home-contact-title">
-        <div className={styles.contactHeader}>
-          <p className={styles.eyebrow}>Selected contact</p>
-          <h2 id="home-contact-title" className={styles.title}>
-            Contact
-          </h2>
-        </div>
+      <div className={styles.contactWorld} data-contact-world>
+        <HomePhysicsFooter />
 
-        <div className={styles.directMailPanel}>
-          <img
-            src="/home/character-stage/doodles/character-6.svg"
-            alt=""
-            className={styles.directMailDoodle}
-            draggable={false}
-          />
-          <h3 id="home-direct-mail-title" className={styles.directMailTitle}>
-            Direct Mail
-          </h3>
-          <a
-            className={styles.directMailLink}
-            href="mailto:koetsu1147@gmail.com?subject=Portfolio%20Contact"
-          >
-            koetsu1147@gmail.com
-          </a>
-        </div>
-      </section>
+        <section className={styles.contactSection} aria-labelledby="home-contact-title">
+          <div className={styles.contactHeader}>
+            <p className={styles.eyebrow}>Selected contact</p>
+            <h2 id="home-contact-title" className={styles.title} data-physics-trigger>
+              Contact
+            </h2>
+          </div>
 
-      <HomePhysicsFooter />
+          <div className={styles.directMailPanel}>
+            <img
+              src="/home/character-stage/doodles/character-6.svg"
+              alt=""
+              className={styles.directMailDoodle}
+              draggable={false}
+            />
+            <h3 id="home-direct-mail-title" className={styles.directMailTitle}>
+              Direct Mail
+            </h3>
+            <a
+              className={styles.directMailLink}
+              href="mailto:koetsu1147@gmail.com?subject=Portfolio%20Contact"
+            >
+              koetsu1147@gmail.com
+            </a>
+          </div>
+        </section>
+      </div>
     </section>
   )
 }

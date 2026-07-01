@@ -3,8 +3,7 @@
   z-index: 2;
   width: min(1480px, 100%);
   margin: 0 auto;
-  padding: clamp(78px, 10vw, 150px) clamp(18px, 4.8vw, 76px)
-    clamp(86px, 11vw, 160px);
+  padding: clamp(78px, 10vw, 150px) clamp(18px, 4.8vw, 76px) 0;
   color: var(--home-text-color);
 }
 
@@ -427,8 +426,23 @@
   transform: translateY(1px) scale(0.98);
 }
 
-.contactSection {
+.contactWorld {
+  position: relative;
+  min-height: clamp(1500px, 152vh, 1800px);
   margin-top: clamp(120px, 17vw, 250px);
+  isolation: isolate;
+}
+
+.contactSection {
+  position: relative;
+  z-index: 2;
+  padding-bottom: clamp(800px, 78vh, 980px);
+  pointer-events: none;
+}
+
+.contactHeader,
+.directMailPanel {
+  pointer-events: auto;
 }
 
 .contactHeader {
@@ -570,6 +584,14 @@
   .profileScreenContent {
     padding: clamp(12px, 2vw, 20px) clamp(13px, 2.4vw, 24px);
   }
+
+  .contactWorld {
+    min-height: clamp(1160px, 140vh, 1500px);
+  }
+
+  .contactSection {
+    padding-bottom: clamp(560px, 78vh, 780px);
+  }
 }
 
 @media (max-width: 640px) {
@@ -639,7 +661,7 @@
     justify-self: center;
     width: min(760px, 110vw);
     margin-right: 0;
-    transform: translateX(35);
+    transform: translateX(30);
   }
 
   .profileLead {
