@@ -7,20 +7,86 @@ import Matter, { type Body, type Engine, type Runner } from 'matter-js'
 import styles from './HomePhysicsFooter.module.css'
 
 const footerItems = [
-  { src: '/footer/cartridge.svg', label: 'Cartridge', width: 361.4, height: 361.3 },
-  { src: '/footer/character-1.svg', label: 'Character one', width: 486.5, height: 522.3 },
-  { src: '/footer/character-2.svg', label: 'Character two', width: 317.2, height: 290.3 },
-  { src: '/footer/character-4.svg', label: 'Character four', width: 526.8, height: 511.6 },
-  { src: '/footer/character-5.svg', label: 'Character five', width: 324.3, height: 320.8 },
-  { src: '/footer/doodle-03.svg', label: 'Doodle three', width: 501.7, height: 264.3 },
-  { src: '/footer/doodle-04.svg', label: 'Doodle four', width: 186.4, height: 237.4 },
-  { src: '/footer/doodle-05.svg', label: 'Doodle five', width: 294.8, height: 301 },
-  { src: '/footer/doodle-06.svg', label: 'Doodle six', width: 417.5, height: 515.2 },
-  { src: '/footer/doodle-07.svg', label: 'Doodle seven', width: 352.1, height: 290.2 },
-  { src: '/footer/doodle-08.svg', label: 'Doodle eight', width: 331.2, height: 271.7 },
+  {
+    src: '/footer/cartridge.svg',
+    label: 'Cartridge',
+    width: 361.4,
+    height: 361.3,
+    collision: { x: 0.92, y: 0.92 },
+  },
+  {
+    src: '/footer/character-1.svg',
+    label: 'Character one',
+    width: 486.5,
+    height: 522.3,
+    collision: { x: 0.74, y: 0.82 },
+  },
+  {
+    src: '/footer/character-2.svg',
+    label: 'Character two',
+    width: 317.2,
+    height: 290.3,
+    collision: { x: 0.8, y: 0.82 },
+  },
+  {
+    src: '/footer/character-4.svg',
+    label: 'Character four',
+    width: 526.8,
+    height: 511.6,
+    collision: { x: 0.74, y: 0.78 },
+  },
+  {
+    src: '/footer/character-5.svg',
+    label: 'Character five',
+    width: 324.3,
+    height: 320.8,
+    collision: { x: 0.8, y: 0.8 },
+  },
+  {
+    src: '/footer/doodle-03.svg',
+    label: 'Doodle three',
+    width: 501.7,
+    height: 264.3,
+    collision: { x: 0.86, y: 0.7 },
+  },
+  {
+    src: '/footer/doodle-04.svg',
+    label: 'Doodle four',
+    width: 186.4,
+    height: 237.4,
+    collision: { x: 0.76, y: 0.84 },
+  },
+  {
+    src: '/footer/doodle-05.svg',
+    label: 'Doodle five',
+    width: 294.8,
+    height: 301,
+    collision: { x: 0.8, y: 0.8 },
+  },
+  {
+    src: '/footer/doodle-06.svg',
+    label: 'Doodle six',
+    width: 417.5,
+    height: 515.2,
+    collision: { x: 0.7, y: 0.84 },
+  },
+  {
+    src: '/footer/doodle-07.svg',
+    label: 'Doodle seven',
+    width: 352.1,
+    height: 290.2,
+    collision: { x: 0.82, y: 0.78 },
+  },
+  {
+    src: '/footer/doodle-08.svg',
+    label: 'Doodle eight',
+    width: 331.2,
+    height: 271.7,
+    collision: { x: 0.82, y: 0.78 },
+  },
 ] as const
 
-const FOOTER_ITEM_SCALE = 0.85
+const FOOTER_ITEM_BASE_SCALE = 0.34
 
 type FooterPhysicsItem = {
   body: Body
@@ -46,10 +112,26 @@ const clamp = (value: number, min: number, max: number) =>
 
 const random = (min: number, max: number) => min + Math.random() * (max - min)
 
+const lerp = (start: number, end: number, progress: number) =>
+  start + (end - start) * clamp(progress, 0, 1)
+
+const getResponsiveItemScale = (stageWidth: number) => {
+  if (stageWidth >= 1440) return FOOTER_ITEM_BASE_SCALE * 2.5
+  if (stageWidth >= 1024) {
+    return FOOTER_ITEM_BASE_SCALE * lerp(2, 2.5, (stageWidth - 1024) / 416)
+  }
+  if (stageWidth >= 640) {
+    return FOOTER_ITEM_BASE_SCALE * lerp(1.5, 2, (stageWidth - 640) / 384)
+  }
+
+  return FOOTER_ITEM_BASE_SCALE * lerp(1.2, 1.5, (stageWidth - 360) / 280)
+}
+
 export default function HomePhysicsFooter() {
   const stageRef = useRef<HTMLDivElement | null>(null)
   const itemRefs = useRef<Array<HTMLLIElement | null>>([])
   const worldRef = useRef<FooterPhysicsWorld | null>(null)
+  const [itemScale, setItemScale] = useState(FOOTER_ITEM_BASE_SCALE * 2.5)
   const [hasStarted, setHasStarted] = useState(false)
   const pointerRef = useRef({
     x: -9999,
@@ -139,6 +221,14 @@ export default function HomePhysicsFooter() {
 
       if (width <= 0 || height <= 0) return
 
+      const nextItemScale = getResponsiveItemScale(width)
+      const isCompactStage = width < 768
+      const spawnMinX = isCompactStage ? width * 0.14 : width * 0.06
+      const spawnMaxX = isCompactStage ? width * 0.86 : width * 0.94
+      const collisionScale = isCompactStage ? 1 : 0.96
+
+      setItemScale(nextItemScale)
+
       const engine = Matter.Engine.create({ enableSleeping: false })
       const runner = Matter.Runner.create()
       const thickness = Math.max(90, width * 0.08)
@@ -167,6 +257,13 @@ export default function HomePhysicsFooter() {
       const physicsItems = itemRefs.current.flatMap((element, index) => {
         if (!element) return []
 
+        const item = footerItems[index]
+
+        if (!item) return []
+
+        element.style.setProperty('--pile-width', `${item.width * nextItemScale}px`)
+        element.style.setProperty('--pile-height', `${item.height * nextItemScale}px`)
+
         const rect = element.getBoundingClientRect()
         const itemWidth = rect.width
         const itemHeight = rect.height
@@ -174,10 +271,10 @@ export default function HomePhysicsFooter() {
         if (itemWidth <= 0 || itemHeight <= 0) return []
 
         const body = Matter.Bodies.rectangle(
-          random(width * 0.06, width * 0.94),
+          random(spawnMinX, spawnMaxX),
           random(-height * 0.18, height * 0.05) - index * 34,
-          itemWidth * 0.96,
-          itemHeight * 0.96,
+          itemWidth * collisionScale * item.collision.x,
+          itemHeight * collisionScale * item.collision.y,
           {
             density: 0.0014,
             friction: 0.9,
@@ -359,9 +456,6 @@ export default function HomePhysicsFooter() {
       aria-label="Interactive footer"
     >
       <div ref={stageRef} className={styles.stage}>
-        <button type="button" className={styles.stirButton}>
-          stir
-        </button>
         <ul className={styles.pile} aria-hidden="true">
           {footerItems.map((item, index) => (
             <li
@@ -372,8 +466,8 @@ export default function HomePhysicsFooter() {
               key={item.src}
               style={
                 {
-                  '--pile-width': `${item.width * FOOTER_ITEM_SCALE}px`,
-                  '--pile-height': `${item.height * FOOTER_ITEM_SCALE}px`,
+                  '--pile-width': `${item.width * itemScale}px`,
+                  '--pile-height': `${item.height * itemScale}px`,
                 } as FooterItemStyle
               }
             >

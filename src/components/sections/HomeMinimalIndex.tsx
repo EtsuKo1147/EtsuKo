@@ -88,8 +88,8 @@ const profileCopy = {
   },
   jp: {
     lead: [
-      '私はWebデザイン、グラフィックデザイン、イラスト、写真に',
-      '興味を持つビジュアルデザイナーです。',
+      '私はWebデザイン、グラフィックデザイン、イラスト、',
+      '写真に興味を持つビジュアルデザイナーです。',
       'デザインにおけるAIを活用したワークフローを探求しながら、',
       '大胆で遊び心のあるビジュアル表現や',
       'インタラクティブな作品を制作しています。',
@@ -283,6 +283,15 @@ export default function HomeMinimalIndex() {
             >
               koetsu1147@gmail.com
             </a>
+            <button
+              type="button"
+              className={styles.topButton}
+              aria-label="Back to top"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            >
+              <img src="/home/character-stage/ui/top-up.svg" alt="" draggable={false} />
+              <span>top</span>
+            </button>
           </div>
         </section>
       </div>

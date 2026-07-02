@@ -7,6 +7,8 @@
   --home-button-bg: #363636;
   --home-button-text: #f7f6f0;
   --home-doodle-filter: none;
+  --home-control-hover-opacity: 0.72;
+  --home-control-active-opacity: 0.62;
 
   cursor: auto;
   position: relative;
@@ -29,6 +31,8 @@
   --home-button-bg: #f7f6f0;
   --home-button-text: #363636;
   --home-doodle-filter: brightness(0) invert(1);
+  --home-control-hover-opacity: 0.82;
+  --home-control-active-opacity: 0.72;
 }
 
 .invertToggle {
@@ -49,7 +53,6 @@
   background-size: contain;
   cursor: pointer;
   transition:
-    opacity 180ms ease,
     transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -57,14 +60,36 @@
   background-image: url('/home/character-stage/ui/turn-light.svg');
 }
 
-.invertToggle:hover,
-.invertToggle:focus-visible {
-  opacity: 0.82;
+@media (hover: hover) and (pointer: fine) {
+  .invertToggle:hover,
+  .invertToggle:focus-visible {
+    background-image: url('/home/character-stage/ui/turn-dark-hover.svg');
+  }
+
+  .homeMainInverted .invertToggle:hover,
+  .homeMainInverted .invertToggle:focus-visible {
+    background-image: url('/home/character-stage/ui/turn-light-hover.svg');
+  }
+}
+
+.invertToggle:active {
+  background-image: url('/home/character-stage/ui/turn-dark-pressed.svg');
+}
+
+.homeMainInverted .invertToggle:active {
+  background-image: url('/home/character-stage/ui/turn-light-pressed.svg');
 }
 
 .invertToggle:focus-visible {
   outline: 2px solid rgba(var(--home-text-rgb), 0.5);
   outline-offset: 4px;
+}
+
+@media (max-width: 768px) {
+  .invertToggle {
+    left: 12px;
+    top: 17px;
+  }
 }
 
 :global(html.homeCustomCursorActive),
