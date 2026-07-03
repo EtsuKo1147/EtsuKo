@@ -232,8 +232,7 @@ export default function HomePhysicsFooter() {
       const engine = Matter.Engine.create({ enableSleeping: false })
       const runner = Matter.Runner.create()
       const thickness = Math.max(90, width * 0.08)
-      const floorInset = clamp(height * 0.065, 26, 48)
-      const floorTop = height - floorInset
+      const floorTop = height
 
       engine.gravity.x = 0
       engine.gravity.y = 1.65
@@ -477,10 +476,6 @@ export default function HomePhysicsFooter() {
         </ul>
       </div>
 
-      <div className={styles.footerMeta} aria-label="Footer credits">
-        <p>Designed &amp; Built by ETSU.</p>
-        <p>&copy; 2026</p>
-      </div>
     </footer>
   )
 }

@@ -672,7 +672,7 @@ export default function Header() {
           <span className={styles.srOnly}>WORKS</span>
         </Link>
 
-        <Link className={`${styles.link} ${styles.linkProfile}`} href="/about">
+        <Link className={`${styles.link} ${styles.linkProfile}`} href="/profile">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className={`${styles.img} ${styles.imgDefault}`} src="/road-sign/profile-sign-default.svg" alt="" draggable={false} />
           {/* eslint-disable-next-line @next/next/no-img-element */}

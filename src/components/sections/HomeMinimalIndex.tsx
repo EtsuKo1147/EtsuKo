@@ -4,130 +4,16 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { workCategories, works } from '@/data/works'
+import { profileCopy, type ProfileLanguage } from '@/data/profile'
 import HomePhysicsFooter from './HomePhysicsFooter'
 import styles from './HomeMinimalIndex.module.css'
 
-const categories = ['all', 'web', 'graphic', 'photo', 'illustration', 'branding']
-
-const works = [
-  {
-    id: '01',
-    title: 'Project One',
-    category: 'Web Design',
-    year: '2024',
-    image: '/home/character-stage/works-console/previews/work-01.svg',
-  },
-  {
-    id: '02',
-    title: 'Project Two',
-    category: 'Branding',
-    year: '2024',
-    image: '/home/character-stage/works-console/previews/work-02.svg',
-  },
-  {
-    id: '03',
-    title: 'Project Three',
-    category: 'Motion',
-    year: '2023',
-    image: '/home/character-stage/works-console/previews/work-03.svg',
-  },
-  {
-    id: '04',
-    title: 'Project Four',
-    category: 'Editorial',
-    year: '2023',
-    image: '/home/character-stage/works-console/previews/work-04.svg',
-  },
-  {
-    id: '05',
-    title: 'Project Five',
-    category: 'Photography',
-    year: '2022',
-    image: '/home/character-stage/works-console/previews/work-05.svg',
-  },
-]
-
-const profileCopy = {
-  en: {
-    lead: [
-      'A visual designer interested in web design,',
-      'graphic design, illustration and photography.',
-      'Currently exploring AI-assisted workflows',
-      'in design, creating bold, playful visuals and',
-      'interactive works.',
-    ],
-    items: [
-      {
-        label: 'Name',
-        value: ['KoEtsu'],
-      },
-      {
-        label: 'Education',
-        value: ['Kobe Design University, M.A.'],
-      },
-      {
-        label: 'Creative Skills',
-        value: [
-          'Web Design / UI Design',
-          'Graphic Design / Logo Design / VI Design',
-          'Poster Design / Banner Design / Illustration',
-          'Photography / Photo Retouching / Color Grading',
-        ],
-      },
-      {
-        label: 'Main Tools',
-        value: ['Photoshop / Illustrator / Lightroom / Codex / Claude Code'],
-      },
-      {
-        label: 'Hobbies & Interests',
-        value: ['Motorcycling / Drawing', 'Action Games / Board Games'],
-      },
-    ],
-    languageLabel: 'Language',
-    languageSwitch: '<Jp/En>',
-  },
-  jp: {
-    lead: [
-      '私はWebデザイン、グラフィックデザイン、イラスト、',
-      '写真に興味を持つビジュアルデザイナーです。',
-      'デザインにおけるAIを活用したワークフローを探求しながら、',
-      '大胆で遊び心のあるビジュアル表現や',
-      'インタラクティブな作品を制作しています。',
-    ],
-    items: [
-      {
-        label: '名　前',
-        value: ['胡 越 / Ko Etsu'],
-      },
-      {
-        label: '学　歴',
-        value: ['神戸芸術工科大学 修士'],
-      },
-      {
-        label: '制作スキル',
-        value: [
-          'Webデザイン / UIデザイン / グラフィックデザイン',
-          'ロゴデザイン / ビジュアルアイデンティティデザイン',
-          'ポスターデザイン / バナーデザイン / イラストレーション',
-          '写真撮影 / 写真レタッチ / カラーグレーディング',
-        ],
-      },
-      {
-        label: '主な使用ツール',
-        value: ['Photoshop / Illustrator / Lightroom / Codex / Claude Code'],
-      },
-      {
-        label: '趣味・関心',
-        value: ['バイク / 絵を描くこと', 'アクションゲーム / ボードゲーム'],
-      },
-    ],
-    languageLabel: '言語',
-    languageSwitch: '<En/Jp>',
-  },
-} as const
+const categories = ['all', ...workCategories.map((category) => category.slug)]
+const homeWorks = works.slice(0, 5)
 
 export default function HomeMinimalIndex() {
-  const [profileLanguage, setProfileLanguage] = useState<'en' | 'jp'>('en')
+  const [profileLanguage, setProfileLanguage] = useState<ProfileLanguage>('en')
   const profile = profileCopy[profileLanguage]
 
   return (
@@ -152,16 +38,19 @@ export default function HomeMinimalIndex() {
       </nav>
 
       <div className={styles.workGrid}>
-        {works.map((work) => (
-          <Link className={styles.workTile} href="/works" key={work.id}>
+        {homeWorks.map((work) => (
+          <Link className={styles.workTile} href={work.href} key={work.id}>
             <figure className={styles.figure}>
-              <img src={work.image} alt="" className={styles.image} draggable={false} />
+              <span className={styles.placeholderIndex}>{work.id}</span>
+              <span className={styles.placeholderRing} />
+              <span className={styles.placeholderBar} />
+              <span className={styles.placeholderDot} />
             </figure>
             <div className={styles.meta}>
               <span>{work.id}</span>
               <h3>{work.title}</h3>
               <p>
-                {work.category} / {work.year}
+                {work.categoryLabel} / {work.year}
               </p>
             </div>
           </Link>
@@ -292,6 +181,10 @@ export default function HomeMinimalIndex() {
               <img src="/home/character-stage/ui/top-up.svg" alt="" draggable={false} />
               <span>top</span>
             </button>
+            <div className={styles.contactCredits} aria-label="Footer credits">
+              <p>Designed &amp; Built by ETSU.</p>
+              <p>&copy; 2026</p>
+            </div>
           </div>
         </section>
       </div>
