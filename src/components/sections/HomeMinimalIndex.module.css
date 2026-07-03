@@ -467,16 +467,33 @@
 }
 
 .contactWorld {
+  --physics-footer-tail: clamp(480px, 69dvh, 680px);
+
   position: relative;
-  min-height: auto;
+  min-height: 100svh;
+  min-height: 100dvh;
   margin-top: clamp(120px, 17vw, 250px);
   isolation: isolate;
+}
+
+.contactWorld::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  left: 50%;
+  z-index: 0;
+  width: 100vw;
+  margin-left: -50vw;
+  background: var(--home-bg);
+  pointer-events: none;
 }
 
 .contactSection {
   position: relative;
   z-index: 2;
-  padding-bottom: clamp(800px, 78vh, 980px);
+  min-height: 100svh;
+  min-height: 100dvh;
+  padding-bottom: max(var(--physics-footer-tail), calc(env(safe-area-inset-bottom) + 48px));
   pointer-events: none;
 }
 
@@ -711,11 +728,14 @@
   }
 
   .contactWorld {
-    min-height: auto;
+    --physics-footer-tail: clamp(430px, 62dvh, 620px);
+
+    min-height: 100svh;
+    min-height: 100dvh;
   }
 
   .contactSection {
-    padding-bottom: clamp(750px, 96vh, 980px);
+    padding-bottom: max(var(--physics-footer-tail), calc(env(safe-area-inset-bottom) + 48px));
   }
 }
 
@@ -880,6 +900,6 @@
   }
 
   .contactSection {
-    padding-bottom: 750px;
+    padding-bottom: max(430px, calc(70dvh + env(safe-area-inset-bottom)));
   }
 }

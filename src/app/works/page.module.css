@@ -203,6 +203,10 @@
   border: 1px solid color-mix(in srgb, var(--works-text) 9%, transparent);
 }
 
+.coverImage {
+  object-fit: cover;
+}
+
 .workCardFeatured .figure,
 .workCard:nth-child(5) .figure {
   aspect-ratio: 1.35 / 1;
@@ -210,6 +214,7 @@
 
 .placeholderIndex {
   position: absolute;
+  z-index: 1;
   left: clamp(14px, 1.7vw, 24px);
   top: clamp(14px, 1.7vw, 24px);
   color: color-mix(in srgb, var(--work-accent) 58%, var(--works-text));

@@ -12,6 +12,8 @@
 
   cursor: auto;
   position: relative;
+  min-height: 100svh;
+  min-height: 100dvh;
   overflow-x: clip;
   color: var(--home-text-color);
   background:

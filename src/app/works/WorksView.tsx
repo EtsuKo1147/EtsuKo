@@ -1,8 +1,9 @@
 'use client'
 
 import { useMemo, useState, type CSSProperties } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
-import { workCategories, works, type WorkCategory } from '@/data/works'
+import { workCategories, type Work, type WorkCategory } from '@/data/works'
 import styles from './page.module.css'
 
 type ActiveCategory = 'all' | WorkCategory
@@ -12,7 +13,11 @@ const categoryOptions: { slug: ActiveCategory; label: string }[] = [
   ...workCategories,
 ]
 
-export default function WorksView() {
+type WorksViewProps = {
+  works: Work[]
+}
+
+export default function WorksView({ works }: WorksViewProps) {
   const [activeCategory, setActiveCategory] = useState<ActiveCategory>('all')
   const [isInverted, setIsInverted] = useState(false)
 
@@ -22,7 +27,7 @@ export default function WorksView() {
     }
 
     return works.filter((work) => work.category === activeCategory)
-  }, [activeCategory])
+  }, [activeCategory, works])
 
   return (
     <main className={`${styles.page} ${isInverted ? styles.pageInverted : ''}`}>
@@ -72,11 +77,23 @@ export default function WorksView() {
               } as CSSProperties
             }
           >
-            <figure className={styles.figure} aria-label={`${work.title} placeholder image`}>
+            <figure className={styles.figure} aria-label={`${work.title} cover image`}>
+              {work.coverImageUrl ? (
+                <Image
+                  src={work.coverImageUrl}
+                  alt={work.coverImageAlt || work.title}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 980px) 50vw, 33vw"
+                  className={styles.coverImage}
+                />
+              ) : (
+                <>
+                  <span className={styles.placeholderRing} />
+                  <span className={styles.placeholderBar} />
+                  <span className={styles.placeholderDot} />
+                </>
+              )}
               <span className={styles.placeholderIndex}>{work.id}</span>
-              <span className={styles.placeholderRing} />
-              <span className={styles.placeholderBar} />
-              <span className={styles.placeholderDot} />
             </figure>
             <div className={styles.cardMeta}>
               <span>{work.id}</span>

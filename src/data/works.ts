@@ -13,9 +13,17 @@ export interface Work {
   surface: string
   featured?: boolean
   href: string
+  coverImageUrl?: string
+  coverImageAlt?: string
+  galleryImages?: WorkImage[]
 }
 
 export type WorkCategory = 'branding' | 'photography' | 'web' | 'graphic'
+
+export interface WorkImage {
+  url: string
+  alt?: string
+}
 
 export const workCategories: { slug: WorkCategory; label: string }[] = [
   { slug: 'branding', label: 'Branding' },
