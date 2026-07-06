@@ -5,6 +5,11 @@ import dynamic from 'next/dynamic'
 import HomeEntryScrollController from '@/components/sections/HomeEntryScrollController'
 import HomeHero from '@/components/sections/HomeHero'
 import HomeMinimalIndex from '@/components/sections/HomeMinimalIndex'
+import {
+  clearHomeLoaderSkipRequest,
+  markHomeLoaderPlayed,
+  shouldSkipHomeLoader,
+} from '@/components/animation/homeLoaderSession'
 import styles from './page.module.css'
 
 const HandDrawnLoader = dynamic(
@@ -12,20 +17,10 @@ const HandDrawnLoader = dynamic(
   { ssr: false }
 )
 
-const shouldSkipHomeLoader = () =>
-  typeof window !== 'undefined' &&
-  sessionStorage.getItem('skipHomeLoader') === '1'
-
 export default function HomePage() {
   const [loaderDone,   setLoaderDone]   = useState(shouldSkipHomeLoader)
   const [homeRevealed, setHomeRevealed] = useState(shouldSkipHomeLoader)
   const [isInverted, setIsInverted] = useState(false)
-
-  useEffect(() => {
-    if (sessionStorage.getItem('skipHomeLoader') === '1') {
-      sessionStorage.removeItem('skipHomeLoader')
-    }
-  }, [])
 
   const revealHome = () => {
     setHomeRevealed(true)
@@ -34,6 +29,16 @@ export default function HomePage() {
     }
   }
 
+  useEffect(() => {
+    const skippedLoader = shouldSkipHomeLoader()
+    clearHomeLoaderSkipRequest()
+
+    if (skippedLoader) {
+      markHomeLoaderPlayed()
+      window.dispatchEvent(new CustomEvent('homeReveal'))
+    }
+  }, [])
+
   return (
     <>
       <HomeEntryScrollController />
@@ -41,6 +46,7 @@ export default function HomePage() {
         <HandDrawnLoader
           onReveal={revealHome}
           onComplete={() => {
+            markHomeLoaderPlayed()
             revealHome()
             setLoaderDone(true)
           }}

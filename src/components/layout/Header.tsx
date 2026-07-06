@@ -5,6 +5,10 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { MouseEvent } from 'react'
 import gsap from 'gsap'
+import {
+  requestHomeLoaderSkip,
+  shouldSkipHomeLoader,
+} from '@/components/animation/homeLoaderSession'
 import styles from './RoadSign.module.css'
 import RoadSignClock from './RoadSignClock'
 
@@ -405,7 +409,7 @@ export default function Header() {
 
   const handleHomeClick = (event: MouseEvent<HTMLAnchorElement>) => {
     if (pathname !== '/') {
-      sessionStorage.setItem('skipHomeLoader', '1')
+      requestHomeLoaderSkip()
       return
     }
     event.preventDefault()
@@ -537,7 +541,7 @@ export default function Header() {
     }
 
     const isHome = window.location.pathname === '/'
-    const shouldSkip = sessionStorage.getItem('skipHomeLoader') === '1'
+    const shouldSkip = shouldSkipHomeLoader()
 
     const onScroll = () => {
       if (scrollRafRef.current !== null) return

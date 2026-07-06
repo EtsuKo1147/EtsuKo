@@ -4,57 +4,169 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { workCategories, works } from '@/data/works'
 import { profileCopy, type ProfileLanguage } from '@/data/profile'
 import HomePhysicsFooter from './HomePhysicsFooter'
 import styles from './HomeMinimalIndex.module.css'
 
-const categories = ['all', ...workCategories.map((category) => category.slug)]
-const homeWorks = works.slice(0, 5)
+const polaroidAssetPath = '/home/images/works-polaroid'
+
+const polaroidCategories = [
+  {
+    label: 'Branding',
+    image: `${polaroidAssetPath}/work-branding.jpg`,
+  },
+  {
+    label: 'Illustration',
+    image: `${polaroidAssetPath}/work-illustration.jpg`,
+  },
+  {
+    label: 'Web',
+    image: `${polaroidAssetPath}/work-web.jpg`,
+  },
+  {
+    label: 'Photography',
+    image: `${polaroidAssetPath}/work-photography.jpg`,
+  },
+]
+
+const featuredPolaroids = [
+  {
+    title: 'Loop Identity System',
+    ghost: 'Branding',
+    role: 'VI / LOGO / Package',
+    year: '2026',
+    image: `${polaroidAssetPath}/featured-01.jpg`,
+    href: '/works/loop-identity-system',
+  },
+  {
+    title: 'Type Signal Posters',
+    ghost: 'Illustration',
+    role: 'LOGO / Typography / Poster',
+    year: '2025',
+    image: `${polaroidAssetPath}/featured-02.jpg`,
+    href: '/works/type-signal-posters',
+  },
+  {
+    title: 'Etsu Portfolio System',
+    ghost: 'Web Design',
+    role: 'Web / Interaction / Frontend',
+    year: '2026',
+    image: `${polaroidAssetPath}/featured-03.jpg`,
+    href: '/works/etsu-portfolio-system',
+  },
+  {
+    title: 'North Pier Frames',
+    ghost: 'Photography',
+    role: 'Photography / Retouching',
+    year: '2025',
+    image: `${polaroidAssetPath}/featured-04.jpg`,
+    href: '/works/north-pier-frames',
+  },
+]
 
 export default function HomeMinimalIndex() {
   const [profileLanguage, setProfileLanguage] = useState<ProfileLanguage>('en')
   const profile = profileCopy[profileLanguage]
+  const activeCategory = polaroidCategories[0]
 
   return (
     <section className={styles.index} aria-labelledby="home-work-index-title">
-      <div className={styles.header}>
-        <p className={styles.eyebrow}>Selected index</p>
-        <h2 id="home-work-index-title" className={styles.title}>
-          Works
-        </h2>
-        <p className={styles.intro}>
-          Visual design, web direction, graphics, images, and small interactive
-          experiments.
-        </p>
-      </div>
+      <div className={styles.worksPolaroid} aria-labelledby="home-work-index-title">
+        <div className={styles.header}>
+          <p className={styles.eyebrow}>Selected index</p>
+          <h2 id="home-work-index-title" className={styles.title}>
+            Works
+          </h2>
+          <p className={styles.intro}>
+            Visual design, web direction, graphics, images, and small interactive
+            experiments.
+          </p>
+        </div>
 
-      <nav className={styles.categoryNav} aria-label="Work categories">
-        {categories.map((category) => (
-          <Link href="/works" key={category}>
-            {category}
-          </Link>
-        ))}
-      </nav>
+        <div className={styles.polaroidHero}>
+          <div className={styles.cameraStage} aria-label={`${activeCategory.label} work preview`}>
+            <img
+              src={`${polaroidAssetPath}/polaroid-camera-up.svg`}
+              alt=""
+              className={`${styles.cameraLayer} ${styles.cameraUp}`}
+              draggable={false}
+            />
+            <img
+              src={`${polaroidAssetPath}/polaroid-camera-down.svg`}
+              alt=""
+              className={`${styles.cameraLayer} ${styles.cameraDown}`}
+              draggable={false}
+            />
 
-      <div className={styles.workGrid}>
-        {homeWorks.map((work) => (
-          <Link className={styles.workTile} href={work.href} key={work.id}>
-            <figure className={styles.figure}>
-              <span className={styles.placeholderIndex}>{work.id}</span>
-              <span className={styles.placeholderRing} />
-              <span className={styles.placeholderBar} />
-              <span className={styles.placeholderDot} />
-            </figure>
-            <div className={styles.meta}>
-              <span>{work.id}</span>
-              <h3>{work.title}</h3>
-              <p>
-                {work.categoryLabel} / {work.year}
-              </p>
+            <div className={styles.paperMask}>
+              <div className={styles.cameraPaper}>
+                <img
+                  src={`${polaroidAssetPath}/polaroid-paper-blank.svg`}
+                  alt=""
+                  className={styles.paperShell}
+                  draggable={false}
+                />
+                <img
+                  src={activeCategory.image}
+                  alt=""
+                  className={styles.paperImage}
+                  draggable={false}
+                />
+                <span className={styles.paperCaption}>{activeCategory.label}</span>
+              </div>
             </div>
-          </Link>
-        ))}
+            <span className={styles.exitShadow} aria-hidden="true" />
+          </div>
+
+          <nav className={styles.polaroidCategories} aria-label="Work categories">
+            {polaroidCategories.map((category) => (
+              <Link
+                href="/works"
+                key={category.label}
+                className={category.label === activeCategory.label ? styles.activeCategory : ''}
+              >
+                {category.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        <div className={styles.featuredBoard}>
+          {featuredPolaroids.map((work) => (
+            <article className={styles.featuredItem} key={work.title}>
+              <div className={styles.featuredCopy}>
+                <span className={styles.featuredGhost}>{work.ghost}</span>
+                <h3>{work.title}</h3>
+                <p>{work.role}</p>
+                <span>{work.year}</span>
+              </div>
+
+              <Link
+                href={work.href}
+                className={styles.featuredPhoto}
+                aria-label={`View ${work.title}`}
+              >
+                <img
+                  src={`${polaroidAssetPath}/polaroid-paper-blank.svg`}
+                  alt=""
+                  className={styles.featuredShell}
+                  draggable={false}
+                />
+                <img
+                  src={work.image}
+                  alt=""
+                  className={styles.featuredImage}
+                  draggable={false}
+                />
+                <span className={styles.featuredStrip}>
+                  <span>{work.title}</span>
+                  <span>{work.year}</span>
+                </span>
+              </Link>
+            </article>
+          ))}
+        </div>
+
         <Link className={styles.viewMoreLink} href="/works" aria-label="View more works">
           <span className={styles.viewMoreText}>view more</span>
           <svg
@@ -179,7 +291,7 @@ export default function HomeMinimalIndex() {
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             >
               <img src="/home/character-stage/ui/top-up.svg" alt="" draggable={false} />
-              <span>top</span>
+              <span>back</span>
             </button>
             <div className={styles.contactCredits} aria-label="Footer credits">
               <p>Designed &amp; Built by ETSU.</p>
