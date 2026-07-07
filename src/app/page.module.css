@@ -6,6 +6,7 @@
   --home-tile-bg: #eeeeea;
   --home-button-bg: #363636;
   --home-button-text: #f7f6f0;
+  --home-mask-fill: #363636;
   --home-doodle-filter: none;
   --home-control-hover-opacity: 0.72;
   --home-control-active-opacity: 0.62;
@@ -32,6 +33,7 @@
   --home-tile-bg: #404040;
   --home-button-bg: #f7f6f0;
   --home-button-text: #363636;
+  --home-mask-fill: #faf9f6;
   --home-doodle-filter: brightness(0) invert(1);
   --home-control-hover-opacity: 0.82;
   --home-control-active-opacity: 0.72;

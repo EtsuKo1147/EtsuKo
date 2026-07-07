@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { profileCopy, type ProfileLanguage } from '@/data/profile'
 import HomePhysicsFooter from './HomePhysicsFooter'
@@ -66,12 +66,170 @@ const featuredPolaroids = [
 
 export default function HomeMinimalIndex() {
   const [profileLanguage, setProfileLanguage] = useState<ProfileLanguage>('en')
+  const [activeCategoryIndex, setActiveCategoryIndex] = useState(0)
+  const [isWorkCueActive, setIsWorkCueActive] = useState(false)
+  const [isFeaturedBoardActive, setIsFeaturedBoardActive] = useState(false)
+  const [featuredBoardStep, setFeaturedBoardStep] = useState(0)
+  const polaroidHeroRef = useRef<HTMLDivElement>(null)
+  const featuredBoardRef = useRef<HTMLDivElement>(null)
   const profile = profileCopy[profileLanguage]
-  const activeCategory = polaroidCategories[0]
+  const activeCategory = polaroidCategories[activeCategoryIndex]
+  const featuredBoardStepClass =
+    featuredBoardStep > 0
+      ? styles[`featuredBoardMobileStep${featuredBoardStep}` as keyof typeof styles]
+      : ''
+
+  useEffect(() => {
+    const polaroidHero = polaroidHeroRef.current
+
+    if (!polaroidHero) {
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) {
+          return
+        }
+
+        setActiveCategoryIndex(0)
+        setIsWorkCueActive(false)
+        window.requestAnimationFrame(() => {
+          setIsWorkCueActive(true)
+        })
+        observer.disconnect()
+      },
+      {
+        rootMargin: '-28% 0px -22% 0px',
+        threshold: 0.35,
+      },
+    )
+
+    observer.observe(polaroidHero)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
+
+  useEffect(() => {
+    const board = featuredBoardRef.current
+
+    if (!board) {
+      return
+    }
+
+    const mobileQuery = window.matchMedia('(max-width: 640px)')
+    let observer: IntersectionObserver | null = null
+    let frame = 0
+
+    const updateMobileStep = () => {
+      frame = 0
+
+      if (!mobileQuery.matches) {
+        return
+      }
+
+      const rect = board.getBoundingClientRect()
+      const viewportHeight = window.innerHeight
+      const progress =
+        (viewportHeight * 0.72 - rect.top) /
+        Math.max(rect.height - viewportHeight * 0.28, 1)
+
+      let nextStep = 0
+
+      if (progress >= 0.12) {
+        nextStep = 1
+      }
+
+      if (progress >= 0.32) {
+        nextStep = 2
+      }
+
+      if (progress >= 0.52) {
+        nextStep = 3
+      }
+
+      if (progress >= 0.72) {
+        nextStep = 4
+      }
+
+      setIsFeaturedBoardActive(progress >= 0.04)
+      setFeaturedBoardStep(nextStep)
+    }
+
+    const requestMobileStepUpdate = () => {
+      if (frame) {
+        return
+      }
+
+      frame = window.requestAnimationFrame(updateMobileStep)
+    }
+
+    const setupFeaturedBoardTrigger = () => {
+      observer?.disconnect()
+      observer = null
+      window.removeEventListener('scroll', requestMobileStepUpdate)
+      window.removeEventListener('resize', requestMobileStepUpdate)
+
+      if (mobileQuery.matches) {
+        setIsFeaturedBoardActive(false)
+        setFeaturedBoardStep(0)
+        window.addEventListener('scroll', requestMobileStepUpdate, { passive: true })
+        window.addEventListener('resize', requestMobileStepUpdate)
+        requestMobileStepUpdate()
+        return
+      }
+
+      setFeaturedBoardStep(0)
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry.isIntersecting) {
+            return
+          }
+
+          setIsFeaturedBoardActive(true)
+          observer?.disconnect()
+          observer = null
+        },
+        {
+          rootMargin: '-18% 0px -24% 0px',
+          threshold: 0.18,
+        },
+      )
+
+      observer.observe(board)
+    }
+
+    setupFeaturedBoardTrigger()
+    mobileQuery.addEventListener('change', setupFeaturedBoardTrigger)
+
+    return () => {
+      observer?.disconnect()
+      mobileQuery.removeEventListener('change', setupFeaturedBoardTrigger)
+      window.removeEventListener('scroll', requestMobileStepUpdate)
+      window.removeEventListener('resize', requestMobileStepUpdate)
+
+      if (frame) {
+        window.cancelAnimationFrame(frame)
+      }
+    }
+  }, [])
+
+  const featuredBoardClassName = [
+    styles.featuredBoard,
+    isFeaturedBoardActive ? styles.featuredBoardActive : '',
+    featuredBoardStepClass,
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return (
     <section className={styles.index} aria-labelledby="home-work-index-title">
-      <div className={styles.worksPolaroid} aria-labelledby="home-work-index-title">
+      <div
+        className={`${styles.worksPolaroid} ${isWorkCueActive ? styles.worksPolaroidCue : ''}`}
+        aria-labelledby="home-work-index-title"
+      >
         <div className={styles.header}>
           <p className={styles.eyebrow}>Selected index</p>
           <h2 id="home-work-index-title" className={styles.title}>
@@ -83,47 +241,47 @@ export default function HomeMinimalIndex() {
           </p>
         </div>
 
-        <div className={styles.polaroidHero}>
+        <div ref={polaroidHeroRef} className={styles.polaroidHero}>
           <div className={styles.cameraStage} aria-label={`${activeCategory.label} work preview`}>
-            <img
-              src={`${polaroidAssetPath}/polaroid-camera-up.svg`}
-              alt=""
-              className={`${styles.cameraLayer} ${styles.cameraUp}`}
-              draggable={false}
-            />
             <img
               src={`${polaroidAssetPath}/polaroid-camera-down.svg`}
               alt=""
               className={`${styles.cameraLayer} ${styles.cameraDown}`}
               draggable={false}
             />
+            <span
+              className={`${styles.cameraLayer} ${styles.cameraUp}`}
+              aria-hidden="true"
+            />
+            <span className={styles.cameraFlash} aria-hidden="true">
+              <span className={`${styles.cameraFlashFrame} ${styles.cameraFlashOne}`} />
+              <span className={`${styles.cameraFlashFrame} ${styles.cameraFlashTwo}`} />
+            </span>
+            <span className={styles.cameraCategoryLabel}>{activeCategory.label}</span>
 
             <div className={styles.paperMask}>
-              <div className={styles.cameraPaper}>
-                <img
-                  src={`${polaroidAssetPath}/polaroid-paper-blank.svg`}
-                  alt=""
-                  className={styles.paperShell}
-                  draggable={false}
-                />
+              <div className={styles.cameraPaper} key={activeCategory.label}>
+                <span className={styles.paperShell} aria-hidden="true" />
                 <img
                   src={activeCategory.image}
                   alt=""
                   className={styles.paperImage}
                   draggable={false}
                 />
+                <span className={styles.paperSurfaceShadow} aria-hidden="true" />
                 <span className={styles.paperCaption}>{activeCategory.label}</span>
               </div>
             </div>
-            <span className={styles.exitShadow} aria-hidden="true" />
           </div>
 
           <nav className={styles.polaroidCategories} aria-label="Work categories">
-            {polaroidCategories.map((category) => (
+            {polaroidCategories.map((category, index) => (
               <Link
                 href="/works"
                 key={category.label}
                 className={category.label === activeCategory.label ? styles.activeCategory : ''}
+                onMouseEnter={() => setActiveCategoryIndex(index)}
+                onFocus={() => setActiveCategoryIndex(index)}
               >
                 {category.label}
               </Link>
@@ -131,7 +289,10 @@ export default function HomeMinimalIndex() {
           </nav>
         </div>
 
-        <div className={styles.featuredBoard}>
+        <div
+          ref={featuredBoardRef}
+          className={featuredBoardClassName}
+        >
           {featuredPolaroids.map((work) => (
             <article className={styles.featuredItem} key={work.title}>
               <div className={styles.featuredCopy}>
@@ -146,18 +307,14 @@ export default function HomeMinimalIndex() {
                 className={styles.featuredPhoto}
                 aria-label={`View ${work.title}`}
               >
-                <img
-                  src={`${polaroidAssetPath}/polaroid-paper-blank.svg`}
-                  alt=""
-                  className={styles.featuredShell}
-                  draggable={false}
-                />
+                <span className={styles.featuredShell} aria-hidden="true" />
                 <img
                   src={work.image}
                   alt=""
                   className={styles.featuredImage}
                   draggable={false}
                 />
+                <span className={styles.paperSurfaceShadow} aria-hidden="true" />
                 <span className={styles.featuredStrip}>
                   <span>{work.title}</span>
                   <span>{work.year}</span>
@@ -202,12 +359,7 @@ export default function HomeMinimalIndex() {
 
         <div className={styles.profileArcade}>
           <div className={styles.profileStage}>
-            <img
-              src="/home/character-stage/doodles/character-3.svg"
-              alt=""
-              className={styles.profileCharacter}
-              draggable={false}
-            />
+            <span className={styles.profileCharacter} aria-hidden="true" />
 
             <div className={styles.profileConsoleFrame}>
               <img
@@ -269,12 +421,7 @@ export default function HomeMinimalIndex() {
           </div>
 
           <div className={styles.directMailPanel}>
-            <img
-              src="/home/character-stage/doodles/character-6.svg"
-              alt=""
-              className={styles.directMailDoodle}
-              draggable={false}
-            />
+            <span className={styles.directMailDoodle} aria-hidden="true" />
             <h3 id="home-direct-mail-title" className={styles.directMailTitle}>
               Direct Mail
             </h3>

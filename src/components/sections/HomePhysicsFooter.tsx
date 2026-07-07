@@ -1,7 +1,5 @@
 'use client'
 
-/* eslint-disable @next/next/no-img-element */
-
 import { useEffect, useRef, useState } from 'react'
 import Matter, { type Body, type Engine, type Runner } from 'matter-js'
 import styles from './HomePhysicsFooter.module.css'
@@ -105,6 +103,7 @@ type FooterPhysicsWorld = {
 type FooterItemStyle = React.CSSProperties & {
   '--pile-width': string
   '--pile-height': string
+  '--footer-mask': string
 }
 
 const clamp = (value: number, min: number, max: number) =>
@@ -467,10 +466,11 @@ export default function HomePhysicsFooter() {
                 {
                   '--pile-width': `${item.width * itemScale}px`,
                   '--pile-height': `${item.height * itemScale}px`,
+                  '--footer-mask': `url('${item.src}')`,
                 } as FooterItemStyle
               }
             >
-              <img src={item.src} alt={item.label} draggable={false} />
+              <span className={styles.itemMask} aria-label={item.label} />
             </li>
           ))}
         </ul>
