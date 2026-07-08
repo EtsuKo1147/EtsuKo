@@ -2,13 +2,40 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useEffect, useRef, useState } from 'react'
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent,
+} from 'react'
 import Link from 'next/link'
 import { profileCopy, type ProfileLanguage } from '@/data/profile'
 import HomePhysicsFooter from './HomePhysicsFooter'
 import styles from './HomeMinimalIndex.module.css'
 
 const polaroidAssetPath = '/home/images/works-polaroid'
+const worksCameraAssetPath = '/home/images/works-camera'
+
+const stampPhotoAssets = [
+  `${worksCameraAssetPath}/stamp-photo-01.svg`,
+  `${worksCameraAssetPath}/stamp-photo-02.svg`,
+  `${worksCameraAssetPath}/stamp-photo-03.svg`,
+  `${worksCameraAssetPath}/stamp-photo-04.svg`,
+  `${worksCameraAssetPath}/stamp-photo-05.svg`,
+]
+
+type StampPhoto = {
+  id: number
+  src: string
+  x: number
+  y: number
+  rotate: number
+  offsetX: number
+  offsetY: number
+  scale: number
+}
 
 const polaroidCategories = [
   {
@@ -64,20 +91,150 @@ const featuredPolaroids = [
   },
 ]
 
+function ViewMoreWorksCue() {
+  const rawId = useId()
+  const ringPathId = `view-more-works-ring-${rawId.replace(/:/g, '')}`
+
+  return (
+    <span className={styles.viewMoreWorksCue} aria-hidden="true">
+      <svg viewBox="0 0 140 140" className={styles.viewMoreWorksCueSvg}>
+        <defs>
+          <path
+            id={ringPathId}
+            d="M70 70 m -54 0 a 54 54 0 1 1 108 0 a 54 54 0 1 1 -108 0"
+          />
+        </defs>
+        <g className={styles.viewMoreWorksCueText}>
+          <text>
+            <textPath href={`#${ringPathId}`} startOffset="0%">
+              View more Works
+            </textPath>
+          </text>
+          <text>
+            <textPath href={`#${ringPathId}`} startOffset="50%">
+              View more Works
+            </textPath>
+          </text>
+        </g>
+        <g className={styles.viewMoreWorksCueArrow}>
+          <path d="M45 70H92" />
+          <path d="M79 57 94 70 79 83" />
+        </g>
+      </svg>
+    </span>
+  )
+}
+
 export default function HomeMinimalIndex() {
   const [profileLanguage, setProfileLanguage] = useState<ProfileLanguage>('en')
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(0)
   const [isWorkCueActive, setIsWorkCueActive] = useState(false)
   const [isFeaturedBoardActive, setIsFeaturedBoardActive] = useState(false)
   const [featuredBoardStep, setFeaturedBoardStep] = useState(0)
+  const [isWorksStampCameraVisible, setIsWorksStampCameraVisible] = useState(false)
+  const [isWorksStampCameraPressed, setIsWorksStampCameraPressed] = useState(false)
+  const [stampPhotos, setStampPhotos] = useState<StampPhoto[]>([])
   const polaroidHeroRef = useRef<HTMLDivElement>(null)
   const featuredBoardRef = useRef<HTMLDivElement>(null)
+  const stampPhotoIdRef = useRef(0)
   const profile = profileCopy[profileLanguage]
   const activeCategory = polaroidCategories[activeCategoryIndex]
   const featuredBoardStepClass =
     featuredBoardStep > 0
       ? styles[`featuredBoardMobileStep${featuredBoardStep}` as keyof typeof styles]
       : ''
+
+  const handlePolaroidPointerMove = (event: PointerEvent<HTMLAnchorElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect()
+
+    event.currentTarget.style.setProperty(
+      '--view-more-cue-x',
+      `${event.clientX - rect.left}px`,
+    )
+    event.currentTarget.style.setProperty(
+      '--view-more-cue-y',
+      `${event.clientY - rect.top}px`,
+    )
+  }
+
+  const updateWorksStampCursor = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== 'mouse') {
+      return null
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect()
+    const point = {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+    }
+
+    event.currentTarget.style.setProperty('--stamp-cursor-x', `${point.x}px`)
+    event.currentTarget.style.setProperty('--stamp-cursor-y', `${point.y}px`)
+
+    return point
+  }
+
+  const handleWorksStampPointerEnter = (event: PointerEvent<HTMLDivElement>) => {
+    if (!updateWorksStampCursor(event)) {
+      return
+    }
+
+    setIsWorksStampCameraVisible(true)
+  }
+
+  const handleWorksStampPointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    if (!updateWorksStampCursor(event)) {
+      return
+    }
+
+    if (!isWorksStampCameraVisible) {
+      setIsWorksStampCameraVisible(true)
+    }
+  }
+
+  const handleWorksStampPointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0) {
+      return
+    }
+
+    const point = updateWorksStampCursor(event)
+
+    if (!point) {
+      return
+    }
+
+    setIsWorksStampCameraPressed(true)
+
+    const clickedInteractiveElement =
+      event.target instanceof Element && event.target.closest('a, button')
+
+    if (clickedInteractiveElement) {
+      return
+    }
+
+    const nextPhoto: StampPhoto = {
+      id: stampPhotoIdRef.current,
+      src: stampPhotoAssets[Math.floor(Math.random() * stampPhotoAssets.length)],
+      x: point.x,
+      y: point.y,
+      rotate: Math.round((Math.random() * 30 - 15) * 10) / 10,
+      offsetX: Math.round(Math.random() * 44 - 22),
+      offsetY: Math.round(Math.random() * 36 - 18),
+      scale: Math.round((0.9 + Math.random() * 0.16) * 100) / 100,
+    }
+
+    stampPhotoIdRef.current += 1
+    setStampPhotos((currentPhotos) => [...currentPhotos, nextPhoto].slice(-6))
+  }
+
+  const handleWorksStampPointerUp = () => {
+    setIsWorksStampCameraPressed(false)
+  }
+
+  const handleWorksStampPointerLeave = () => {
+    setIsWorksStampCameraVisible(false)
+    setIsWorksStampCameraPressed(false)
+  }
 
   useEffect(() => {
     const polaroidHero = polaroidHeroRef.current
@@ -230,63 +387,158 @@ export default function HomeMinimalIndex() {
         className={`${styles.worksPolaroid} ${isWorkCueActive ? styles.worksPolaroidCue : ''}`}
         aria-labelledby="home-work-index-title"
       >
-        <div className={styles.header}>
-          <p className={styles.eyebrow}>Selected index</p>
-          <h2 id="home-work-index-title" className={styles.title}>
-            Works
-          </h2>
-          <p className={styles.intro}>
-            Visual design, web direction, graphics, images, and small interactive
-            experiments.
-          </p>
-        </div>
-
-        <div ref={polaroidHeroRef} className={styles.polaroidHero}>
-          <div className={styles.cameraStage} aria-label={`${activeCategory.label} work preview`}>
+        <div
+          className={styles.worksStampZone}
+          onPointerEnter={handleWorksStampPointerEnter}
+          onPointerMove={handleWorksStampPointerMove}
+          onPointerDown={handleWorksStampPointerDown}
+          onPointerUp={handleWorksStampPointerUp}
+          onPointerCancel={handleWorksStampPointerLeave}
+          onPointerLeave={handleWorksStampPointerLeave}
+        >
+          <div className={styles.worksStampPhotoLayer} aria-hidden="true">
+            {stampPhotos.map((photo) => (
+              <img
+                key={photo.id}
+                src={photo.src}
+                alt=""
+                className={styles.worksStampPhoto}
+                draggable={false}
+                style={
+                  {
+                    '--stamp-photo-x': `${photo.x}px`,
+                    '--stamp-photo-y': `${photo.y}px`,
+                    '--stamp-photo-offset-x': `${photo.offsetX}px`,
+                    '--stamp-photo-offset-y': `${photo.offsetY}px`,
+                    '--stamp-photo-rotate': `${photo.rotate}deg`,
+                    '--stamp-photo-scale': `${photo.scale}`,
+                  } as CSSProperties
+                }
+              />
+            ))}
+          </div>
+          <span
+            className={[
+              styles.worksStampCamera,
+              isWorksStampCameraVisible ? styles.worksStampCameraVisible : '',
+              isWorksStampCameraPressed ? styles.worksStampCameraPressed : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+            aria-hidden="true"
+          >
             <img
-              src={`${polaroidAssetPath}/polaroid-camera-down.svg`}
+              src={`${worksCameraAssetPath}/stamp-camera-idle-back.svg`}
               alt=""
-              className={`${styles.cameraLayer} ${styles.cameraDown}`}
+              className={`${styles.worksStampCameraBack} ${styles.worksStampCameraIdleBack}`}
               draggable={false}
             />
-            <span
-              className={`${styles.cameraLayer} ${styles.cameraUp}`}
-              aria-hidden="true"
+            <img
+              src={`${worksCameraAssetPath}/stamp-camera-idle.svg`}
+              alt=""
+              className={styles.worksStampCameraIdle}
+              draggable={false}
             />
-            <span className={styles.cameraFlash} aria-hidden="true">
-              <span className={`${styles.cameraFlashFrame} ${styles.cameraFlashOne}`} />
-              <span className={`${styles.cameraFlashFrame} ${styles.cameraFlashTwo}`} />
-            </span>
-            <span className={styles.cameraCategoryLabel}>{activeCategory.label}</span>
+            <img
+              src={`${worksCameraAssetPath}/stamp-camera-pressed-back.svg`}
+              alt=""
+              className={`${styles.worksStampCameraBack} ${styles.worksStampCameraPressedBack}`}
+              draggable={false}
+            />
+            <img
+              src={`${worksCameraAssetPath}/stamp-camera-pressed.svg`}
+              alt=""
+              className={styles.worksStampCameraPressedImage}
+              draggable={false}
+            />
+          </span>
 
-            <div className={styles.paperMask}>
-              <div className={styles.cameraPaper} key={activeCategory.label}>
-                <span className={styles.paperShell} aria-hidden="true" />
-                <img
-                  src={activeCategory.image}
-                  alt=""
-                  className={styles.paperImage}
-                  draggable={false}
-                />
-                <span className={styles.paperSurfaceShadow} aria-hidden="true" />
-                <span className={styles.paperCaption}>{activeCategory.label}</span>
-              </div>
-            </div>
+          <div className={styles.header}>
+            <p className={styles.eyebrow}>Selected index</p>
+            <h2 id="home-work-index-title" className={styles.title}>
+              Works
+            </h2>
+            <p className={styles.intro}>
+              Visual design, web direction, graphics, images, and small interactive
+              experiments.
+            </p>
           </div>
 
-          <nav className={styles.polaroidCategories} aria-label="Work categories">
-            {polaroidCategories.map((category, index) => (
-              <Link
-                href="/works"
-                key={category.label}
-                className={category.label === activeCategory.label ? styles.activeCategory : ''}
-                onMouseEnter={() => setActiveCategoryIndex(index)}
-                onFocus={() => setActiveCategoryIndex(index)}
+          <div ref={polaroidHeroRef} className={styles.polaroidHero}>
+            <div className={styles.cameraStage} aria-label={`${activeCategory.label} work preview`}>
+              <img
+                src={`${polaroidAssetPath}/polaroid-camera-down.svg`}
+                alt=""
+                className={`${styles.cameraLayer} ${styles.cameraDown}`}
+                draggable={false}
+              />
+              <span
+                className={`${styles.cameraLayer} ${styles.cameraUp}`}
+                aria-hidden="true"
+              />
+              <svg
+                className={styles.cameraTextRing}
+                viewBox="0 0 180 180"
+                aria-hidden="true"
               >
-                {category.label}
-              </Link>
-            ))}
-          </nav>
+                <defs>
+                  <path
+                    id="camera-category-ring"
+                    d="M90 90 m -68 0 a 68 68 0 1 1 136 0 a 68 68 0 1 1 -136 0"
+                  />
+                </defs>
+                <text>
+                  <textPath href="#camera-category-ring" startOffset="8%">
+                    Branding
+                  </textPath>
+                </text>
+                <text>
+                  <textPath href="#camera-category-ring" startOffset="32%">
+                    Illustration
+                  </textPath>
+                </text>
+                <text>
+                  <textPath href="#camera-category-ring" startOffset="65%">
+                    Web
+                  </textPath>
+                </text>
+                <text>
+                  <textPath href="#camera-category-ring" startOffset="78%">
+                    Photography
+                  </textPath>
+                </text>
+              </svg>
+              <span className={styles.cameraCategoryLabel}>{activeCategory.label}</span>
+
+              <div className={styles.paperMask}>
+                <div className={styles.cameraPaper} key={activeCategory.label}>
+                  <span className={styles.paperShell} aria-hidden="true" />
+                  <img
+                    src={activeCategory.image}
+                    alt=""
+                    className={styles.paperImage}
+                    draggable={false}
+                  />
+                  <span className={styles.paperSurfaceShadow} aria-hidden="true" />
+                  <span className={styles.paperCaption}>{activeCategory.label}</span>
+                </div>
+              </div>
+            </div>
+
+            <nav className={styles.polaroidCategories} aria-label="Work categories">
+              {polaroidCategories.map((category, index) => (
+                <Link
+                  href="/works"
+                  key={category.label}
+                  className={category.label === activeCategory.label ? styles.activeCategory : ''}
+                  onMouseEnter={() => setActiveCategoryIndex(index)}
+                  onFocus={() => setActiveCategoryIndex(index)}
+                >
+                  {category.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
         </div>
 
         <div
@@ -306,6 +558,7 @@ export default function HomeMinimalIndex() {
                 href={work.href}
                 className={styles.featuredPhoto}
                 aria-label={`View ${work.title}`}
+                onPointerMove={handlePolaroidPointerMove}
               >
                 <span className={styles.featuredShell} aria-hidden="true" />
                 <img
@@ -319,10 +572,50 @@ export default function HomeMinimalIndex() {
                   <span>{work.title}</span>
                   <span>{work.year}</span>
                 </span>
+                <ViewMoreWorksCue />
               </Link>
             </article>
           ))}
         </div>
+
+        <Link
+          className={styles.featuredLargeFrame}
+          href="/works"
+          aria-label="View Photography works"
+          onPointerMove={handlePolaroidPointerMove}
+        >
+          <span className={styles.featuredLargeViewport} aria-hidden="true">
+            <picture className={styles.featuredLargePicture}>
+              <source
+                media="(max-width: 640px)"
+                srcSet={`${polaroidAssetPath}/featured-05-mobile.jpg`}
+              />
+              <img
+                src={`${polaroidAssetPath}/featured-05.jpg`}
+                alt=""
+                className={styles.featuredLargeImage}
+                draggable={false}
+              />
+            </picture>
+          </span>
+          <picture className={styles.featuredLargeFrameImage}>
+            <source
+              media="(max-width: 640px)"
+              srcSet={`${polaroidAssetPath}/polaroid-paper-blank-mobile.svg`}
+            />
+            <img
+              src={`${polaroidAssetPath}/polaroid-paper-blank-large.svg`}
+              alt=""
+              draggable={false}
+            />
+          </picture>
+          <span className={styles.featuredLargeSurfaceShadow} aria-hidden="true" />
+          <span className={styles.featuredLargeStrip}>
+            <span>Photography</span>
+            <span>2026</span>
+          </span>
+          <ViewMoreWorksCue />
+        </Link>
 
         <Link className={styles.viewMoreLink} href="/works" aria-label="View more works">
           <span className={styles.viewMoreText}>view more</span>
