@@ -633,9 +633,9 @@ export default function HomeMinimalIndex() {
             <article className={styles.featuredItem} key={work.title}>
               <div className={styles.featuredCopy}>
                 <span className={styles.featuredGhost}>{work.ghost}</span>
-                <h3>{work.title}</h3>
-                <p>{work.role}</p>
-                <span>{work.year}</span>
+                <h3 className={styles.featuredTitle}>{work.title}</h3>
+                <p className={styles.featuredRole}>{work.role}</p>
+                <span className={styles.featuredYear}>{work.year}</span>
               </div>
 
               <Link
@@ -662,56 +662,62 @@ export default function HomeMinimalIndex() {
           ))}
         </div>
 
-        <Link
-          className={styles.featuredLargeFrame}
-          href="/works"
-          aria-label="View Photography works"
-          onPointerMove={handlePolaroidPointerMove}
-        >
-          <span className={styles.featuredLargeViewport} aria-hidden="true">
-            <picture className={styles.featuredLargePicture}>
+        <div className={styles.featuredLargeStack}>
+          <Link
+            className={styles.featuredLargeFrame}
+            href="/works"
+            aria-label="View Photography works"
+            onPointerMove={handlePolaroidPointerMove}
+          >
+            <span className={styles.featuredLargeViewport} aria-hidden="true">
+              <picture className={styles.featuredLargePicture}>
+                <source
+                  media="(max-width: 640px)"
+                  srcSet={`${polaroidAssetPath}/featured-05-mobile.jpg`}
+                />
+                <img
+                  src={`${polaroidAssetPath}/featured-05.jpg`}
+                  alt=""
+                  className={styles.featuredLargeImage}
+                  draggable={false}
+                />
+              </picture>
+            </span>
+            <picture className={styles.featuredLargeFrameImage}>
               <source
                 media="(max-width: 640px)"
-                srcSet={`${polaroidAssetPath}/featured-05-mobile.jpg`}
+                srcSet={`${polaroidAssetPath}/polaroid-paper-blank-mobile.svg`}
               />
               <img
-                src={`${polaroidAssetPath}/featured-05.jpg`}
+                src={`${polaroidAssetPath}/polaroid-paper-blank-large.svg`}
                 alt=""
-                className={styles.featuredLargeImage}
                 draggable={false}
               />
             </picture>
-          </span>
-          <picture className={styles.featuredLargeFrameImage}>
-            <source
-              media="(max-width: 640px)"
-              srcSet={`${polaroidAssetPath}/polaroid-paper-blank-mobile.svg`}
-            />
-            <img
-              src={`${polaroidAssetPath}/polaroid-paper-blank-large.svg`}
-              alt=""
-              draggable={false}
-            />
-          </picture>
-          <span className={styles.featuredLargeSurfaceShadow} aria-hidden="true" />
-          <span className={styles.featuredLargeStrip}>
-            <span>Photography</span>
-            <span>2026</span>
-          </span>
-          <ViewMoreWorksCue />
-        </Link>
+            <span className={styles.featuredLargeSurfaceShadow} aria-hidden="true" />
+            <span className={styles.featuredLargeStrip}>
+              <span>Photography</span>
+              <span>2026</span>
+            </span>
+            <ViewMoreWorksCue />
+          </Link>
 
-        <Link className={styles.viewMoreLink} href="/works" aria-label="View more works">
-          <span className={styles.viewMoreText}>view more</span>
-          <svg
-            className={styles.viewMoreArrow}
-            viewBox="0 0 64 28"
-            aria-hidden="true"
-          >
-            <path d="M4 14H54" />
-            <path d="M44 5 56 14 44 23" />
-          </svg>
-        </Link>
+          <Link className={styles.viewMoreLink} href="/works" aria-label="View more works">
+            <span className={styles.viewMoreText}>
+             view
+             <br />
+              more
+            </span>
+            <svg
+              className={styles.viewMoreArrow}
+              viewBox="0 0 64 28"
+              aria-hidden="true"
+            >
+              <path d="M4 14H54" />
+              <path d="M44 5 56 14 44 23" />
+            </svg>
+          </Link>
+        </div>
       </div>
 
       <section className={styles.profileSection} aria-labelledby="home-profile-title">
