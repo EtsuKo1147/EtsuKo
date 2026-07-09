@@ -26,6 +26,19 @@ const stampPhotoAssets = [
   `${worksCameraAssetPath}/stamp-photo-05.svg`,
 ]
 
+const stampHintCharacters = [
+  { char: 'カ', x: -5.15, y: 1.8, rotate: -20, swingA: -4, swingB: 6, delay: 0 },
+  { char: 'メ', x: -4.03, y: 1.2, rotate: -11, swingA: 5, swingB: -5, delay: 140 },
+  { char: 'ラ', x: -2.88, y: 0.72, rotate: -10, swingA: -3, swingB: 7, delay: 60 },
+  { char: 'を', x: -1.62, y: 0.46, rotate: -2, swingA: 6, swingB: -4, delay: 210 },
+  { char: '押', x: -0.28, y: 0.34, rotate: 1, swingA: -5, swingB: 5, delay: 100 },
+  { char: 'し', x: 1.02, y: 0.42, rotate: 5, swingA: 4, swingB: -6, delay: 260 },
+  { char: 'て', x: 2.22, y: 0.66, rotate: 5, swingA: -7, swingB: 3, delay: 40 },
+  { char: 'み', x: 3.28, y: 1.06, rotate: 14, swingA: 5, swingB: -5, delay: 180 },
+  { char: 'て', x: 4.2, y: 1.58, rotate: 15, swingA: -4, swingB: 6, delay: 90 },
+  { char: '！', x: 5.0, y: 2.16, rotate: 26, swingA: 6, swingB: -4, delay: 230 },
+]
+
 type StampPhoto = {
   id: number
   src: string
@@ -133,10 +146,13 @@ export default function HomeMinimalIndex() {
   const [featuredBoardStep, setFeaturedBoardStep] = useState(0)
   const [isWorksStampCameraVisible, setIsWorksStampCameraVisible] = useState(false)
   const [isWorksStampCameraPressed, setIsWorksStampCameraPressed] = useState(false)
+  const [isWorksStampHintActive, setIsWorksStampHintActive] = useState(false)
   const [stampPhotos, setStampPhotos] = useState<StampPhoto[]>([])
+  const worksStampZoneRef = useRef<HTMLDivElement>(null)
   const polaroidHeroRef = useRef<HTMLDivElement>(null)
   const featuredBoardRef = useRef<HTMLDivElement>(null)
   const stampPhotoIdRef = useRef(0)
+  const hasShownWorksStampHintRef = useRef(false)
   const profile = profileCopy[profileLanguage]
   const activeCategory = polaroidCategories[activeCategoryIndex]
   const featuredBoardStepClass =
@@ -203,6 +219,8 @@ export default function HomeMinimalIndex() {
       return
     }
 
+    setIsWorksStampHintActive(false)
+
     setIsWorksStampCameraPressed(true)
 
     const clickedInteractiveElement =
@@ -224,7 +242,7 @@ export default function HomeMinimalIndex() {
     }
 
     stampPhotoIdRef.current += 1
-    setStampPhotos((currentPhotos) => [...currentPhotos, nextPhoto].slice(-6))
+    setStampPhotos((currentPhotos) => [...currentPhotos, nextPhoto].slice(-10))
   }
 
   const handleWorksStampPointerUp = () => {
@@ -235,6 +253,37 @@ export default function HomeMinimalIndex() {
     setIsWorksStampCameraVisible(false)
     setIsWorksStampCameraPressed(false)
   }
+
+  useEffect(() => {
+    const zone = worksStampZoneRef.current
+
+    if (!zone) {
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting || hasShownWorksStampHintRef.current) {
+          return
+        }
+
+        hasShownWorksStampHintRef.current = true
+        setIsWorksStampHintActive(true)
+
+        observer.disconnect()
+      },
+      {
+        rootMargin: '-18% 0px -18% 0px',
+        threshold: 0.22,
+      },
+    )
+
+    observer.observe(zone)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
 
   useEffect(() => {
     const polaroidHero = polaroidHeroRef.current
@@ -388,6 +437,7 @@ export default function HomeMinimalIndex() {
         aria-labelledby="home-work-index-title"
       >
         <div
+          ref={worksStampZoneRef}
           className={styles.worksStampZone}
           onPointerEnter={handleWorksStampPointerEnter}
           onPointerMove={handleWorksStampPointerMove}
@@ -427,6 +477,40 @@ export default function HomeMinimalIndex() {
               .join(' ')}
             aria-hidden="true"
           >
+            {isWorksStampHintActive && (
+              <span className={styles.worksStampHint}>
+                {stampHintCharacters.map((item, index) => (
+                  <span
+                    className={styles.worksStampHintChar}
+                    key={`${item.char}-${index}`}
+                    style={
+                      {
+                        '--stamp-hint-index': index,
+                        '--stamp-hint-x': `${item.x}em`,
+                        '--stamp-hint-y': `${item.y}em`,
+                        '--stamp-hint-rotate': `${item.rotate}deg`,
+                        '--stamp-hint-wiggle-a': `${item.swingA}deg`,
+                        '--stamp-hint-wiggle-b': `${item.swingB}deg`,
+                        '--stamp-hint-wiggle-delay': `${item.delay}ms`,
+                      } as CSSProperties
+                    }
+                  >
+                    <span className={styles.worksStampHintGlyph}>
+                      {item.char === '押' ? (
+                        <img
+                          src={`${worksCameraAssetPath}/stamp-hint-osu.svg`}
+                          alt=""
+                          className={styles.worksStampHintOsu}
+                          draggable={false}
+                        />
+                      ) : (
+                        item.char
+                      )}
+                    </span>
+                  </span>
+                ))}
+              </span>
+            )}
             <img
               src={`${worksCameraAssetPath}/stamp-camera-idle-back.svg`}
               alt=""

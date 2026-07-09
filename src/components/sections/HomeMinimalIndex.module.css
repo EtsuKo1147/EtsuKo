@@ -147,7 +147,7 @@
   transform: translate(-28%, -62%) scale(0.96);
 }
 
-.worksStampCamera img {
+.worksStampCamera > img {
   position: absolute;
   inset: 0;
   display: block;
@@ -156,6 +156,53 @@
   pointer-events: none;
   user-select: none;
   transition: none;
+}
+
+.worksStampHint {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% - clamp(8px, 0.7vw, 14px));
+  z-index: 4;
+  display: block;
+  width: 12.5em;
+  height: 3em;
+  color: var(--home-text-color);
+  font-family: 'Mini Wakuwaku Maru', 'WadaLabChuMaruGo2004P', Arial, sans-serif;
+  font-size: clamp(0.92rem, 1.55vw, 1.42rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+  pointer-events: none;
+  user-select: none;
+  transform: translateX(-50%);
+}
+
+.worksStampHintChar {
+  position: absolute;
+  left: calc(50% + var(--stamp-hint-x, 0em));
+  top: var(--stamp-hint-y, 0em);
+  display: block;
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(var(--stamp-hint-rotate, 0deg));
+  transform-origin: center;
+  animation: worksStampHintAppear 1ms steps(1, end) forwards;
+  animation-delay: calc(var(--stamp-hint-index, 0) * 100ms);
+}
+
+.worksStampHintGlyph {
+  display: block;
+  transform-origin: center;
+  animation: worksStampHintWiggle 980ms steps(1, end) infinite;
+  animation-delay: calc(1000ms + var(--stamp-hint-wiggle-delay, 0ms));
+}
+
+.worksStampHintOsu {
+  display: block;
+  width: auto;
+  height: 1.08em;
+  filter: var(--home-doodle-filter);
+  pointer-events: none;
+  user-select: none;
 }
 
 .worksStampCameraIdle {
@@ -222,6 +269,24 @@
       )
       rotate(var(--stamp-photo-rotate, 0deg))
       scale(var(--stamp-photo-scale, 1));
+  }
+}
+
+@keyframes worksStampHintAppear {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes worksStampHintWiggle {
+  0%,
+  49.99% {
+    transform: rotate(var(--stamp-hint-wiggle-a, -5deg));
+  }
+
+  50%,
+  100% {
+    transform: rotate(var(--stamp-hint-wiggle-b, 5deg));
   }
 }
 
