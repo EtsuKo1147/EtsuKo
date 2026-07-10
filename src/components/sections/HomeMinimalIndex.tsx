@@ -54,18 +54,22 @@ const polaroidCategories = [
   {
     label: 'Branding',
     image: `${polaroidAssetPath}/work-branding.jpg`,
+    href: '/works?category=branding',
   },
   {
     label: 'Illustration',
     image: `${polaroidAssetPath}/work-illustration.jpg`,
+    href: '/works?category=illustration',
   },
   {
     label: 'Web',
     image: `${polaroidAssetPath}/work-web.jpg`,
+    href: '/works?category=web',
   },
   {
     label: 'Photography',
     image: `${polaroidAssetPath}/work-photography.jpg`,
+    href: '/works?category=photography',
   },
 ]
 
@@ -143,6 +147,7 @@ export default function HomeMinimalIndex() {
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(0)
   const [isWorkCueActive, setIsWorkCueActive] = useState(false)
   const [isFeaturedBoardActive, setIsFeaturedBoardActive] = useState(false)
+  const [isFeaturedLargeViewMoreActive, setIsFeaturedLargeViewMoreActive] = useState(false)
   const [featuredBoardStep, setFeaturedBoardStep] = useState(0)
   const [isWorksStampCameraVisible, setIsWorksStampCameraVisible] = useState(false)
   const [isWorksStampCameraPressed, setIsWorksStampCameraPressed] = useState(false)
@@ -151,8 +156,10 @@ export default function HomeMinimalIndex() {
   const worksStampZoneRef = useRef<HTMLDivElement>(null)
   const polaroidHeroRef = useRef<HTMLDivElement>(null)
   const featuredBoardRef = useRef<HTMLDivElement>(null)
+  const featuredLargeStackRef = useRef<HTMLDivElement>(null)
   const stampPhotoIdRef = useRef(0)
   const hasShownWorksStampHintRef = useRef(false)
+  const hasDismissedWorksStampHintRef = useRef(false)
   const profile = profileCopy[profileLanguage]
   const activeCategory = polaroidCategories[activeCategoryIndex]
   const featuredBoardStepClass =
@@ -173,6 +180,9 @@ export default function HomeMinimalIndex() {
     )
   }
 
+  const isWorksStampExcludedTarget = (target: EventTarget | null) =>
+    target instanceof Element && Boolean(target.closest('a, button, [data-works-stamp-exclude]'))
+
   const updateWorksStampCursor = (event: PointerEvent<HTMLDivElement>) => {
     if (event.pointerType !== 'mouse') {
       return null
@@ -191,14 +201,30 @@ export default function HomeMinimalIndex() {
   }
 
   const handleWorksStampPointerEnter = (event: PointerEvent<HTMLDivElement>) => {
+    if (isWorksStampExcludedTarget(event.target)) {
+      setIsWorksStampCameraVisible(false)
+      setIsWorksStampCameraPressed(false)
+      return
+    }
+
     if (!updateWorksStampCursor(event)) {
       return
     }
 
     setIsWorksStampCameraVisible(true)
+
+    if (!hasDismissedWorksStampHintRef.current) {
+      setIsWorksStampHintActive(true)
+    }
   }
 
   const handleWorksStampPointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    if (isWorksStampExcludedTarget(event.target)) {
+      setIsWorksStampCameraVisible(false)
+      setIsWorksStampCameraPressed(false)
+      return
+    }
+
     if (!updateWorksStampCursor(event)) {
       return
     }
@@ -206,10 +232,20 @@ export default function HomeMinimalIndex() {
     if (!isWorksStampCameraVisible) {
       setIsWorksStampCameraVisible(true)
     }
+
+    if (!hasDismissedWorksStampHintRef.current && !isWorksStampHintActive) {
+      setIsWorksStampHintActive(true)
+    }
   }
 
   const handleWorksStampPointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (event.button !== 0) {
+      return
+    }
+
+    if (isWorksStampExcludedTarget(event.target)) {
+      setIsWorksStampCameraVisible(false)
+      setIsWorksStampCameraPressed(false)
       return
     }
 
@@ -219,16 +255,10 @@ export default function HomeMinimalIndex() {
       return
     }
 
+    hasDismissedWorksStampHintRef.current = true
     setIsWorksStampHintActive(false)
 
     setIsWorksStampCameraPressed(true)
-
-    const clickedInteractiveElement =
-      event.target instanceof Element && event.target.closest('a, button')
-
-    if (clickedInteractiveElement) {
-      return
-    }
 
     const nextPhoto: StampPhoto = {
       id: stampPhotoIdRef.current,
@@ -263,7 +293,11 @@ export default function HomeMinimalIndex() {
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting || hasShownWorksStampHintRef.current) {
+        if (
+          !entry.isIntersecting
+          || hasShownWorksStampHintRef.current
+          || hasDismissedWorksStampHintRef.current
+        ) {
           return
         }
 
@@ -422,10 +456,52 @@ export default function HomeMinimalIndex() {
     }
   }, [])
 
+  useEffect(() => {
+    const featuredLargeStack = featuredLargeStackRef.current
+
+    if (!featuredLargeStack) {
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) {
+          return
+        }
+
+        setIsFeaturedLargeViewMoreActive(true)
+        observer.disconnect()
+      },
+      {
+        rootMargin: '-24% 0px -18% 0px',
+        threshold: 0.18,
+      },
+    )
+
+    observer.observe(featuredLargeStack)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
+
   const featuredBoardClassName = [
     styles.featuredBoard,
     isFeaturedBoardActive ? styles.featuredBoardActive : '',
     featuredBoardStepClass,
+  ]
+    .filter(Boolean)
+    .join(' ')
+
+  const featuredLargeStackClassName = [
+    styles.featuredLargeStack,
+    isFeaturedLargeViewMoreActive ? styles.featuredLargeViewMoreActive : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+  const worksStampZoneClassName = [
+    styles.worksStampZone,
+    isWorksStampCameraVisible ? styles.worksStampZoneCameraActive : '',
   ]
     .filter(Boolean)
     .join(' ')
@@ -438,7 +514,7 @@ export default function HomeMinimalIndex() {
       >
         <div
           ref={worksStampZoneRef}
-          className={styles.worksStampZone}
+          className={worksStampZoneClassName}
           onPointerEnter={handleWorksStampPointerEnter}
           onPointerMove={handleWorksStampPointerMove}
           onPointerDown={handleWorksStampPointerDown}
@@ -612,7 +688,7 @@ export default function HomeMinimalIndex() {
             <nav className={styles.polaroidCategories} aria-label="Work categories">
               {polaroidCategories.map((category, index) => (
                 <Link
-                  href="/works"
+                  href={category.href}
                   key={category.label}
                   className={category.label === activeCategory.label ? styles.activeCategory : ''}
                   onMouseEnter={() => setActiveCategoryIndex(index)}
@@ -623,100 +699,103 @@ export default function HomeMinimalIndex() {
               ))}
             </nav>
           </div>
-        </div>
 
-        <div
-          ref={featuredBoardRef}
-          className={featuredBoardClassName}
-        >
-          {featuredPolaroids.map((work) => (
-            <article className={styles.featuredItem} key={work.title}>
-              <div className={styles.featuredCopy}>
-                <span className={styles.featuredGhost}>{work.ghost}</span>
-                <h3 className={styles.featuredTitle}>{work.title}</h3>
-                <p className={styles.featuredRole}>{work.role}</p>
-                <span className={styles.featuredYear}>{work.year}</span>
-              </div>
-
-              <Link
-                href={work.href}
-                className={styles.featuredPhoto}
-                aria-label={`View ${work.title}`}
-                onPointerMove={handlePolaroidPointerMove}
-              >
-                <span className={styles.featuredShell} aria-hidden="true" />
-                <img
-                  src={work.image}
-                  alt=""
-                  className={styles.featuredImage}
-                  draggable={false}
-                />
-                <span className={styles.paperSurfaceShadow} aria-hidden="true" />
-                <span className={styles.featuredStrip}>
-                  <span>{work.title}</span>
-                  <span>{work.year}</span>
-                </span>
-                <ViewMoreWorksCue />
-              </Link>
-            </article>
-          ))}
-        </div>
-
-        <div className={styles.featuredLargeStack}>
-          <Link
-            className={styles.featuredLargeFrame}
-            href="/works"
-            aria-label="View Photography works"
-            onPointerMove={handlePolaroidPointerMove}
+          <div
+            ref={featuredBoardRef}
+            className={featuredBoardClassName}
           >
-            <span className={styles.featuredLargeViewport} aria-hidden="true">
-              <picture className={styles.featuredLargePicture}>
+            {featuredPolaroids.map((work) => (
+              <article className={styles.featuredItem} key={work.title}>
+                <div className={styles.featuredCopy}>
+                  <span className={styles.featuredGhost}>{work.ghost}</span>
+                  <h3 className={styles.featuredTitle}>{work.title}</h3>
+                  <p className={styles.featuredRole}>{work.role}</p>
+                  <span className={styles.featuredYear}>{work.year}</span>
+                </div>
+
+                <Link
+                  href={work.href}
+                  className={styles.featuredPhoto}
+                  aria-label={`View ${work.title}`}
+                  onPointerMove={handlePolaroidPointerMove}
+                >
+                  <span className={styles.featuredShell} aria-hidden="true" />
+                  <img
+                    src={work.image}
+                    alt=""
+                    className={styles.featuredImage}
+                    draggable={false}
+                  />
+                  <span className={styles.paperSurfaceShadow} aria-hidden="true" />
+                  <span className={styles.featuredStrip}>
+                    <span>{work.title}</span>
+                    <span>{work.year}</span>
+                  </span>
+                  <ViewMoreWorksCue />
+                </Link>
+              </article>
+            ))}
+          </div>
+
+          <div
+            ref={featuredLargeStackRef}
+            className={featuredLargeStackClassName}
+          >
+            <Link
+              className={styles.featuredLargeFrame}
+              href="/works"
+              aria-label="View Photography works"
+              onPointerMove={handlePolaroidPointerMove}
+            >
+              <span className={styles.featuredLargeViewport} aria-hidden="true">
+                <picture className={styles.featuredLargePicture}>
+                  <source
+                    media="(max-width: 640px)"
+                    srcSet={`${polaroidAssetPath}/featured-05-mobile.jpg`}
+                  />
+                  <img
+                    src={`${polaroidAssetPath}/featured-05.jpg`}
+                    alt=""
+                    className={styles.featuredLargeImage}
+                    draggable={false}
+                  />
+                </picture>
+              </span>
+              <picture className={styles.featuredLargeFrameImage}>
                 <source
                   media="(max-width: 640px)"
-                  srcSet={`${polaroidAssetPath}/featured-05-mobile.jpg`}
+                  srcSet={`${polaroidAssetPath}/polaroid-paper-blank-mobile.svg`}
                 />
                 <img
-                  src={`${polaroidAssetPath}/featured-05.jpg`}
+                  src={`${polaroidAssetPath}/polaroid-paper-blank-large.svg`}
                   alt=""
-                  className={styles.featuredLargeImage}
                   draggable={false}
                 />
               </picture>
-            </span>
-            <picture className={styles.featuredLargeFrameImage}>
-              <source
-                media="(max-width: 640px)"
-                srcSet={`${polaroidAssetPath}/polaroid-paper-blank-mobile.svg`}
-              />
-              <img
-                src={`${polaroidAssetPath}/polaroid-paper-blank-large.svg`}
-                alt=""
-                draggable={false}
-              />
-            </picture>
-            <span className={styles.featuredLargeSurfaceShadow} aria-hidden="true" />
-            <span className={styles.featuredLargeStrip}>
-              <span>Photography</span>
-              <span>2026</span>
-            </span>
-            <ViewMoreWorksCue />
-          </Link>
+              <span className={styles.featuredLargeSurfaceShadow} aria-hidden="true" />
+              <span className={styles.featuredLargeStrip}>
+                <span>Photography</span>
+                <span>2026</span>
+              </span>
+              <ViewMoreWorksCue />
+            </Link>
 
-          <Link className={styles.viewMoreLink} href="/works" aria-label="View more works">
-            <span className={styles.viewMoreText}>
-             view
-             <br />
-              more
-            </span>
-            <svg
-              className={styles.viewMoreArrow}
-              viewBox="0 0 64 28"
-              aria-hidden="true"
-            >
-              <path d="M4 14H54" />
-              <path d="M44 5 56 14 44 23" />
-            </svg>
-          </Link>
+            <Link className={styles.viewMoreLink} href="/works" aria-label="View more works">
+              <span className={styles.viewMoreText}>
+               view
+               <br />
+                more
+              </span>
+              <svg
+                className={styles.viewMoreArrow}
+                viewBox="0 0 64 28"
+                aria-hidden="true"
+              >
+                <path d="M4 14H54" />
+                <path d="M44 5 56 14 44 23" />
+              </svg>
+            </Link>
+          </div>
         </div>
       </div>
 

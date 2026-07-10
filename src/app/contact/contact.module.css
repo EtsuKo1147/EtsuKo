@@ -137,12 +137,12 @@
   display: grid;
   justify-items: center;
   margin-bottom: clamp(30px, 5vw, 72px);
-  padding: 0 0 clamp(28px, 4vw, 58px);
+  padding: clamp(18px, 2.4vw, 42px) 0 clamp(28px, 4vw, 58px);
   text-align: center;
 }
 
 .directMailDoodle {
-  width: min(300px, 42vw);
+  width: min(460px, 54vw);
   height: auto;
   display: block;
   filter: var(--contact-doodle-filter);
@@ -151,9 +151,10 @@
 }
 
 .directMailTitle {
-  margin: clamp(18px, 3vw, 34px) 0 0;
+  margin: clamp(26px, 4vw, 56px) 0 0;
   color: var(--contact-text);
-  font-size: clamp(2.2rem, 5vw, 5rem);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: clamp(2.5rem, 5.8vw, 5.8rem);
   font-weight: 400;
   line-height: 0.9;
   letter-spacing: 0.04em;
@@ -163,14 +164,17 @@
 .directMailLink {
   position: relative;
   display: inline-block;
-  margin-top: clamp(18px, 2.3vw, 30px);
+  margin-top: clamp(24px, 2.4vw, 32px);
   padding-bottom: 12px;
   color: rgba(var(--contact-text-rgb), 0.76);
-  font-size: clamp(1rem, 1.45vw, 2rem);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: clamp(1.25rem, 1.65vw, 2.5rem);
   font-weight: 500;
   line-height: 1;
   letter-spacing: 0.02em;
   text-decoration: none;
+  transform: translateY(0) scale(1);
+  transform-origin: center;
   transition:
     color 180ms ease,
     transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -190,6 +194,12 @@
     var(--direct-mail-underline-color) 0 7px,
     transparent 7px 13px
   );
+  transform: scaleX(1);
+  transform-origin: center;
+  transition:
+    background-image 180ms ease,
+    opacity 180ms ease,
+    transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .directMailLink:hover,
@@ -202,6 +212,18 @@
 .directMailLink:hover::after,
 .directMailLink:focus-visible::after {
   --direct-mail-underline-color: #ff840a;
+
+  opacity: 0.9;
+  transform: scaleX(1.08);
+}
+
+.directMailLink:active {
+  color: #ff5a0a;
+  transform: translateY(1px) scale(0.98);
+}
+
+.directMailLink:active::after {
+  --direct-mail-underline-color: #ff5a0a;
 }
 
 .contactForm {
@@ -367,13 +389,13 @@
   }
 
   .contactShell {
-    padding-top: 28px;
+    padding-top: 92px;
     padding-right: 16px;
     padding-left: 16px;
   }
 
   .directMailDoodle {
-    width: min(220px, 58vw);
+    width: min(310px, 70vw);
   }
 
   .contactForm {

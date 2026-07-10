@@ -6,7 +6,7 @@
   --profile-doodle-filter: none;
 
   min-height: 100svh;
-  padding: clamp(18px, 2vw, 48px) clamp(18px, 4.8vw, 76px)
+  padding: clamp(10px, 1.2vw, 24px) clamp(18px, 4.8vw, 76px)
     clamp(72px, 10vw, 128px);
   color: var(--profile-text);
   background:
@@ -81,7 +81,7 @@
   grid-template-columns: minmax(0, 1fr) minmax(320px, 48ch);
   align-items: start;
   gap: clamp(22px, 4vw, 72px);
-  margin-bottom: clamp(42px, 6vw, 88px);
+  margin-bottom: clamp(8px, 1vw, 18px);
 }
 
 .eyebrow,
@@ -114,8 +114,9 @@
 }
 
 .profileLead {
+  grid-column: 2;
   max-width: 48ch;
-  margin: clamp(210px, 11vw, 270px) 0 0;
+  margin: clamp(18px, 2vw, 38px) 0 0;
   color: var(--profile-text);
   font-size: clamp(0.86rem, 0.95vw, 1rem);
   font-weight: 600;
@@ -128,7 +129,7 @@
 }
 
 .profileArcade {
-  margin-top: clamp(34px, 4.4vw, 68px);
+  margin-top: 0;
 }
 
 .profileStage {
@@ -136,7 +137,7 @@
   min-height: clamp(560px, 58vw, 860px);
   display: flex;
   justify-content: flex-end;
-  align-items: flex-end;
+  align-items: flex-start;
 }
 
 .profileCharacter {
@@ -144,7 +145,7 @@
   left: clamp(-28px, 2.2vw, 34px);
   bottom: clamp(116px, 12vw, 176px);
   z-index: 0;
-  width: min(520px, 35vw);
+  width: min(600px, 40vw);
   height: auto;
   display: block;
   filter: var(--profile-doodle-filter);
@@ -305,7 +306,7 @@
   .profileCharacter {
     left: clamp(-42px, -2vw, -14px);
     bottom: clamp(78px, 14vw, 126px);
-    width: min(300px, 36vw);
+    width: min(340px, 40vw);
     transform: rotate(-5deg);
   }
 
@@ -321,7 +322,7 @@
 
 @media (max-width: 640px) {
   .page {
-    padding-top: 28px;
+    padding-top: 92px;
     padding-right: 16px;
     padding-left: 16px;
   }
@@ -352,7 +353,7 @@
     bottom: auto;
     z-index: 0;
     justify-self: end;
-    width: min(380px, 75vw);
+    width: min(430px, 82vw);
     margin: clamp(-10px, -2vw, 8px) clamp(-60px, -10vw, 12px)
       clamp(-30px, -16vw, -48px) 0;
     transform: rotate(-16deg);

@@ -21,11 +21,7 @@ export default function ProfileView() {
         onClick={() => setIsInverted((currentValue) => !currentValue)}
       />
 
-      <section className={styles.header} aria-labelledby="profile-title">
-        <p className={styles.eyebrow}>Selected profile</p>
-        <h1 id="profile-title" className={styles.title}>
-          Profile
-        </h1>
+      <section className={styles.header} aria-label="Profile">
         <p
           className={`${styles.profileLead} ${
             profileLanguage === 'jp' ? styles.profileJapanese : ''

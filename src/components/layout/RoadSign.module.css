@@ -232,3 +232,120 @@
   pointer-events: none;
   user-select: none;
 }
+
+.simplePageNav {
+  position: fixed;
+  top: clamp(28px, 2.8vw, 54px);
+  right: clamp(18px, 1.7vw, 34px);
+  bottom: clamp(28px, 2.8vw, 54px);
+  z-index: 50;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+
+.simplePageNavList {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  min-height: min(760px, calc(100vh - clamp(56px, 5.6vw, 108px)));
+  pointer-events: auto;
+}
+
+.simplePageNavLink {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: max-content;
+  color: #363636;
+  font-family: var(--font-intel-mono), 'Courier New', monospace;
+  font-size: clamp(0.72rem, 0.78vw, 0.98rem);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.simplePageNavLink::before {
+  content: '';
+  display: block;
+  order: 2;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+}
+
+.simplePageNavLink::after {
+  content: '';
+  display: block;
+  order: 3;
+  width: 0;
+  height: 0;
+  margin-top: 5px;
+  border-right: 0.28em solid transparent;
+  border-left: 0.28em solid transparent;
+  border-bottom: 0.34em solid currentColor;
+  opacity: 0;
+}
+
+.simplePageNavLinkActive::after {
+  opacity: 1;
+}
+
+.simplePageNavLinkActive {
+  color: #F26A2F;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .simplePageNavLink:hover,
+  .simplePageNavLink:focus-visible {
+    outline: none;
+    color: #363636;
+  }
+
+  .simplePageNavLinkActive:hover,
+  .simplePageNavLinkActive:focus-visible {
+    color: #F26A2F;
+  }
+}
+
+@media (max-width: 768px) {
+  .simplePageNav {
+    top: 0;
+    right: 0;
+    bottom: auto;
+    left: 0;
+    justify-content: center;
+    padding: 24px 18px 10px;
+  }
+
+  .simplePageNavList {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    gap: clamp(22px, 7vw, 54px);
+    width: 100%;
+    min-height: 0;
+  }
+
+  .simplePageNavLink {
+    gap: 2px;
+    font-size: clamp(0.86rem, 3.2vw, 1.3rem);
+  }
+
+  .simplePageNavLink::before {
+    display: none;
+  }
+
+  .simplePageNavLink::after {
+    margin-top: 2px;
+    border-right-width: 0.24em;
+    border-left-width: 0.24em;
+    border-bottom-width: 0.28em;
+  }
+}

@@ -24,6 +24,12 @@ const ROAD_SIGN_BASE_SCALE = 1.45
 const ROAD_SIGN_MAX_SCALE = 1.45
 const ROAD_SIGN_MOBILE_SCALE = 0.55
 const ROAD_SIGN_SAFE_LEFT_MARGIN = 24
+const SIMPLE_NAV_ITEMS = [
+  { label: 'HOME', href: '/' },
+  { label: 'WORKS', href: '/works' },
+  { label: 'PROFILE', href: '/profile' },
+  { label: 'CONTACT', href: '/contact' },
+] as const
 
 function getRoadSignRightMargin(viewportWidth: number) {
   return Math.min(48, Math.max(16, viewportWidth * 0.022))
@@ -43,6 +49,10 @@ function getRoadSignScale(viewportWidth: number, viewportHeight: number) {
 
 export default function Header() {
   const pathname = usePathname()
+  const usesSimpleNav = pathname === '/works'
+    || pathname.startsWith('/works/')
+    || pathname === '/profile'
+    || pathname === '/contact'
   const asideRef = useRef<HTMLElement>(null)
   const navRef = useRef<HTMLElement>(null)
   const clockRef = useRef<HTMLDivElement>(null)
@@ -631,6 +641,32 @@ export default function Header() {
       clearCollapseControlTimer()
     }
   }, [])
+
+  if (usesSimpleNav) {
+    const activeHref = pathname.startsWith('/works') ? '/works' : pathname
+
+    return (
+      <aside className={styles.simplePageNav} aria-label="Main navigation">
+        <nav className={styles.simplePageNavList}>
+          {SIMPLE_NAV_ITEMS.map((item) => {
+            const isActive = activeHref === item.href
+
+            return (
+              <Link
+                key={item.href}
+                className={`${styles.simplePageNavLink} ${isActive ? styles.simplePageNavLinkActive : ''}`}
+                href={item.href}
+                aria-current={isActive ? 'page' : undefined}
+                onClick={item.href === '/' ? handleHomeClick : undefined}
+              >
+                {item.label}
+              </Link>
+            )
+          })}
+        </nav>
+      </aside>
+    )
+  }
 
   return (
     <aside ref={asideRef} className={styles.roadSign} aria-label="Main navigation">

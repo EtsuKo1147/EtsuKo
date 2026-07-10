@@ -18,14 +18,7 @@ export default function ContactView() {
         onClick={() => setIsInverted((currentValue) => !currentValue)}
       />
 
-      <section className={styles.contactShell} aria-labelledby="contact-title">
-        <div className={styles.contactHeader}>
-          <p className={styles.eyebrow}>Selected contact</p>
-          <h1 id="contact-title" className={styles.title}>
-            Contact
-          </h1>
-        </div>
-
+      <section className={styles.contactShell} aria-label="Contact">
         <section className={styles.directMailPanel} aria-labelledby="contact-direct-mail-title">
           <img
             src="/home/character-stage/doodles/character-6.svg"
