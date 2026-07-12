@@ -1,4 +1,18 @@
+@font-face {
+  font-family: 'Mini Wakuwaku Maru';
+  src: url('/fonts/mini-wakuwaku-maru.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 .page {
+  --works-page-pad-top: 44px;
+  --works-page-pad-x: 76px;
+  --works-page-pad-bottom: 128px;
+  --works-layout-width: 1600px;
+  --works-layout-gap: 86px;
+
   --works-bg: #faf9f6;
   --works-text: #363636;
   --works-text-rgb: 54, 54, 54;
@@ -8,7 +22,11 @@
   --works-orange: #F26A2F;
 
   min-height: 100vh;
-  padding: clamp(18px, 2vw, 44px) clamp(18px, 4.8vw, 76px) clamp(72px, 9vw, 128px);
+  padding:
+    clamp(18px, var(--works-page-pad-top), 44px)
+    clamp(18px, var(--works-page-pad-x), 76px)
+    clamp(72px, var(--works-page-pad-bottom), 128px);
+  overflow-x: hidden;
   color: var(--works-text);
   background: var(--works-bg);
   transition:
@@ -73,21 +91,21 @@
 .worksLayout {
   display: grid;
   grid-template-columns: minmax(280px, 34vw) minmax(0, 1fr);
-  gap: clamp(28px, 4.4vw, 86px);
-  width: min(1600px, 100%);
+  gap: clamp(28px, var(--works-layout-gap), 86px);
+  width: min(var(--works-layout-width), 100%);
   margin: 0 auto;
 }
 
 .worksRail {
   position: fixed;
-  top: clamp(18px, 2.4vw, 44px);
-  left: calc(clamp(18px, 4.8vw, 76px) + 100px);
+  top: clamp(18px, var(--works-rail-top, 44px), 44px);
+  left: calc(clamp(18px, var(--works-page-pad-x), 76px) + var(--works-rail-left-offset, 100px));
   z-index: 4;
   display: grid;
   justify-items: center;
-  gap: clamp(10px, 1.4vw, 24px);
-  width: min(420px, 34vw);
-  min-height: calc(100vh - clamp(36px, 4.8vw, 88px));
+  gap: clamp(10px, var(--works-rail-gap, 24px), 24px);
+  width: min(var(--works-rail-width, 420px), 34vw);
+  min-height: calc(100vh - clamp(36px, var(--works-rail-height-pad, 88px), 88px));
   padding-top: clamp(-2px, 1vw, -20px);
 }
 
@@ -96,8 +114,9 @@
 
   position: relative;
   justify-self: center;
-  width: min(420px, 100%);
+  width: min(var(--works-camera-width, 420px), 100%);
   aspect-ratio: 497.06 / 780;
+  pointer-events: none;
 }
 
 .cameraLayer {
@@ -137,7 +156,7 @@
   top: -5%;
   z-index: 7;
   display: block;
-  width: clamp(120px, 55%, 198px);
+  width: clamp(120px, var(--works-camera-ring-width, 198px), 198px);
   aspect-ratio: 1;
   color: var(--works-text);
   font-family: 'Courier New', Courier, monospace;
@@ -169,7 +188,7 @@
   z-index: 6;
   color: var(--works-orange);
   font-family: 'Mini Wakuwaku Maru', 'WadaLabChuMaruGo2004P', Arial, sans-serif;
-  font-size: clamp(0.9rem, 1.45vw, 1.45rem);
+  font-size: clamp(0.9rem, var(--works-category-label-size, 1.45rem), 1.45rem);
   font-weight: 800;
   line-height: 1;
   pointer-events: none;
@@ -204,11 +223,11 @@
   }
 
   62% {
-    transform: translateY(8px) scaleY(1.006);
+    transform: translateY(2px) scaleY(1.002);
   }
 
   82% {
-    transform: translateY(-3px) scaleY(0.998);
+    transform: translateY(-1px) scaleY(0.999);
   }
 
   100% {
@@ -272,18 +291,20 @@
   z-index: 5;
   color: var(--works-paper-text);
   font-family: var(--font-intel-mono), 'Courier New', monospace;
-  font-size: clamp(0.68rem, 0.95vw, 0.92rem);
+  font-size: clamp(0.68rem, var(--works-paper-caption-size, 0.92rem), 0.92rem);
   font-weight: 800;
   line-height: 1;
   letter-spacing: 0.02em;
 }
 
 .categoryNav {
+  position: relative;
+  z-index: 9;
   display: grid;
   justify-items: center;
-  gap: clamp(8px, 1.1vw, 14px);
+  gap: clamp(8px, var(--works-category-gap, 14px), 14px);
   width: 100%;
-  margin-top: clamp(2px, 6vw, 35px);
+  margin-top: clamp(2px, var(--works-category-margin-top, 35px), 35px);
 }
 
 .categoryNav button {
@@ -291,16 +312,18 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 0;
+  min-height: 1.25em;
+  padding: 0.08em 0.12em;
   border: 0;
   color: var(--works-text);
   background: transparent;
   font-family: 'Mini Wakuwaku Maru', 'WadaLabChuMaruGo2004P', Arial, sans-serif;
-  font-size: clamp(1.15rem, 1.9vw, 2.05rem);
+  font-size: clamp(1.15rem, var(--works-category-font-size, 2.05rem), 2.05rem);
   font-weight: 800;
   line-height: 1;
   letter-spacing: 0;
   cursor: pointer;
+  pointer-events: auto;
   transform: scale(1);
   transform-origin: 50% 50%;
   transition:
@@ -344,16 +367,17 @@
   grid-column: 2;
   grid-template-columns: repeat(2, minmax(260px, 1fr));
   align-content: start;
-  column-gap: clamp(22px, 3.4vw, 70px);
-  row-gap: clamp(46px, 5vw, 96px);
+  column-gap: clamp(22px, var(--works-display-column-gap, 70px), 70px);
+  row-gap: clamp(46px, var(--works-display-row-gap, 96px), 96px);
   min-height: 120vh;
-  padding: clamp(34px, 4.4vw, 82px) 0 clamp(72px, 8vw, 140px);
+  padding: clamp(34px, var(--works-display-pad-top, 82px), 82px) 0
+    clamp(72px, var(--works-display-pad-bottom, 140px), 140px);
 }
 
 .workPolaroid {
   position: relative;
   display: block;
-  width: min(420px, 100%);
+  width: min(var(--works-polaroid-width, 420px), 100%);
   aspect-ratio: 344.01 / 336.65;
   color: var(--works-paper-text);
   text-decoration: none;
@@ -373,7 +397,7 @@
 .workPolaroid:hover,
 .workPolaroid:focus-visible {
   outline: none;
-  transform: translate(var(--work-x, 0), calc(var(--work-y, 0) - 8px)) rotate(var(--work-rotate, 0deg));
+  transform: translate(var(--work-x, 0), calc(var(--work-y, 0) - var(--works-polaroid-hover-y, 8px))) rotate(var(--work-rotate, 0deg));
 }
 
 .workPaperViewport {
@@ -410,7 +434,7 @@
   gap: 12px;
   color: var(--works-paper-text);
   font-family: var(--font-intel-mono), 'Courier New', monospace;
-  font-size: clamp(0.58rem, 0.74vw, 0.78rem);
+  font-size: clamp(0.58rem, var(--works-meta-font-size, 0.78rem), 0.78rem);
   font-weight: 700;
   line-height: 1.15;
   pointer-events: none;
@@ -491,19 +515,19 @@
     left: auto;
     z-index: 3;
     display: grid;
-    grid-template-columns: minmax(0, 55vw) minmax(126px, 1fr);
+    grid-template-columns: minmax(0, 49vw) minmax(142px, 1fr);
     align-items: center;
     justify-items: center;
-    gap: 8px;
+    column-gap: clamp(18px, 4.8vw, 30px);
     width: 100%;
     min-height: 0;
-    padding-top: 16px;
+    padding: 16px 0 0 clamp(18px, 5.2vw, 30px);
   }
 
   .cameraStage {
     justify-self: start;
-    width: min(56vw, 320px);
-    margin-left: -28px;
+    width: min(52vw, 300px);
+    margin-left: 0;
   }
 
   .cameraTextRing {
@@ -520,17 +544,21 @@
   }
 
   .categoryNav {
-    justify-self: end;
+    justify-self: start;
     align-self: center;
-    gap: clamp(8px, 2.5vw, 14px);
+    gap: clamp(9px, 2.8vw, 15px);
     width: auto;
     margin-top: 0;
-    padding-right: clamp(2px, 2vw, 10px);
+    padding-right: 0;
   }
 
   .categoryNav button {
-    gap: 6px;
-    font-size: clamp(1.12rem, 6vw, 2rem);
+    gap: 5px;
+    min-height: 1.28em;
+    padding: 0.08em 0.16em;
+    font-family: 'Mini Wakuwaku Maru', 'WadaLabChuMaruGo2004P', Arial, sans-serif;
+    font-size: clamp(1.06rem, 5.35vw, 1.78rem);
+    line-height: 1.03;
   }
 
   .categoryNav button:hover,
@@ -550,7 +578,19 @@
     transform: scale(1.08);
   }
 
+  .categoryNav .categoryActive:hover,
+  .categoryNav .categoryActive:focus-visible {
+    color: var(--works-orange);
+    transform: scale(1.08);
+  }
+
   .categoryNav .categoryActive::after {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .categoryNav .categoryActive:hover::after,
+  .categoryNav .categoryActive:focus-visible::after {
     opacity: 1;
     transform: translateX(0);
   }

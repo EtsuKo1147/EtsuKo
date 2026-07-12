@@ -53,6 +53,51 @@ Do not create a fragile animation that controls the whole page structure.
 
 The page structure should be stable first; animations should follow the page structure.
 
+## 3.1 Responsive implementation baseline rule
+
+For this portfolio and future website work, do not build a page that only looks correct on a 1920 screen.
+
+When a desktop design is based on `1920 × 1080`, use a continuous design-scale system for desktop and laptop adaptation.
+
+Default implementation approach:
+
+1. Establish a design baseline, usually `1920 × 1080`.
+2. Compute or define a shared scale value from the current viewport relative to that baseline.
+3. Clamp the scale so desktop/laptop sizes shrink smoothly but do not become unreadably small.
+4. Expose scaled values through shared CSS variables or an equivalent local pattern.
+5. Apply those variables to the whole visual stage, not just one visible element.
+
+Elements that should usually share the same scale:
+
+- visual stage width
+- large images or illustration groups
+- cards and frames
+- decorative elements
+- section spacing
+- internal padding
+- side labels and small cards
+- arrows and icons
+- hover or entrance movement distances
+- scroll animation distances when they are tied to the visual stage
+
+Text rule:
+
+- Large display text can follow the design scale.
+- Body text and UI labels should keep readable min and max limits.
+- Do not make text too small just to preserve a perfect screenshot ratio.
+
+Breakpoint rule:
+
+- Avoid adding separate breakpoints just for 14-inch and 16-inch laptop sizes.
+- Use the continuous scale system for desktop and laptop widths.
+- Keep structural breakpoints for tablet/mobile when the layout genuinely needs to change.
+
+Implementation warning:
+
+- If one object still looks too large after adding the scale system, check whether its width, min-width, padding, text size, icon size, position, and hover transform all use the same scaled variables.
+- A common bug is scaling the main frame but leaving a side card or “view more” card on an old fixed clamp range.
+- Avoid CSS math that depends on unsupported multiplication like `calc(520px * var(--scale))`; prefer calculating pixel variables in TypeScript/JavaScript or using well-supported CSS formulas.
+
 ## 4. Default workflow
 
 When this skill is invoked, follow this order:

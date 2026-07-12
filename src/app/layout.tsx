@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Geist, Intel_One_Mono } from 'next/font/google'
 import Header from '@/components/layout/Header'
 import './globals.css'
@@ -17,6 +17,12 @@ const intelMono = Intel_One_Mono({
 export const metadata: Metadata = {
   title: 'Etsu — Portfolio',
   description: 'Designer & Developer portfolio',
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 }
 
 export default function RootLayout({

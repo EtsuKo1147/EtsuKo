@@ -2,17 +2,62 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { profileCopy, type ProfileLanguage } from '@/data/profile'
 import styles from './page.module.css'
 
 export default function ProfileView() {
   const [profileLanguage, setProfileLanguage] = useState<ProfileLanguage>('en')
   const [isInverted, setIsInverted] = useState(false)
+  const [designScale, setDesignScale] = useState(1)
   const profile = profileCopy[profileLanguage]
 
+  useEffect(() => {
+    const updateDesignScale = () => {
+      const widthScale = window.innerWidth / 1920
+      const heightScale = window.innerHeight / 1080
+      const nextScale = Math.max(0.78, Math.min(1, widthScale, heightScale))
+
+      setDesignScale(Math.round(nextScale * 1000) / 1000)
+    }
+
+    updateDesignScale()
+    window.addEventListener('resize', updateDesignScale)
+
+    return () => {
+      window.removeEventListener('resize', updateDesignScale)
+    }
+  }, [])
+
+  const scaledPx = (value: number) => `${Math.round(value * designScale * 10) / 10}px`
+  const pageScaleStyle = {
+    '--profile-page-pad-top': scaledPx(24),
+    '--profile-page-pad-x': scaledPx(76),
+    '--profile-page-pad-bottom': scaledPx(128),
+    '--profile-layout-width': scaledPx(1480),
+    '--profile-header-gap': scaledPx(72),
+    '--profile-header-margin-bottom': scaledPx(18),
+    '--profile-lead-margin-top': scaledPx(38),
+    '--profile-stage-min-height': scaledPx(860),
+    '--profile-character-left': scaledPx(34),
+    '--profile-character-bottom': scaledPx(176),
+    '--profile-character-width': scaledPx(600),
+    '--profile-console-width': scaledPx(980),
+    '--profile-console-margin': scaledPx(-76),
+    '--profile-list-gap': scaledPx(14),
+    '--profile-list-dt-size': scaledPx(18.9),
+    '--profile-list-dd-size': scaledPx(16.3),
+    '--profile-list-dd-jp-size': scaledPx(16),
+    '--profile-language-width': scaledPx(112),
+    '--profile-language-height': scaledPx(120),
+    '--profile-language-font-size': scaledPx(10.9),
+  } as CSSProperties
+
   return (
-    <main className={`${styles.page} ${isInverted ? styles.pageInverted : ''}`}>
+    <main
+      className={`${styles.page} ${isInverted ? styles.pageInverted : ''}`}
+      style={pageScaleStyle}
+    >
       <button
         type="button"
         className={styles.invertToggle}

@@ -2,14 +2,66 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import styles from './contact.module.css'
 
 export default function ContactView() {
   const [isInverted, setIsInverted] = useState(false)
+  const [designScale, setDesignScale] = useState(1)
+
+  useEffect(() => {
+    const updateDesignScale = () => {
+      const widthScale = window.innerWidth / 1920
+      const heightScale = window.innerHeight / 1080
+      const nextScale = Math.max(0.78, Math.min(1, widthScale, heightScale))
+
+      setDesignScale(Math.round(nextScale * 1000) / 1000)
+    }
+
+    updateDesignScale()
+    window.addEventListener('resize', updateDesignScale)
+
+    return () => {
+      window.removeEventListener('resize', updateDesignScale)
+    }
+  }, [])
+
+  const scaledPx = (value: number) => `${Math.round(value * designScale * 10) / 10}px`
+  const pageScaleStyle = {
+    '--contact-shell-width': scaledPx(1480),
+    '--contact-shell-pad-top': scaledPx(48),
+    '--contact-shell-pad-x': scaledPx(76),
+    '--contact-shell-pad-bottom': scaledPx(160),
+    '--contact-panel-margin-bottom': scaledPx(72),
+    '--contact-panel-pad-top': scaledPx(42),
+    '--contact-panel-pad-bottom': scaledPx(58),
+    '--contact-doodle-width': scaledPx(460),
+    '--contact-title-margin-top': scaledPx(56),
+    '--contact-title-size': scaledPx(92.8),
+    '--contact-link-margin-top': scaledPx(32),
+    '--contact-link-size': scaledPx(40),
+    '--contact-form-width': scaledPx(1120),
+    '--contact-form-gap': scaledPx(54),
+    '--contact-form-pad-top': scaledPx(40),
+    '--contact-field-gap': scaledPx(20),
+    '--contact-label-size': scaledPx(21.6),
+    '--contact-input-size': scaledPx(18.6),
+    '--contact-input-height': scaledPx(64),
+    '--contact-input-pad-x': scaledPx(32),
+    '--contact-textarea-height': scaledPx(300),
+    '--contact-textarea-pad-y': scaledPx(28),
+    '--contact-textarea-radius': scaledPx(38),
+    '--contact-note-margin-top': scaledPx(46),
+    '--contact-submit-width': scaledPx(340),
+    '--contact-submit-height': scaledPx(72),
+    '--contact-submit-size': scaledPx(20),
+  } as CSSProperties
 
   return (
-    <main className={`${styles.contactPage} ${isInverted ? styles.contactPageInverted : ''}`}>
+    <main
+      className={`${styles.contactPage} ${isInverted ? styles.contactPageInverted : ''}`}
+      style={pageScaleStyle}
+    >
       <button
         type="button"
         className={styles.invertToggle}

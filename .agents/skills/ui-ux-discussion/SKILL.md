@@ -62,6 +62,37 @@ Discuss:
 
 Technical planning is allowed, but code is not allowed.
 
+## 3.1 Responsive design baseline rule
+
+When discussing responsive behavior for this portfolio or any future website, do not default to breakpoint-only thinking.
+
+The preferred rule is:
+
+- Start from the design baseline size, usually `1920 × 1080` if the page was designed on a 1920 screen.
+- Treat large visual sections as a design stage, not as isolated elements.
+- When the screen becomes smaller, the whole visual stage should scale down continuously.
+- Avoid a page that only looks correct on 1920 and becomes visually too large, too crowded, or strangely spaced on 14-inch or 16-inch laptops.
+- Use breakpoints mainly for structural changes such as desktop to mobile, not for every laptop size.
+
+In design discussion, explain this as:
+
+- “这里不是给 14 寸单独写一套断点，而是要建立一套基于 1920 设计稿的连续比例系统。”
+- “视觉型元素要跟着同一套 scale 走，文字可以缩放但要保留可读下限。”
+- “作品区、hero 舞台、相纸、装饰元素、卡片位移、内部留白和 hover 位移都应该共享同一个比例规则。”
+
+Recommended strategy:
+
+- Visual stage elements: scale together.
+- Text: scale with min and max limits.
+- Spacing and motion distance: scale with the same stage ratio.
+- Mobile layout: may still use structural breakpoints, because mobile is not only a smaller desktop.
+
+Common mistake to call out:
+
+- Only scaling the main card while forgetting side cards, buttons, labels, padding, arrows, or hover offsets.
+- Using `vw` everywhere, which can make elements too large or too small at mid-sized laptop widths.
+- Treating 14-inch and 16-inch screens as separate designs instead of using one continuous scaling system.
+
 ## 4. Trigger examples
 
 Stay in this mode when the user says:

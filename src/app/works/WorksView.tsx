@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useMemo, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import Link from 'next/link'
 import { type Work, type WorkCategory } from '@/data/works'
 import styles from './page.module.css'
@@ -42,6 +42,7 @@ type WorksViewProps = {
 export default function WorksView({ works, initialCategory = 'all' }: WorksViewProps) {
   const [activeCategory, setActiveCategory] = useState<ActiveCategory>(initialCategory)
   const [isInverted, setIsInverted] = useState(false)
+  const [designScale, setDesignScale] = useState(1)
 
   const activeCategoryOption =
     categoryOptions.find((category) => category.slug === activeCategory) ?? categoryOptions[0]
@@ -55,8 +56,56 @@ export default function WorksView({ works, initialCategory = 'all' }: WorksViewP
     return filteredWorks.slice(0, 4)
   }, [activeCategory, works])
 
+  useEffect(() => {
+    const updateDesignScale = () => {
+      const widthScale = window.innerWidth / 1920
+      const heightScale = window.innerHeight / 1080
+      const nextScale = Math.max(0.78, Math.min(1, widthScale, heightScale))
+
+      setDesignScale(Math.round(nextScale * 1000) / 1000)
+    }
+
+    updateDesignScale()
+    window.addEventListener('resize', updateDesignScale)
+
+    return () => {
+      window.removeEventListener('resize', updateDesignScale)
+    }
+  }, [])
+
+  const scaledPx = (value: number) => `${Math.round(value * designScale * 10) / 10}px`
+  const pageScaleStyle = {
+    '--works-page-pad-top': scaledPx(44),
+    '--works-page-pad-x': scaledPx(76),
+    '--works-page-pad-bottom': scaledPx(128),
+    '--works-layout-width': scaledPx(1600),
+    '--works-layout-gap': scaledPx(86),
+    '--works-rail-top': scaledPx(44),
+    '--works-rail-left-offset': scaledPx(100),
+    '--works-rail-gap': scaledPx(18),
+    '--works-rail-width': scaledPx(382),
+    '--works-rail-height-pad': scaledPx(88),
+    '--works-camera-width': scaledPx(382),
+    '--works-camera-ring-width': scaledPx(180),
+    '--works-category-label-size': scaledPx(20),
+    '--works-paper-caption-size': scaledPx(12.8),
+    '--works-category-gap': scaledPx(11),
+    '--works-category-margin-top': scaledPx(24),
+    '--works-category-font-size': scaledPx(27),
+    '--works-display-column-gap': scaledPx(70),
+    '--works-display-row-gap': scaledPx(96),
+    '--works-display-pad-top': scaledPx(82),
+    '--works-display-pad-bottom': scaledPx(140),
+    '--works-polaroid-width': scaledPx(420),
+    '--works-polaroid-hover-y': scaledPx(8),
+    '--works-meta-font-size': scaledPx(12.5),
+  } as CSSProperties
+
   return (
-    <main className={`${styles.page} ${isInverted ? styles.pageInverted : ''}`}>
+    <main
+      className={`${styles.page} ${isInverted ? styles.pageInverted : ''}`}
+      style={pageScaleStyle}
+    >
       <button
         type="button"
         className={styles.invertToggle}
@@ -126,9 +175,9 @@ export default function WorksView({ works, initialCategory = 'all' }: WorksViewP
                 key={category.slug}
                 className={activeCategory === category.slug ? styles.categoryActive : undefined}
                 aria-pressed={activeCategory === category.slug}
-                onClick={() => setActiveCategory(category.slug)}
-                onFocus={() => setActiveCategory(category.slug)}
                 onMouseEnter={() => setActiveCategory(category.slug)}
+                onFocus={() => setActiveCategory(category.slug)}
+                onClick={() => setActiveCategory(category.slug)}
               >
                 <span>{category.label}</span>
               </button>
@@ -145,8 +194,8 @@ export default function WorksView({ works, initialCategory = 'all' }: WorksViewP
               style={
                 {
                   '--work-rotate': `${[-7, 2, -2, 8][index] ?? 0}deg`,
-                  '--work-x': `${[-18, 10, -4, 16][index] ?? 0}px`,
-                  '--work-y': `${[12, -8, 18, 28][index] ?? 0}px`,
+                  '--work-x': scaledPx([-18, 10, -4, 16][index] ?? 0),
+                  '--work-y': scaledPx([12, -8, 18, 28][index] ?? 0),
                 } as CSSProperties
               }
             >

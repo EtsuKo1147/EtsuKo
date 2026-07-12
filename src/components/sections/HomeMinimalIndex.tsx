@@ -153,6 +153,7 @@ export default function HomeMinimalIndex() {
   const [isWorksStampCameraPressed, setIsWorksStampCameraPressed] = useState(false)
   const [isWorksStampHintActive, setIsWorksStampHintActive] = useState(false)
   const [stampPhotos, setStampPhotos] = useState<StampPhoto[]>([])
+  const [homeDesignScale, setHomeDesignScale] = useState(1)
   const worksStampZoneRef = useRef<HTMLDivElement>(null)
   const polaroidHeroRef = useRef<HTMLDivElement>(null)
   const featuredBoardRef = useRef<HTMLDivElement>(null)
@@ -165,7 +166,24 @@ export default function HomeMinimalIndex() {
   const featuredBoardStepClass =
     featuredBoardStep > 0
       ? styles[`featuredBoardMobileStep${featuredBoardStep}` as keyof typeof styles]
-      : ''
+    : ''
+
+  useEffect(() => {
+    const updateHomeDesignScale = () => {
+      const widthScale = window.innerWidth / 1920
+      const heightScale = window.innerHeight / 1080
+      const nextScale = Math.max(0.78, Math.min(1, widthScale, heightScale))
+
+      setHomeDesignScale(Math.round(nextScale * 1000) / 1000)
+    }
+
+    updateHomeDesignScale()
+    window.addEventListener('resize', updateHomeDesignScale)
+
+    return () => {
+      window.removeEventListener('resize', updateHomeDesignScale)
+    }
+  }, [])
 
   const handlePolaroidPointerMove = (event: PointerEvent<HTMLAnchorElement>) => {
     const rect = event.currentTarget.getBoundingClientRect()
@@ -266,8 +284,8 @@ export default function HomeMinimalIndex() {
       x: point.x,
       y: point.y,
       rotate: Math.round((Math.random() * 30 - 15) * 10) / 10,
-      offsetX: Math.round(Math.random() * 44 - 22),
-      offsetY: Math.round(Math.random() * 36 - 18),
+      offsetX: Math.round((Math.random() * 44 - 22) * homeDesignScale),
+      offsetY: Math.round((Math.random() * 36 - 18) * homeDesignScale),
       scale: Math.round((0.9 + Math.random() * 0.16) * 100) / 100,
     }
 
@@ -495,6 +513,8 @@ export default function HomeMinimalIndex() {
 
   const featuredLargeStackClassName = [
     styles.featuredLargeStack,
+    isFeaturedBoardActive ? styles.featuredLargeDeckActive : '',
+    featuredBoardStepClass,
     isFeaturedLargeViewMoreActive ? styles.featuredLargeViewMoreActive : '',
   ]
     .filter(Boolean)
@@ -505,9 +525,97 @@ export default function HomeMinimalIndex() {
   ]
     .filter(Boolean)
     .join(' ')
+  const scaledPx = (value: number) => `${Math.round(value * homeDesignScale * 10) / 10}px`
+  const homeScaleStyle = {
+    '--home-layout-width': scaledPx(1480),
+    '--home-section-pad-x': scaledPx(76),
+    '--home-section-pad-top': scaledPx(150),
+    '--home-works-overhang': scaledPx(200),
+    '--home-polaroid-gap': scaledPx(112),
+    '--home-polaroid-min-height': scaledPx(780),
+    '--home-camera-stage-width': scaledPx(520),
+    '--home-stamp-photo-width': scaledPx(118),
+    '--home-stamp-camera-width': scaledPx(152),
+    '--home-stamp-hint-offset': scaledPx(14),
+    '--home-stamp-hint-font-size': scaledPx(22.7),
+    '--home-featured-row-min': scaledPx(360),
+    '--home-featured-row-gap': scaledPx(70),
+    '--home-featured-margin-top': scaledPx(122),
+    '--home-featured-item-min-height': scaledPx(650),
+    '--home-featured-item-y': scaledPx(170),
+    '--home-featured-copy-width': scaledPx(340),
+    '--home-featured-large-width': scaledPx(1020),
+    '--home-featured-large-margin': scaledPx(20),
+    '--home-featured-large-stack-x': scaledPx(-24),
+    '--home-featured-large-stack-y': scaledPx(-340),
+    '--home-featured-large-spread-x': scaledPx(-90),
+    '--home-view-more-right': scaledPx(-130),
+    '--home-view-more-bottom': scaledPx(64),
+    '--home-view-more-width': scaledPx(480),
+    '--home-view-more-gap': scaledPx(16),
+    '--home-view-more-pad-top': scaledPx(35),
+    '--home-view-more-pad-right': scaledPx(32),
+    '--home-view-more-pad-bottom': scaledPx(79),
+    '--home-view-more-pad-left': scaledPx(39),
+    '--home-view-more-text-size': scaledPx(27.5),
+    '--home-view-more-arrow-width': scaledPx(66),
+    '--home-view-more-hover-x': scaledPx(29),
+    '--home-profile-margin-top': scaledPx(210),
+    '--home-profile-stage-min-height': scaledPx(860),
+    '--home-profile-character-left': scaledPx(34),
+    '--home-profile-character-bottom': scaledPx(176),
+    '--home-profile-character-width': scaledPx(520),
+    '--home-profile-console-width': scaledPx(980),
+    '--home-profile-console-margin': scaledPx(-76),
+    '--home-contact-tail': scaledPx(680),
+    '--home-contact-margin-top': scaledPx(250),
+    '--home-direct-mail-doodle-width': scaledPx(520),
+    '--featured-copy-1-stack-x': scaledPx(180),
+    '--featured-copy-1-stack-y': scaledPx(18),
+    '--featured-copy-1-x': scaledPx(-130),
+    '--featured-copy-1-y': scaledPx(50),
+    '--featured-copy-1-title-x': scaledPx(-5),
+    '--featured-copy-1-title-y': scaledPx(-10),
+    '--featured-copy-1-role-x': scaledPx(-15),
+    '--featured-copy-1-role-y': scaledPx(46),
+    '--featured-copy-1-year-x': scaledPx(2),
+    '--featured-copy-1-year-y': scaledPx(100),
+    '--featured-copy-2-stack-x': scaledPx(-178),
+    '--featured-copy-2-stack-y': scaledPx(24),
+    '--featured-copy-2-x': scaledPx(180),
+    '--featured-copy-2-y': scaledPx(-64),
+    '--featured-copy-2-title-x': scaledPx(8),
+    '--featured-copy-2-role-x': scaledPx(-6),
+    '--featured-copy-2-role-y': scaledPx(42),
+    '--featured-copy-2-year-x': scaledPx(-25),
+    '--featured-copy-2-year-y': scaledPx(90),
+    '--featured-copy-3-stack-x': scaledPx(176),
+    '--featured-copy-3-stack-y': scaledPx(-18),
+    '--featured-copy-3-x': scaledPx(-200),
+    '--featured-copy-3-y': scaledPx(40),
+    '--featured-copy-3-title-x': scaledPx(-5),
+    '--featured-copy-3-title-y': scaledPx(-10),
+    '--featured-copy-3-role-x': scaledPx(-10),
+    '--featured-copy-3-role-y': scaledPx(50),
+    '--featured-copy-3-year-x': scaledPx(-4),
+    '--featured-copy-3-year-y': scaledPx(92),
+    '--featured-copy-4-stack-x': scaledPx(-170),
+    '--featured-copy-4-stack-y': scaledPx(-18),
+    '--featured-copy-4-x': scaledPx(220),
+    '--featured-copy-4-y': scaledPx(-20),
+    '--featured-copy-4-title-x': scaledPx(-10),
+    '--featured-copy-4-role-x': scaledPx(10),
+    '--featured-copy-4-role-y': scaledPx(54),
+    '--featured-copy-4-year-x': scaledPx(20),
+    '--featured-copy-4-year-y': scaledPx(96),
+  } as CSSProperties
 
   return (
-    <section className={styles.index} aria-labelledby="home-work-index-title">
+    <section
+      className={styles.index}
+      aria-labelledby="home-work-index-title"
+      style={homeScaleStyle}
+    >
       <div
         className={`${styles.worksPolaroid} ${isWorkCueActive ? styles.worksPolaroidCue : ''}`}
         aria-labelledby="home-work-index-title"
@@ -704,97 +812,97 @@ export default function HomeMinimalIndex() {
             ref={featuredBoardRef}
             className={featuredBoardClassName}
           >
-            {featuredPolaroids.map((work) => (
-              <article className={styles.featuredItem} key={work.title}>
-                <div className={styles.featuredCopy}>
-                  <span className={styles.featuredGhost}>{work.ghost}</span>
-                  <h3 className={styles.featuredTitle}>{work.title}</h3>
-                  <p className={styles.featuredRole}>{work.role}</p>
-                  <span className={styles.featuredYear}>{work.year}</span>
-                </div>
+              {featuredPolaroids.map((work) => (
+                <article className={styles.featuredItem} key={work.title}>
+                  <div className={styles.featuredCopy}>
+                    <span className={styles.featuredGhost}>{work.ghost}</span>
+                    <h3 className={styles.featuredTitle}>{work.title}</h3>
+                    <p className={styles.featuredRole}>{work.role}</p>
+                    <span className={styles.featuredYear}>{work.year}</span>
+                  </div>
 
-                <Link
-                  href={work.href}
-                  className={styles.featuredPhoto}
-                  aria-label={`View ${work.title}`}
-                  onPointerMove={handlePolaroidPointerMove}
-                >
-                  <span className={styles.featuredShell} aria-hidden="true" />
-                  <img
-                    src={work.image}
-                    alt=""
-                    className={styles.featuredImage}
-                    draggable={false}
-                  />
-                  <span className={styles.paperSurfaceShadow} aria-hidden="true" />
-                  <span className={styles.featuredStrip}>
-                    <span>{work.title}</span>
-                    <span>{work.year}</span>
-                  </span>
-                  <ViewMoreWorksCue />
-                </Link>
-              </article>
-            ))}
+                  <Link
+                    href={work.href}
+                    className={styles.featuredPhoto}
+                    aria-label={`View ${work.title}`}
+                    onPointerMove={handlePolaroidPointerMove}
+                  >
+                    <span className={styles.featuredShell} aria-hidden="true" />
+                    <img
+                      src={work.image}
+                      alt=""
+                      className={styles.featuredImage}
+                      draggable={false}
+                    />
+                    <span className={styles.paperSurfaceShadow} aria-hidden="true" />
+                    <span className={styles.featuredStrip}>
+                      <span>{work.title}</span>
+                      <span>{work.year}</span>
+                    </span>
+                    <ViewMoreWorksCue />
+                  </Link>
+                </article>
+              ))}
           </div>
 
           <div
             ref={featuredLargeStackRef}
             className={featuredLargeStackClassName}
           >
-            <Link
-              className={styles.featuredLargeFrame}
-              href="/works"
-              aria-label="View Photography works"
-              onPointerMove={handlePolaroidPointerMove}
-            >
-              <span className={styles.featuredLargeViewport} aria-hidden="true">
-                <picture className={styles.featuredLargePicture}>
+              <Link
+                className={styles.featuredLargeFrame}
+                href="/works"
+                aria-label="View Photography works"
+                onPointerMove={handlePolaroidPointerMove}
+              >
+                <span className={styles.featuredLargeViewport} aria-hidden="true">
+                  <picture className={styles.featuredLargePicture}>
+                    <source
+                      media="(max-width: 640px)"
+                      srcSet={`${polaroidAssetPath}/featured-05-mobile.jpg`}
+                    />
+                    <img
+                      src={`${polaroidAssetPath}/featured-05.jpg`}
+                      alt=""
+                      className={styles.featuredLargeImage}
+                      draggable={false}
+                    />
+                  </picture>
+                </span>
+                <picture className={styles.featuredLargeFrameImage}>
                   <source
                     media="(max-width: 640px)"
-                    srcSet={`${polaroidAssetPath}/featured-05-mobile.jpg`}
+                    srcSet={`${polaroidAssetPath}/polaroid-paper-blank-mobile.svg`}
                   />
                   <img
-                    src={`${polaroidAssetPath}/featured-05.jpg`}
+                    src={`${polaroidAssetPath}/polaroid-paper-blank-large.svg`}
                     alt=""
-                    className={styles.featuredLargeImage}
                     draggable={false}
                   />
                 </picture>
-              </span>
-              <picture className={styles.featuredLargeFrameImage}>
-                <source
-                  media="(max-width: 640px)"
-                  srcSet={`${polaroidAssetPath}/polaroid-paper-blank-mobile.svg`}
-                />
-                <img
-                  src={`${polaroidAssetPath}/polaroid-paper-blank-large.svg`}
-                  alt=""
-                  draggable={false}
-                />
-              </picture>
-              <span className={styles.featuredLargeSurfaceShadow} aria-hidden="true" />
-              <span className={styles.featuredLargeStrip}>
-                <span>Photography</span>
-                <span>2026</span>
-              </span>
-              <ViewMoreWorksCue />
-            </Link>
+                <span className={styles.featuredLargeSurfaceShadow} aria-hidden="true" />
+                <span className={styles.featuredLargeStrip}>
+                  <span>Photography</span>
+                  <span>2026</span>
+                </span>
+                <ViewMoreWorksCue />
+              </Link>
 
-            <Link className={styles.viewMoreLink} href="/works" aria-label="View more works">
-              <span className={styles.viewMoreText}>
-               view
-               <br />
-                more
-              </span>
-              <svg
-                className={styles.viewMoreArrow}
-                viewBox="0 0 64 28"
-                aria-hidden="true"
-              >
-                <path d="M4 14H54" />
-                <path d="M44 5 56 14 44 23" />
-              </svg>
-            </Link>
+              <Link className={styles.viewMoreLink} href="/works" aria-label="View more works">
+                <span className={styles.viewMoreText}>
+                 view
+                 <br />
+                  more
+                </span>
+                <svg
+                  className={styles.viewMoreArrow}
+                  viewBox="0 0 64 28"
+                  aria-hidden="true"
+                >
+                  <path d="M4 14H54" />
+                  <path d="M44 5 56 14 44 23" />
+                </svg>
+              </Link>
           </div>
         </div>
       </div>

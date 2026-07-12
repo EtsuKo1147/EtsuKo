@@ -111,19 +111,10 @@ const clamp = (value: number, min: number, max: number) =>
 
 const random = (min: number, max: number) => min + Math.random() * (max - min)
 
-const lerp = (start: number, end: number, progress: number) =>
-  start + (end - start) * clamp(progress, 0, 1)
-
 const getResponsiveItemScale = (stageWidth: number) => {
-  if (stageWidth >= 1440) return FOOTER_ITEM_BASE_SCALE * 2.5
-  if (stageWidth >= 1024) {
-    return FOOTER_ITEM_BASE_SCALE * lerp(2, 2.5, (stageWidth - 1024) / 416)
-  }
-  if (stageWidth >= 640) {
-    return FOOTER_ITEM_BASE_SCALE * lerp(1.5, 2, (stageWidth - 640) / 384)
-  }
+  const designScale = clamp(stageWidth / 1920, 0.62, 1)
 
-  return FOOTER_ITEM_BASE_SCALE * lerp(1.2, 1.5, (stageWidth - 360) / 280)
+  return FOOTER_ITEM_BASE_SCALE * 2.5 * designScale
 }
 
 export default function HomePhysicsFooter() {
