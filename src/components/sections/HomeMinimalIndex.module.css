@@ -310,6 +310,7 @@
   width: min(var(--home-camera-stage-width, 520px), 96%);
   aspect-ratio: 497.06 / 780;
   --paper-exit-top: 65.3%;
+  --home-camera-visual-shift: 0px;
 }
 
 .cameraLayer {
@@ -322,7 +323,7 @@
   height: auto;
   user-select: none;
   pointer-events: none;
-  transform: translateX(-50%);
+  transform: translateX(calc(-50% + var(--home-camera-visual-shift)));
 }
 
 .cameraUp {
@@ -345,7 +346,7 @@
 
 .cameraTextRing {
   position: absolute;
-  left: -20%;
+  left: calc(-20% + var(--home-camera-visual-shift));
   top: -5%;
   z-index: 7;
   display: block;
@@ -393,12 +394,13 @@
   letter-spacing: 0;
   pointer-events: none;
   user-select: none;
+  transform: translateX(var(--home-camera-visual-shift));
 }
 
 .paperMask {
   position: absolute;
   top: var(--paper-exit-top);
-  left: 50%;
+  left: calc(50% + var(--home-camera-visual-shift));
   z-index: 4;
   width: 70%;
   height: 50%;
@@ -423,11 +425,11 @@
   }
 
   62% {
-    transform: translateY(8px) scaleY(1.006);
+    transform: translateY(2px) scaleY(1.002);
   }
 
   82% {
-    transform: translateY(-3px) scaleY(0.998);
+    transform: translateY(-1px) scaleY(0.999);
   }
 
   100% {
@@ -1744,8 +1746,10 @@
   }
 
   .cameraStage {
-    width: min(380px, 96vw);
-    transform: translateX(-12px);
+    --home-camera-visual-shift: -24px;
+
+    width: min(340px, calc(100vw - 52px));
+    transform: none;
   }
 
   .polaroidCategories {

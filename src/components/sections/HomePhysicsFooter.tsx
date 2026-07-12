@@ -112,7 +112,7 @@ const clamp = (value: number, min: number, max: number) =>
 const random = (min: number, max: number) => min + Math.random() * (max - min)
 
 const getResponsiveItemScale = (stageWidth: number) => {
-  const designScale = clamp(stageWidth / 1920, 0.62, 1)
+  const designScale = clamp(stageWidth / 1920, 0.529, 1)
 
   return FOOTER_ITEM_BASE_SCALE * 2.5 * designScale
 }
