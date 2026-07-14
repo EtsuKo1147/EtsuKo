@@ -145,6 +145,292 @@ function ViewMoreWorksCue() {
   )
 }
 
+type ProfileTypewriterSegment = {
+  key: string
+  text: string
+  kind: 'label' | 'value'
+  pauseAfter: number
+}
+
+type ProfileTypewriterLineProps = {
+  text: string
+  visibleText: string
+  showCursor: boolean
+  showEndCursor: boolean
+}
+
+function getProfileTypewriterSegments(language: ProfileLanguage) {
+  const segments: ProfileTypewriterSegment[] = []
+
+  profileCopy[language].items.forEach((item, itemIndex) => {
+    segments.push({
+      key: `${itemIndex}-label`,
+      text: item.label,
+      kind: 'label',
+      pauseAfter: 45,
+    })
+
+    item.value.forEach((line, lineIndex) => {
+      segments.push({
+        key: `${itemIndex}-value-${lineIndex}`,
+        text: line,
+        kind: 'value',
+        pauseAfter: lineIndex === item.value.length - 1 ? 65 : 24,
+      })
+    })
+  })
+
+  return segments
+}
+
+function ProfileTypewriterLine({
+  text,
+  visibleText,
+  showCursor,
+  showEndCursor,
+}: ProfileTypewriterLineProps) {
+  return (
+    <span className={styles.profileTypewriterLine}>
+      <span className={styles.profileTypewriterMeasure} aria-hidden="true">
+        {text}
+      </span>
+      <span className={styles.profileTypewriterValue} aria-hidden="true">
+        {visibleText}
+        {showCursor ? <span className={styles.profileTypewriterCursor} /> : null}
+        {showEndCursor ? (
+          <span className={styles.profileTypewriterEndCursor}>_</span>
+        ) : null}
+      </span>
+      <span className={styles.profileTypewriterAccessible}>{text}</span>
+    </span>
+  )
+}
+
+function ProfileConsoleTypewriter({
+  language,
+  onLanguageToggle,
+}: {
+  language: ProfileLanguage
+  onLanguageToggle: () => void
+}) {
+  const [hasEnteredView, setHasEnteredView] = useState(false)
+  const [typingState, setTypingState] = useState({
+    language,
+    visibleCharacters: 0,
+  })
+  const screenRef = useRef<HTMLDivElement>(null)
+  const initialTypingLanguageRef = useRef(language)
+  const hasConsumedInitialPlaybackRef = useRef(false)
+  const profile = profileCopy[language]
+  const segments = getProfileTypewriterSegments(language)
+  const totalCharacters = segments.reduce(
+    (total, segment) => total + Array.from(segment.text).length,
+    0,
+  )
+  const visibleCharacters =
+    typingState.language === language
+      ? typingState.visibleCharacters
+      : totalCharacters
+  const renderedSegments = new Map<
+    string,
+    { visibleText: string; showCursor: boolean; showEndCursor: boolean }
+  >()
+  let characterOffset = 0
+
+  segments.forEach((segment, segmentIndex) => {
+    const characters = Array.from(segment.text)
+    const segmentStart = characterOffset
+    const visibleLength = Math.max(
+      0,
+      Math.min(characters.length, visibleCharacters - segmentStart),
+    )
+
+    renderedSegments.set(segment.key, {
+      visibleText: characters.slice(0, visibleLength).join(''),
+      showCursor:
+        hasEnteredView &&
+        visibleCharacters >= segmentStart &&
+        visibleCharacters < segmentStart + characters.length,
+      showEndCursor:
+        segmentIndex === segments.length - 1 &&
+        visibleCharacters >= totalCharacters,
+    })
+    characterOffset += characters.length
+  })
+
+  useEffect(() => {
+    const screen = screenRef.current
+
+    if (!screen) {
+      return
+    }
+
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+
+    if (reducedMotionQuery.matches) {
+      const frame = window.requestAnimationFrame(() => {
+        setHasEnteredView(true)
+      })
+
+      return () => {
+        window.cancelAnimationFrame(frame)
+      }
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) {
+          return
+        }
+
+        setHasEnteredView(true)
+        observer.disconnect()
+      },
+      {
+        rootMargin: '0px 0px -10% 0px',
+        threshold: 0.22,
+      },
+    )
+
+    observer.observe(screen)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!hasEnteredView) {
+      return
+    }
+
+    const typingSegments = getProfileTypewriterSegments(language)
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const shouldPlayInitialAnimation =
+      !hasConsumedInitialPlaybackRef.current &&
+      language === initialTypingLanguageRef.current
+
+    if (reducedMotionQuery.matches || !shouldPlayInitialAnimation) {
+      hasConsumedInitialPlaybackRef.current = true
+      const frame = window.requestAnimationFrame(() => {
+        setTypingState({ language, visibleCharacters: totalCharacters })
+      })
+
+      return () => {
+        window.cancelAnimationFrame(frame)
+      }
+    }
+
+    let timeoutId: number | undefined
+    let segmentIndex = 0
+    let characterIndex = 0
+    let nextVisibleCharacters = 0
+    let isCancelled = false
+
+    const typeNextCharacter = () => {
+      if (isCancelled || segmentIndex >= typingSegments.length) {
+        return
+      }
+
+      hasConsumedInitialPlaybackRef.current = true
+
+      const segment = typingSegments[segmentIndex]
+      const characters = Array.from(segment.text)
+
+      if (characterIndex < characters.length) {
+        characterIndex += 1
+        nextVisibleCharacters += 1
+        setTypingState({
+          language,
+          visibleCharacters: nextVisibleCharacters,
+        })
+
+        const characterDelay =
+          language === 'jp'
+            ? segment.kind === 'label'
+              ? 18
+              : 8
+            : segment.kind === 'label'
+              ? 14
+              : 6
+
+        timeoutId = window.setTimeout(typeNextCharacter, characterDelay)
+        return
+      }
+
+      segmentIndex += 1
+      characterIndex = 0
+      timeoutId = window.setTimeout(typeNextCharacter, segment.pauseAfter)
+    }
+
+    timeoutId = window.setTimeout(typeNextCharacter, 120)
+
+    return () => {
+      isCancelled = true
+
+      if (timeoutId !== undefined) {
+        window.clearTimeout(timeoutId)
+      }
+    }
+  }, [hasEnteredView, language, totalCharacters])
+
+  return (
+    <div ref={screenRef} className={styles.profileScreen} aria-live="polite">
+      <div
+        className={`${styles.profileScreenContent} ${
+          language === 'jp' ? styles.profileJapanese : ''
+        }`}
+      >
+        <dl className={styles.profileList}>
+          {profile.items.map((item, itemIndex) => {
+            const labelSegment = renderedSegments.get(`${itemIndex}-label`)
+
+            return (
+              <div key={item.label}>
+                <dt>
+                  <ProfileTypewriterLine
+                    text={item.label}
+                    visibleText={labelSegment?.visibleText ?? ''}
+                    showCursor={labelSegment?.showCursor ?? false}
+                    showEndCursor={labelSegment?.showEndCursor ?? false}
+                  />
+                </dt>
+                <dd>
+                  {item.value.map((line, lineIndex) => {
+                    const segment = renderedSegments.get(
+                      `${itemIndex}-value-${lineIndex}`,
+                    )
+
+                    return (
+                      <ProfileTypewriterLine
+                        key={line}
+                        text={line}
+                        visibleText={segment?.visibleText ?? ''}
+                        showCursor={segment?.showCursor ?? false}
+                        showEndCursor={segment?.showEndCursor ?? false}
+                      />
+                    )
+                  })}
+                </dd>
+              </div>
+            )
+          })}
+        </dl>
+
+        <button
+          type="button"
+          className={styles.profileLanguage}
+          onClick={onLanguageToggle}
+        >
+          {profile.languageLabel}
+          <br />
+          {profile.languageSwitch}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function HomeMinimalIndex() {
   const [profileLanguage, setProfileLanguage] = useState<ProfileLanguage>('en')
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(0)
@@ -1248,37 +1534,10 @@ export default function HomeMinimalIndex() {
                 draggable={false}
               />
 
-              <div className={styles.profileScreen} aria-live="polite">
-                <div
-                  key={profileLanguage}
-                  className={`${styles.profileScreenContent} ${
-                    profileLanguage === 'jp' ? styles.profileJapanese : ''
-                  }`}
-                >
-                  <dl className={styles.profileList}>
-                    {profile.items.map((item) => (
-                      <div key={item.label}>
-                        <dt>{item.label}</dt>
-                        <dd>
-                          {item.value.map((line) => (
-                            <span key={line}>{line}</span>
-                          ))}
-                        </dd>
-                      </div>
-                    ))}
-                  </dl>
-
-                  <button
-                    type="button"
-                    className={styles.profileLanguage}
-                    onClick={handleProfileLanguageToggle}
-                  >
-                    {profile.languageLabel}
-                    <br />
-                    {profile.languageSwitch}
-                  </button>
-                </div>
-              </div>
+              <ProfileConsoleTypewriter
+                language={profileLanguage}
+                onLanguageToggle={handleProfileLanguageToggle}
+              />
             </div>
           </div>
         </div>

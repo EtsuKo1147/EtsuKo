@@ -357,7 +357,7 @@
   width: clamp(160px, 55%, 250px);
   aspect-ratio: 1;
   color: var(--home-text-color);
-  font-family: 'Courier New', Courier, monospace;
+  font-family: var(--font-intel-mono), 'Courier New', monospace;
   font-size: 15px;
   font-weight: 500;
   letter-spacing: 0.08em;
@@ -779,7 +779,7 @@
   position: relative;
   z-index: 1;
   display: block;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: var(--font-intel-mono), 'Courier New', monospace;
   font-size: clamp(1.65rem, 2.65vw, 3.3rem);
   font-weight: 400;
   line-height: 1.08;
@@ -929,7 +929,7 @@
 
 .viewMoreWorksCue text {
   fill: currentColor;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: var(--font-intel-mono), 'Courier New', monospace;
   font-size: 17px;
   font-weight: 500;
   letter-spacing: 0.02em;
@@ -1451,6 +1451,80 @@
   font-family: var(--font-intel-mono), 'Courier New', monospace;
 }
 
+.profileTypewriterLine {
+  position: relative;
+  display: block;
+  max-width: 100%;
+}
+
+.profileTypewriterMeasure,
+.profileTypewriterValue {
+  display: block;
+  max-width: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.profileTypewriterMeasure {
+  visibility: hidden;
+  user-select: none;
+}
+
+.profileTypewriterValue {
+  position: absolute;
+  inset: 0;
+}
+
+.profileTypewriterCursor {
+  display: inline-block;
+  width: 0.5em;
+  height: 0.88em;
+  margin-left: 0.12em;
+  background: currentColor;
+  vertical-align: -0.08em;
+  animation: profileTypewriterCursorBlink 720ms steps(1, end) infinite;
+}
+
+.profileTypewriterEndCursor {
+  margin-left: 0.04em;
+  animation: profileTypewriterCursorBlink 720ms steps(1, end) infinite;
+}
+
+.profileTypewriterAccessible {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes profileTypewriterCursorBlink {
+  0%,
+  52% {
+    opacity: 1;
+  }
+
+  53%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profileTypewriterCursor {
+    display: none;
+    animation: none;
+  }
+
+  .profileTypewriterEndCursor {
+    animation: none;
+  }
+}
+
 .profileList {
   position: absolute;
   top: -4%;
@@ -1482,7 +1556,7 @@
   line-height: 1.18;
 }
 
-.profileList dd span {
+.profileList dd > .profileTypewriterLine {
   display: block;
   max-width: 100%;
   overflow-wrap: break-word;
@@ -1622,7 +1696,7 @@
 .directMailTitle {
   margin: clamp(26px, 4vw, 56px) 0 0;
   color: var(--home-text-color);
-  font-family: 'Courier New', Courier, monospace;
+  font-family: var(--font-intel-mono), 'Courier New', monospace;
   font-size: clamp(2.5rem, 5.8vw, 5.8rem);
   font-weight: 400;
   line-height: 0.9;
@@ -1636,7 +1710,7 @@
   margin-top: clamp(24px, 2.4vw, 32px);
   padding-bottom: 12px;
   color: rgba(var(--home-text-rgb), 0.76);
-  font-family: 'Courier New', Courier, monospace;
+  font-family: var(--font-intel-mono), 'Courier New', monospace;
   font-size: clamp(1.25rem, 1.65vw, 2.5rem);
   font-weight: 500;
   line-height: 1;
@@ -1724,7 +1798,7 @@
 
 .topButton span {
   color: var(--home-text-color);
-  font-family: 'Courier New', Courier, monospace;
+  font-family: var(--font-intel-mono), 'Courier New', monospace;
   font-size: clamp(0.58rem, 0.65vw, 0.78rem);
   font-weight: 500;
   line-height: 1;
@@ -1766,7 +1840,7 @@
   gap: 8px;
   margin-top: clamp(24px, 2vw, 82px);
   color: rgba(var(--home-text-rgb), 0.76);
-  font-family: 'Courier New', Courier, monospace;
+  font-family: var(--font-intel-mono), 'Courier New', monospace;
   font-size: clamp(0.58rem, 0.65vw, 0.78rem);
   font-weight: 500;
   line-height: 1.1;
@@ -1874,12 +1948,15 @@
   }
 
   .polaroidHero {
+    grid-template-columns: minmax(0, 1fr);
     gap: 34px;
   }
 
   .cameraStage {
-    --home-camera-visual-shift: -24px;
+    --home-camera-visual-shift: 0px;
 
+    left: auto;
+    justify-self: unsafe center;
     width: min(340px, calc(100vw - 52px));
     transform: none;
   }
@@ -1905,7 +1982,7 @@
   height: min(600px, 100dvh);
   margin-top: clamp(72px, 18vw, 92px);
     margin-left: -50vw;
-    overflow: hidden;
+    overflow: visible;
     isolation: isolate;
     touch-action: pan-y;
     user-select: none;
@@ -1972,7 +2049,7 @@
     margin-bottom: 24px;
     opacity: 1;
     pointer-events: auto;
-    transform: none;
+    transform: var(--featured-copy-mobile-transform, none);
     transition: none;
   }
 
@@ -1981,28 +2058,54 @@
     right: auto;
   }
 
-  .featuredGhost {
-    left: -0.2em;
-    top: -0.36em;
-    color: rgba(var(--home-text-rgb), 0.08);
-    font-size: clamp(2.4rem, 15vw, 5rem);
-    transform: none;
+  .featuredBoardActive .featuredCopy {
+    transform: var(--featured-copy-mobile-transform, none);
   }
 
-  .featuredTitle,
-  .featuredRole,
-  .featuredYear {
-    transform: none;
+  .featuredItem:nth-child(1) .featuredCopy {
+    --featured-copy-mobile-transform: translateX(-40px) translateY(-10px) rotate(10deg) scale(0.88);
+  }
+
+  .featuredItem:nth-child(2) .featuredCopy {
+    --featured-copy-mobile-transform: translateX(-70px) translateY(-25px) rotate(-20deg) scale(0.88);
+  }
+
+  .featuredItem:nth-child(3) .featuredCopy {
+    --featured-copy-mobile-transform: translateX(80px) translateY(-25px) rotate(3deg) scale(0.88);
+  }
+
+  .featuredItem:nth-child(4) .featuredCopy {
+    --featured-copy-mobile-transform: translateX(-40px) translateY(-25px) rotate(12deg) scale(0.88);
+  }
+
+  .featuredItem:nth-child(odd) .featuredCopy {
+    justify-self: start;
+    margin-right: 0;
+    margin-left: clamp(8px, 4vw, 16px);
+  }
+
+  .featuredItem:nth-child(even) .featuredCopy {
+    justify-self: end;
+    margin-right: clamp(8px, 4vw, 16px);
+    margin-left: 0;
+  }
+
+  .featuredGhost {
+    left: var(--featured-ghost-x, -0.2em);
+    top: var(--featured-ghost-y, -0.36em);
+    color: rgba(var(--home-text-rgb), 0.08);
+    font-size: clamp(2.4rem, 15vw, 5rem);
+    transform: rotate(var(--featured-ghost-rotate, 0deg));
   }
 
   .featuredRole {
     width: auto;
     max-width: none;
-    margin-top: clamp(26px, 3vw, 44px);
+    margin-top: 0;
   }
 
   .featuredYear {
-    margin-top: clamp(18px, 2.2vw, 34px);
+    margin-top: 0;
   }
 
   .featuredPhoto {
@@ -2016,27 +2119,34 @@
   }
 
   .featuredItem:nth-child(1) .featuredPhoto {
-    --featured-stack-transform: translateY(var(--featured-mobile-stack-start-y)) rotate(4deg) scale(0.96);
+    --featured-stack-transform: rotate(7deg);
     --featured-spread-transform: translateY(0) rotate(7deg);
     --featured-hover-transform: translateY(-8px) rotate(6deg);
   }
 
   .featuredItem:nth-child(2) .featuredPhoto {
-    --featured-stack-transform: translateY(calc(var(--featured-mobile-stack-start-y) - clamp(620px, 150vw, 760px))) rotate(-3deg) scale(0.96);
+    --featured-stack-transform: rotate(-6deg);
     --featured-spread-transform: translateY(0) rotate(-6deg);
     --featured-hover-transform: translateY(-8px) rotate(-5deg);
   }
 
   .featuredItem:nth-child(3) .featuredPhoto {
-    --featured-stack-transform: translateY(calc(var(--featured-mobile-stack-start-y) - clamp(1180px, 300vw, 1520px))) rotate(2deg) scale(0.96);
+    --featured-stack-transform: rotate(5deg);
     --featured-spread-transform: translateY(0) rotate(5deg);
     --featured-hover-transform: translateY(-8px) rotate(4deg);
   }
 
   .featuredItem:nth-child(4) .featuredPhoto {
-    --featured-stack-transform: translateY(calc(var(--featured-mobile-stack-start-y) - clamp(1740px, 450vw, 2280px))) rotate(-2deg) scale(0.96);
+    --featured-stack-transform: rotate(-5deg);
     --featured-spread-transform: translateY(0) rotate(-5deg);
     --featured-hover-transform: translateY(-8px) rotate(-4deg);
+  }
+
+  .featuredItem:nth-child(1) .featuredPhoto:active,
+  .featuredItem:nth-child(2) .featuredPhoto:active,
+  .featuredItem:nth-child(3) .featuredPhoto:active,
+  .featuredItem:nth-child(4) .featuredPhoto:active {
+    transform: var(--featured-hover-transform);
   }
 
   .featuredBoardActive .featuredPhoto {
@@ -2049,7 +2159,7 @@
     z-index: 0;
     width: min(330px, 86vw);
     margin: clamp(36px, 11vw, 62px) auto 0;
-    --featured-large-mobile-stack-transform: translateY(calc(var(--featured-mobile-stack-start-y) - clamp(2320px, 600vw, 3040px))) rotate(-3deg) scale(0.96);
+    --featured-large-mobile-stack-transform: rotate(-3deg);
     --featured-large-mobile-final-transform: rotate(-3deg);
     transform: var(--featured-large-mobile-stack-transform);
   }
@@ -2063,7 +2173,8 @@
   }
 
   .featuredLargeFrame:hover,
-  .featuredLargeFrame:focus-visible {
+  .featuredLargeFrame:focus-visible,
+  .featuredLargeFrame:active {
     transform: translateY(-8px) rotate(-2deg);
   }
 

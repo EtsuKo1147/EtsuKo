@@ -269,6 +269,11 @@
   letter-spacing: 0;
   text-decoration: none;
   text-transform: uppercase;
+  transition: color 220ms ease;
+}
+
+:global(body[data-simple-nav-inverted='true']) .simplePageNavLink {
+  color: #faf9f6;
 }
 
 .simplePageNavLink::before {
@@ -301,6 +306,10 @@
   color: #F26A2F;
 }
 
+:global(body[data-simple-nav-inverted='true']) .simplePageNavLinkActive {
+  color: #F26A2F;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .simplePageNavLink:hover,
   .simplePageNavLink:focus-visible {
@@ -310,6 +319,16 @@
 
   .simplePageNavLinkActive:hover,
   .simplePageNavLinkActive:focus-visible {
+    color: #F26A2F;
+  }
+
+  :global(body[data-simple-nav-inverted='true']) .simplePageNavLink:hover,
+  :global(body[data-simple-nav-inverted='true']) .simplePageNavLink:focus-visible {
+    color: #faf9f6;
+  }
+
+  :global(body[data-simple-nav-inverted='true']) .simplePageNavLinkActive:hover,
+  :global(body[data-simple-nav-inverted='true']) .simplePageNavLinkActive:focus-visible {
     color: #F26A2F;
   }
 }

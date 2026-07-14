@@ -77,6 +77,14 @@ export default function WorksView({ works, initialCategory = 'all' }: WorksViewP
     }
   }, [])
 
+  useEffect(() => {
+    document.body.dataset.simpleNavInverted = isInverted ? 'true' : 'false'
+
+    return () => {
+      delete document.body.dataset.simpleNavInverted
+    }
+  }, [isInverted])
+
   const scaledPx = (value: number) => `${Math.round(value * designScale * 10) / 10}px`
   const pageScaleStyle = {
     '--works-page-pad-top': scaledPx(44),

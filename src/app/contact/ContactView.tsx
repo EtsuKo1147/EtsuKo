@@ -26,6 +26,14 @@ export default function ContactView() {
     }
   }, [])
 
+  useEffect(() => {
+    document.body.dataset.simpleNavInverted = isInverted ? 'true' : 'false'
+
+    return () => {
+      delete document.body.dataset.simpleNavInverted
+    }
+  }, [isInverted])
+
   const scaledPx = (value: number) => `${Math.round(value * designScale * 10) / 10}px`
   const pageScaleStyle = {
     '--contact-shell-width': scaledPx(1480),

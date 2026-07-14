@@ -162,7 +162,7 @@
 .directMailTitle {
   margin: clamp(26px, var(--contact-title-margin-top, 56px), 56px) 0 0;
   color: var(--contact-text);
-  font-family: 'Courier New', Courier, monospace;
+  font-family: var(--font-intel-mono), 'Courier New', monospace;
   font-size: clamp(2.5rem, var(--contact-title-size, 5.8rem), 5.8rem);
   font-weight: 400;
   line-height: 0.9;
@@ -176,7 +176,7 @@
   margin-top: clamp(24px, var(--contact-link-margin-top, 32px), 32px);
   padding-bottom: 12px;
   color: rgba(var(--contact-text-rgb), 0.76);
-  font-family: 'Courier New', Courier, monospace;
+  font-family: var(--font-intel-mono), 'Courier New', monospace;
   font-size: clamp(1.25rem, var(--contact-link-size, 2.5rem), 2.5rem);
   font-weight: 500;
   line-height: 1;

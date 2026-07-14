@@ -1,12 +1,7 @@
 import type { Metadata, Viewport } from 'next'
-import { Geist, Intel_One_Mono } from 'next/font/google'
+import { Intel_One_Mono } from 'next/font/google'
 import Header from '@/components/layout/Header'
 import './globals.css'
-
-const geist = Geist({
-  subsets: ['latin'],
-  variable: '--font-geist',
-})
 
 const intelMono = Intel_One_Mono({
   subsets: ['latin'],
@@ -31,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${geist.variable} ${intelMono.variable} h-full`}>
+    <html lang="en" className={`${intelMono.variable} h-full`}>
       <body className="min-h-full flex flex-col">
         <Header />
         {children}

@@ -197,6 +197,80 @@
   font-family: var(--font-intel-mono), 'Courier New', monospace;
 }
 
+.profileTypewriterLine {
+  position: relative;
+  display: block;
+  max-width: 100%;
+}
+
+.profileTypewriterMeasure,
+.profileTypewriterValue {
+  display: block;
+  max-width: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.profileTypewriterMeasure {
+  visibility: hidden;
+  user-select: none;
+}
+
+.profileTypewriterValue {
+  position: absolute;
+  inset: 0;
+}
+
+.profileTypewriterCursor {
+  display: inline-block;
+  width: 0.5em;
+  height: 0.88em;
+  margin-left: 0.12em;
+  background: currentColor;
+  vertical-align: -0.08em;
+  animation: profileTypewriterCursorBlink 720ms steps(1, end) infinite;
+}
+
+.profileTypewriterEndCursor {
+  margin-left: 0.04em;
+  animation: profileTypewriterCursorBlink 720ms steps(1, end) infinite;
+}
+
+.profileTypewriterAccessible {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes profileTypewriterCursorBlink {
+  0%,
+  52% {
+    opacity: 1;
+  }
+
+  53%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profileTypewriterCursor {
+    display: none;
+    animation: none;
+  }
+
+  .profileTypewriterEndCursor {
+    animation: none;
+  }
+}
+
 .profileList {
   position: absolute;
   top: -4%;
@@ -228,7 +302,7 @@
   line-height: 1.18;
 }
 
-.profileList dd span {
+.profileList dd > .profileTypewriterLine {
   display: block;
   max-width: 100%;
   overflow-wrap: break-word;
