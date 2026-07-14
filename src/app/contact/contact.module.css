@@ -14,6 +14,7 @@
   --contact-doodle-filter: none;
 
   min-height: 100svh;
+  overflow-x: clip;
   color: var(--contact-text);
   background:
     radial-gradient(circle at 18% 6%, var(--contact-glow), transparent 30%),
@@ -406,6 +407,16 @@
 
   .directMailDoodle {
     width: min(310px, 70vw);
+  }
+
+  .directMailTitle {
+    font-size: clamp(3rem, 14vw, 3.5rem);
+  }
+
+  .directMailLink {
+    max-width: 100%;
+    font-size: clamp(1rem, 5.2vw, 1.3rem);
+    overflow-wrap: anywhere;
   }
 
   .contactForm {

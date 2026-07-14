@@ -55,6 +55,10 @@ export default function WorksView({ works, initialCategory = 'all' }: WorksViewP
 
     return filteredWorks.slice(0, 4)
   }, [activeCategory, works])
+  const previewSlots = useMemo(
+    () => Array.from({ length: 4 }, (_, index) => visibleWorks[index] ?? null),
+    [visibleWorks],
+  )
 
   useEffect(() => {
     const updateDesignScale = () => {
@@ -186,43 +190,58 @@ export default function WorksView({ works, initialCategory = 'all' }: WorksViewP
         </aside>
 
         <section className={styles.workDisplay} aria-live="polite">
-          {visibleWorks.map((work, index) => (
-            <Link
-              href={work.href}
-              className={styles.workPolaroid}
-              key={work.id}
-              style={
-                {
-                  '--work-rotate': `${[-7, 2, -2, 8][index] ?? 0}deg`,
-                  '--work-x': scaledPx([-18, 10, -4, 16][index] ?? 0),
-                  '--work-y': scaledPx([12, -8, 18, 28][index] ?? 0),
-                } as CSSProperties
-              }
-            >
-              <span className={styles.workPaperViewport}>
-                {work.coverImageUrl ? (
-                  <img
-                    src={work.coverImageUrl}
-                    alt={work.coverImageAlt || work.title}
-                    className={styles.workCoverImage}
-                    draggable={false}
-                  />
-                ) : (
-                  <img
-                    src={projectPreviewImages[index % projectPreviewImages.length]}
-                    alt=""
-                    className={styles.workCoverImage}
-                    draggable={false}
-                  />
-                )}
-              </span>
-              <span className={styles.workPaperFrame} aria-hidden="true" />
-              <span className={styles.workMeta}>
-                <span>{work.title}</span>
-                <span>{work.year}</span>
-              </span>
-            </Link>
-          ))}
+          {previewSlots.map((work, index) => {
+            if (!work) {
+              return (
+                <span
+                  className={styles.workPlaceholder}
+                  key={`${activeCategory}-empty-${index}`}
+                  aria-hidden="true"
+                />
+              )
+            }
+
+            return (
+              <Link
+                href={work.href}
+                className={styles.workPolaroid}
+                key={`${activeCategory}-${work.id}`}
+                style={
+                  {
+                    '--work-rotate': `${[-7, 2, -2, 8][index] ?? 0}deg`,
+                    '--work-x': scaledPx([-18, 10, -4, 16][index] ?? 0),
+                    '--work-y': scaledPx([12, -8, 18, 28][index] ?? 0),
+                    '--work-flip-delay': `${index * 55}ms`,
+                  } as CSSProperties
+                }
+              >
+                <span className={styles.workFlip}>
+                  <span className={styles.workPaperViewport}>
+                    {work.coverImageUrl ? (
+                      <img
+                        src={work.coverImageUrl}
+                        alt={work.coverImageAlt || work.title}
+                        className={styles.workCoverImage}
+                        draggable={false}
+                      />
+                    ) : (
+                      <img
+                        src={projectPreviewImages[index % projectPreviewImages.length]}
+                        alt=""
+                        className={styles.workCoverImage}
+                        draggable={false}
+                      />
+                    )}
+                  </span>
+                  <span className={styles.workPaperFrame} aria-hidden="true" />
+                  <span className={styles.workMeta}>
+                    <span>{work.title}</span>
+                    <span>{work.year}</span>
+                  </span>
+                </span>
+              </Link>
+            )
+          })}
         </section>
       </div>
     </main>

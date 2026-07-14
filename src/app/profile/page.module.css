@@ -11,6 +11,7 @@
   --profile-doodle-filter: none;
 
   min-height: 100svh;
+  overflow-x: clip;
   padding:
     clamp(10px, var(--profile-page-pad-top), 24px)
     clamp(18px, var(--profile-page-pad-x), 76px)
@@ -336,7 +337,7 @@
   }
 
   .header {
-    padding-left: clamp(68px, 17vw, 84px);
+    padding-left: 0;
   }
 
   .invertToggle {
@@ -376,10 +377,11 @@
     justify-self: center;
     width: min(760px, 110vw);
     margin-right: 0;
-    transform: translateX(18px);
+    transform: translateX(var(--profile-console-center-shift, 0px));
   }
 
   .profileLead {
+    width: 100%;
     max-width: calc(100vw - 92px);
     min-height: 90px;
     margin-left: 0;
@@ -397,7 +399,7 @@
   }
 
   .profileLead span {
-    white-space: nowrap;
+    white-space: normal;
   }
 
   .profileScreen {

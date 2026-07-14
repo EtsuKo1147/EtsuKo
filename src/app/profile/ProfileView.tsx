@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { profileCopy, type ProfileLanguage } from '@/data/profile'
 import styles from './page.module.css'
 
@@ -10,6 +10,7 @@ export default function ProfileView() {
   const [profileLanguage, setProfileLanguage] = useState<ProfileLanguage>('en')
   const [isInverted, setIsInverted] = useState(false)
   const [designScale, setDesignScale] = useState(1)
+  const profileConsoleFrameRef = useRef<HTMLDivElement>(null)
   const profile = profileCopy[profileLanguage]
 
   useEffect(() => {
@@ -26,6 +27,44 @@ export default function ProfileView() {
 
     return () => {
       window.removeEventListener('resize', updateDesignScale)
+    }
+  }, [])
+
+  useEffect(() => {
+    const consoleFrame = profileConsoleFrameRef.current
+
+    if (!consoleFrame) {
+      return
+    }
+
+    const mobileQuery = window.matchMedia('(max-width: 640px)')
+
+    const centerProfileConsole = () => {
+      consoleFrame.style.removeProperty('--profile-console-center-shift')
+
+      if (!mobileQuery.matches) {
+        return
+      }
+
+      const consoleRect = consoleFrame.getBoundingClientRect()
+      const viewportCenter = document.documentElement.clientWidth / 2
+      const consoleCenter = consoleRect.left + consoleRect.width / 2
+      const centerShift = Math.round((viewportCenter - consoleCenter) * 10) / 10
+
+      consoleFrame.style.setProperty(
+        '--profile-console-center-shift',
+        `${centerShift}px`,
+      )
+    }
+
+    const frame = window.requestAnimationFrame(centerProfileConsole)
+    window.addEventListener('resize', centerProfileConsole)
+    mobileQuery.addEventListener('change', centerProfileConsole)
+
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.removeEventListener('resize', centerProfileConsole)
+      mobileQuery.removeEventListener('change', centerProfileConsole)
     }
   }, [])
 
@@ -90,7 +129,7 @@ export default function ProfileView() {
             draggable={false}
           />
 
-          <div className={styles.profileConsoleFrame}>
+          <div ref={profileConsoleFrameRef} className={styles.profileConsoleFrame}>
             <img
               src="/home/character-stage/doodles/new-gameplayer-2-02.svg"
               alt=""

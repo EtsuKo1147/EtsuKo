@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import {
+  useCallback,
   useEffect,
   useId,
   useRef,
@@ -17,6 +18,8 @@ import styles from './HomeMinimalIndex.module.css'
 
 const polaroidAssetPath = '/home/images/works-polaroid'
 const worksCameraAssetPath = '/home/images/works-camera'
+const profileJapaneseFontSpec = '1rem "WadaLabChuMaruGo2004P"'
+const profileJapaneseFontSample = '日本語プロフィール制作スキル'
 
 const stampPhotoAssets = [
   `${worksCameraAssetPath}/stamp-photo-01.svg`,
@@ -148,25 +151,76 @@ export default function HomeMinimalIndex() {
   const [isWorkCueActive, setIsWorkCueActive] = useState(false)
   const [isFeaturedBoardActive, setIsFeaturedBoardActive] = useState(false)
   const [isFeaturedLargeViewMoreActive, setIsFeaturedLargeViewMoreActive] = useState(false)
-  const [featuredBoardStep, setFeaturedBoardStep] = useState(0)
   const [isWorksStampCameraVisible, setIsWorksStampCameraVisible] = useState(false)
   const [isWorksStampCameraPressed, setIsWorksStampCameraPressed] = useState(false)
   const [isWorksStampHintActive, setIsWorksStampHintActive] = useState(false)
+  const [isProfileCharacterActive, setIsProfileCharacterActive] = useState(false)
+  const [isProfileCharacterReady, setIsProfileCharacterReady] = useState(false)
   const [stampPhotos, setStampPhotos] = useState<StampPhoto[]>([])
   const [homeDesignScale, setHomeDesignScale] = useState(1)
   const worksStampZoneRef = useRef<HTMLDivElement>(null)
+  const mobileWorksStampStageRef = useRef<HTMLDivElement>(null)
   const polaroidHeroRef = useRef<HTMLDivElement>(null)
   const featuredBoardRef = useRef<HTMLDivElement>(null)
   const featuredLargeStackRef = useRef<HTMLDivElement>(null)
+  const profileCharacterRef = useRef<HTMLSpanElement>(null)
+  const profileConsoleFrameRef = useRef<HTMLDivElement>(null)
+  const mobileStampPointerStartRef = useRef<{
+    pointerId: number
+    clientX: number
+    clientY: number
+  } | null>(null)
+  const mobileStampPressTimerRef = useRef<number | null>(null)
   const stampPhotoIdRef = useRef(0)
   const hasShownWorksStampHintRef = useRef(false)
   const hasDismissedWorksStampHintRef = useRef(false)
+  const profileJapaneseFontReadyRef = useRef(false)
+  const profileJapaneseFontLoadRef = useRef<Promise<void> | null>(null)
   const profile = profileCopy[profileLanguage]
   const activeCategory = polaroidCategories[activeCategoryIndex]
-  const featuredBoardStepClass =
-    featuredBoardStep > 0
-      ? styles[`featuredBoardMobileStep${featuredBoardStep}` as keyof typeof styles]
-    : ''
+
+  const loadProfileJapaneseFont = useCallback(() => {
+    if (profileJapaneseFontReadyRef.current) {
+      return Promise.resolve()
+    }
+
+    if (typeof document === 'undefined' || !('fonts' in document)) {
+      return Promise.resolve()
+    }
+
+    const fontSet = document.fonts
+
+    if (fontSet.check(profileJapaneseFontSpec, profileJapaneseFontSample)) {
+      profileJapaneseFontReadyRef.current = true
+      return Promise.resolve()
+    }
+
+    if (!profileJapaneseFontLoadRef.current) {
+      profileJapaneseFontLoadRef.current = fontSet
+        .load(profileJapaneseFontSpec, profileJapaneseFontSample)
+        .then(() => {
+          profileJapaneseFontReadyRef.current = true
+        })
+        .catch(() => {
+          profileJapaneseFontLoadRef.current = null
+        })
+    }
+
+    return profileJapaneseFontLoadRef.current
+  }, [])
+
+  const handleProfileLanguageToggle = useCallback(() => {
+    if (profileLanguage === 'jp') {
+      setProfileLanguage('en')
+      return
+    }
+
+    void loadProfileJapaneseFont().then(() => {
+      setProfileLanguage((currentLanguage) =>
+        currentLanguage === 'en' ? 'jp' : currentLanguage,
+      )
+    })
+  }, [loadProfileJapaneseFont, profileLanguage])
 
   useEffect(() => {
     const updateHomeDesignScale = () => {
@@ -185,6 +239,10 @@ export default function HomeMinimalIndex() {
     }
   }, [])
 
+  useEffect(() => {
+    void loadProfileJapaneseFont()
+  }, [loadProfileJapaneseFont])
+
   const handlePolaroidPointerMove = (event: PointerEvent<HTMLAnchorElement>) => {
     const rect = event.currentTarget.getBoundingClientRect()
 
@@ -201,8 +259,27 @@ export default function HomeMinimalIndex() {
   const isWorksStampExcludedTarget = (target: EventTarget | null) =>
     target instanceof Element && Boolean(target.closest('a, button, [data-works-stamp-exclude]'))
 
+  const addWorksStampPhoto = (point: { x: number; y: number }) => {
+    const nextPhoto: StampPhoto = {
+      id: stampPhotoIdRef.current,
+      src: stampPhotoAssets[Math.floor(Math.random() * stampPhotoAssets.length)],
+      x: point.x,
+      y: point.y,
+      rotate: Math.round((Math.random() * 30 - 15) * 10) / 10,
+      offsetX: Math.round((Math.random() * 44 - 22) * homeDesignScale),
+      offsetY: Math.round((Math.random() * 36 - 18) * homeDesignScale),
+      scale: Math.round((0.9 + Math.random() * 0.16) * 100) / 100,
+    }
+
+    stampPhotoIdRef.current += 1
+    setStampPhotos((currentPhotos) => [...currentPhotos, nextPhoto].slice(-10))
+  }
+
   const updateWorksStampCursor = (event: PointerEvent<HTMLDivElement>) => {
-    if (event.pointerType !== 'mouse') {
+    if (
+      event.pointerType !== 'mouse'
+      || window.matchMedia('(max-width: 640px)').matches
+    ) {
       return null
     }
 
@@ -277,20 +354,7 @@ export default function HomeMinimalIndex() {
     setIsWorksStampHintActive(false)
 
     setIsWorksStampCameraPressed(true)
-
-    const nextPhoto: StampPhoto = {
-      id: stampPhotoIdRef.current,
-      src: stampPhotoAssets[Math.floor(Math.random() * stampPhotoAssets.length)],
-      x: point.x,
-      y: point.y,
-      rotate: Math.round((Math.random() * 30 - 15) * 10) / 10,
-      offsetX: Math.round((Math.random() * 44 - 22) * homeDesignScale),
-      offsetY: Math.round((Math.random() * 36 - 18) * homeDesignScale),
-      scale: Math.round((0.9 + Math.random() * 0.16) * 100) / 100,
-    }
-
-    stampPhotoIdRef.current += 1
-    setStampPhotos((currentPhotos) => [...currentPhotos, nextPhoto].slice(-10))
+    addWorksStampPhoto(point)
   }
 
   const handleWorksStampPointerUp = () => {
@@ -298,14 +362,94 @@ export default function HomeMinimalIndex() {
   }
 
   const handleWorksStampPointerLeave = () => {
+    if (window.matchMedia('(max-width: 640px)').matches) {
+      return
+    }
+
     setIsWorksStampCameraVisible(false)
     setIsWorksStampCameraPressed(false)
   }
 
+  const handleMobileStampPointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0) {
+      return
+    }
+
+    event.stopPropagation()
+    mobileStampPointerStartRef.current = {
+      pointerId: event.pointerId,
+      clientX: event.clientX,
+      clientY: event.clientY,
+    }
+  }
+
+  const handleMobileStampPointerUp = (event: PointerEvent<HTMLDivElement>) => {
+    event.stopPropagation()
+
+    const startPoint = mobileStampPointerStartRef.current
+    mobileStampPointerStartRef.current = null
+
+    if (!startPoint || startPoint.pointerId !== event.pointerId) {
+      return
+    }
+
+    const movement = Math.hypot(
+      event.clientX - startPoint.clientX,
+      event.clientY - startPoint.clientY,
+    )
+
+    if (movement > 12) {
+      return
+    }
+
+    const stage = mobileWorksStampStageRef.current
+
+    if (!stage) {
+      return
+    }
+
+    const rect = stage.getBoundingClientRect()
+    const point = {
+      x: Math.min(Math.max(event.clientX - rect.left, 54), rect.width - 54),
+      y: Math.min(Math.max(event.clientY - rect.top, 48), rect.height - 48),
+    }
+
+    stage.style.setProperty('--stamp-cursor-x', `${point.x}px`)
+    stage.style.setProperty('--stamp-cursor-y', `${point.y}px`)
+
+    hasDismissedWorksStampHintRef.current = true
+    setIsWorksStampHintActive(false)
+    setIsWorksStampCameraVisible(true)
+    setIsWorksStampCameraPressed(true)
+    addWorksStampPhoto(point)
+
+    if (mobileStampPressTimerRef.current !== null) {
+      window.clearTimeout(mobileStampPressTimerRef.current)
+    }
+
+    mobileStampPressTimerRef.current = window.setTimeout(() => {
+      setIsWorksStampCameraPressed(false)
+      mobileStampPressTimerRef.current = null
+    }, 160)
+  }
+
+  const handleMobileStampPointerCancel = (event: PointerEvent<HTMLDivElement>) => {
+    event.stopPropagation()
+    mobileStampPointerStartRef.current = null
+  }
+
+  useEffect(() => {
+    return () => {
+      if (mobileStampPressTimerRef.current !== null) {
+        window.clearTimeout(mobileStampPressTimerRef.current)
+      }
+    }
+  }, [])
+
   useEffect(() => {
     const zone = worksStampZoneRef.current
 
-    if (!zone) {
+    if (!zone || window.matchMedia('(max-width: 640px)').matches) {
       return
     }
 
@@ -331,6 +475,43 @@ export default function HomeMinimalIndex() {
     )
 
     observer.observe(zone)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
+
+  useEffect(() => {
+    const stage = mobileWorksStampStageRef.current
+
+    if (!stage || !window.matchMedia('(max-width: 640px)').matches) {
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (
+          !entry.isIntersecting
+          || hasShownWorksStampHintRef.current
+          || hasDismissedWorksStampHintRef.current
+        ) {
+          return
+        }
+
+        stage.style.setProperty('--stamp-cursor-x', '50%')
+        stage.style.setProperty('--stamp-cursor-y', '50%')
+        hasShownWorksStampHintRef.current = true
+        setIsWorksStampCameraVisible(true)
+        setIsWorksStampHintActive(true)
+        observer.disconnect()
+      },
+      {
+        rootMargin: '-18% 0px -18% 0px',
+        threshold: 0.42,
+      },
+    )
+
+    observer.observe(stage)
 
     return () => {
       observer.disconnect()
@@ -377,100 +558,31 @@ export default function HomeMinimalIndex() {
       return
     }
 
-    const mobileQuery = window.matchMedia('(max-width: 640px)')
-    let observer: IntersectionObserver | null = null
-    let frame = 0
+    const topPhoto = board.querySelector<HTMLElement>(`.${styles.featuredPhoto}`)
 
-    const updateMobileStep = () => {
-      frame = 0
-
-      if (!mobileQuery.matches) {
-        return
-      }
-
-      const rect = board.getBoundingClientRect()
-      const viewportHeight = window.innerHeight
-      const progress =
-        (viewportHeight * 0.72 - rect.top) /
-        Math.max(rect.height - viewportHeight * 0.28, 1)
-
-      let nextStep = 0
-
-      if (progress >= 0.12) {
-        nextStep = 1
-      }
-
-      if (progress >= 0.32) {
-        nextStep = 2
-      }
-
-      if (progress >= 0.52) {
-        nextStep = 3
-      }
-
-      if (progress >= 0.72) {
-        nextStep = 4
-      }
-
-      setIsFeaturedBoardActive(progress >= 0.04)
-      setFeaturedBoardStep(nextStep)
+    if (!topPhoto) {
+      return
     }
 
-    const requestMobileStepUpdate = () => {
-      if (frame) {
-        return
-      }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) {
+          return
+        }
 
-      frame = window.requestAnimationFrame(updateMobileStep)
-    }
+        setIsFeaturedBoardActive(true)
+        observer.disconnect()
+      },
+      {
+        rootMargin: '0px 0px -4% 0px',
+        threshold: 0.78,
+      },
+    )
 
-    const setupFeaturedBoardTrigger = () => {
-      observer?.disconnect()
-      observer = null
-      window.removeEventListener('scroll', requestMobileStepUpdate)
-      window.removeEventListener('resize', requestMobileStepUpdate)
-
-      if (mobileQuery.matches) {
-        setIsFeaturedBoardActive(false)
-        setFeaturedBoardStep(0)
-        window.addEventListener('scroll', requestMobileStepUpdate, { passive: true })
-        window.addEventListener('resize', requestMobileStepUpdate)
-        requestMobileStepUpdate()
-        return
-      }
-
-      setFeaturedBoardStep(0)
-      observer = new IntersectionObserver(
-        ([entry]) => {
-          if (!entry.isIntersecting) {
-            return
-          }
-
-          setIsFeaturedBoardActive(true)
-          observer?.disconnect()
-          observer = null
-        },
-        {
-          rootMargin: '-18% 0px -24% 0px',
-          threshold: 0.18,
-        },
-      )
-
-      observer.observe(board)
-    }
-
-    setupFeaturedBoardTrigger()
-    mobileQuery.addEventListener('change', setupFeaturedBoardTrigger)
+    observer.observe(topPhoto)
 
     return () => {
-      observer?.disconnect()
-      mobileQuery.removeEventListener('change', setupFeaturedBoardTrigger)
-      window.removeEventListener('scroll', requestMobileStepUpdate)
-      window.removeEventListener('resize', requestMobileStepUpdate)
-
-      if (frame) {
-        window.cancelAnimationFrame(frame)
-      }
+      observer.disconnect()
     }
   }, [])
 
@@ -503,10 +615,82 @@ export default function HomeMinimalIndex() {
     }
   }, [])
 
+  useEffect(() => {
+    const consoleFrame = profileConsoleFrameRef.current
+
+    if (!consoleFrame) {
+      return
+    }
+
+    const mobileQuery = window.matchMedia('(max-width: 640px)')
+
+    const centerProfileConsole = () => {
+      consoleFrame.style.removeProperty('--home-profile-console-center-shift')
+
+      if (!mobileQuery.matches) {
+        return
+      }
+
+      const consoleRect = consoleFrame.getBoundingClientRect()
+      const viewportCenter = document.documentElement.clientWidth / 2
+      const consoleCenter = consoleRect.left + consoleRect.width / 2
+      const centerShift = Math.round((viewportCenter - consoleCenter) * 10) / 10
+
+      consoleFrame.style.setProperty(
+        '--home-profile-console-center-shift',
+        `${centerShift}px`,
+      )
+    }
+
+    const frame = window.requestAnimationFrame(centerProfileConsole)
+    window.addEventListener('resize', centerProfileConsole)
+    mobileQuery.addEventListener('change', centerProfileConsole)
+
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.removeEventListener('resize', centerProfileConsole)
+      mobileQuery.removeEventListener('change', centerProfileConsole)
+    }
+  }, [])
+
+  useEffect(() => {
+    const character = profileCharacterRef.current
+
+    if (!character) {
+      return
+    }
+
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) {
+          return
+        }
+
+        setIsProfileCharacterActive(true)
+
+        if (reducedMotionQuery.matches) {
+          setIsProfileCharacterReady(true)
+        }
+
+        observer.disconnect()
+      },
+      {
+        rootMargin: '0px 0px -8% 0px',
+        threshold: 0.16,
+      },
+    )
+
+    observer.observe(character)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
+
   const featuredBoardClassName = [
     styles.featuredBoard,
     isFeaturedBoardActive ? styles.featuredBoardActive : '',
-    featuredBoardStepClass,
   ]
     .filter(Boolean)
     .join(' ')
@@ -514,7 +698,6 @@ export default function HomeMinimalIndex() {
   const featuredLargeStackClassName = [
     styles.featuredLargeStack,
     isFeaturedBoardActive ? styles.featuredLargeDeckActive : '',
-    featuredBoardStepClass,
     isFeaturedLargeViewMoreActive ? styles.featuredLargeViewMoreActive : '',
   ]
     .filter(Boolean)
@@ -547,7 +730,7 @@ export default function HomeMinimalIndex() {
     '--home-featured-large-width': scaledPx(1020),
     '--home-featured-large-margin': scaledPx(20),
     '--home-featured-large-stack-x': scaledPx(-24),
-    '--home-featured-large-stack-y': scaledPx(-340),
+    '--home-featured-large-stack-y': scaledPx(-270),
     '--home-featured-large-spread-x': scaledPx(-90),
     '--home-view-more-right': scaledPx(-130),
     '--home-view-more-bottom': scaledPx(64),
@@ -565,6 +748,16 @@ export default function HomeMinimalIndex() {
     '--home-profile-character-left': scaledPx(34),
     '--home-profile-character-bottom': scaledPx(176),
     '--home-profile-character-width': scaledPx(520),
+    '--home-profile-character-enter-x': scaledPx(132),
+    '--home-profile-character-enter-y': scaledPx(96),
+    '--home-profile-character-overshoot-x': scaledPx(-14),
+    '--home-profile-character-overshoot-y': scaledPx(-16),
+    '--home-profile-character-settle-x': scaledPx(5),
+    '--home-profile-character-settle-y': scaledPx(6),
+    '--home-profile-character-fine-x': scaledPx(-3),
+    '--home-profile-character-fine-y': scaledPx(-5),
+    '--home-profile-character-hover-y': scaledPx(-18),
+    '--home-profile-character-hover-y-small': scaledPx(-8),
     '--home-profile-console-width': scaledPx(980),
     '--home-profile-console-margin': scaledPx(-76),
     '--home-contact-tail': scaledPx(680),
@@ -809,6 +1002,111 @@ export default function HomeMinimalIndex() {
           </div>
 
           <div
+            ref={mobileWorksStampStageRef}
+            className={styles.mobileWorksStampStage}
+            aria-label="Tap anywhere in this area to take a photo"
+            onPointerDown={handleMobileStampPointerDown}
+            onPointerUp={handleMobileStampPointerUp}
+            onPointerCancel={handleMobileStampPointerCancel}
+          >
+            <div
+              className={`${styles.worksStampPhotoLayer} ${styles.mobileWorksStampPhotoLayer}`}
+              aria-hidden="true"
+            >
+              {stampPhotos.map((photo) => (
+                <img
+                  key={`mobile-${photo.id}`}
+                  src={photo.src}
+                  alt=""
+                  className={`${styles.worksStampPhoto} ${styles.mobileWorksStampPhoto}`}
+                  draggable={false}
+                  style={
+                    {
+                      '--stamp-photo-x': `${photo.x}px`,
+                      '--stamp-photo-y': `${photo.y}px`,
+                      '--stamp-photo-offset-x': `${photo.offsetX}px`,
+                      '--stamp-photo-offset-y': `${photo.offsetY}px`,
+                      '--stamp-photo-rotate': `${photo.rotate}deg`,
+                      '--stamp-photo-scale': `${photo.scale}`,
+                    } as CSSProperties
+                  }
+                />
+              ))}
+            </div>
+
+            <span
+              className={[
+                styles.worksStampCamera,
+                styles.mobileWorksStampCamera,
+                isWorksStampCameraVisible ? styles.worksStampCameraVisible : '',
+                isWorksStampCameraPressed ? styles.worksStampCameraPressed : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              aria-hidden="true"
+            >
+              {isWorksStampHintActive && (
+                <span className={styles.worksStampHint}>
+                  {stampHintCharacters.map((item, index) => (
+                    <span
+                      className={styles.worksStampHintChar}
+                      key={`mobile-${item.char}-${index}`}
+                      style={
+                        {
+                          '--stamp-hint-index': index,
+                          '--stamp-hint-x': `${item.x}em`,
+                          '--stamp-hint-y': `${item.y}em`,
+                          '--stamp-hint-rotate': `${item.rotate}deg`,
+                          '--stamp-hint-wiggle-a': `${item.swingA}deg`,
+                          '--stamp-hint-wiggle-b': `${item.swingB}deg`,
+                          '--stamp-hint-wiggle-delay': `${item.delay}ms`,
+                        } as CSSProperties
+                      }
+                    >
+                      <span className={styles.worksStampHintGlyph}>
+                        {item.char === '押' ? (
+                          <img
+                            src={`${worksCameraAssetPath}/stamp-hint-osu.svg`}
+                            alt=""
+                            className={styles.worksStampHintOsu}
+                            draggable={false}
+                          />
+                        ) : (
+                          item.char
+                        )}
+                      </span>
+                    </span>
+                  ))}
+                </span>
+              )}
+              <img
+                src={`${worksCameraAssetPath}/stamp-camera-idle-back.svg`}
+                alt=""
+                className={`${styles.worksStampCameraBack} ${styles.worksStampCameraIdleBack}`}
+                draggable={false}
+              />
+              <img
+                src={`${worksCameraAssetPath}/stamp-camera-idle.svg`}
+                alt=""
+                className={styles.worksStampCameraIdle}
+                draggable={false}
+              />
+              <img
+                src={`${worksCameraAssetPath}/stamp-camera-pressed-back.svg`}
+                alt=""
+                className={`${styles.worksStampCameraBack} ${styles.worksStampCameraPressedBack}`}
+                draggable={false}
+              />
+              <img
+                src={`${worksCameraAssetPath}/stamp-camera-pressed.svg`}
+                alt=""
+                className={styles.worksStampCameraPressedImage}
+                draggable={false}
+              />
+            </span>
+          </div>
+
+          <div
             ref={featuredBoardRef}
             className={featuredBoardClassName}
           >
@@ -929,9 +1227,20 @@ export default function HomeMinimalIndex() {
 
         <div className={styles.profileArcade}>
           <div className={styles.profileStage}>
-            <span className={styles.profileCharacter} aria-hidden="true" />
+            <span
+              ref={profileCharacterRef}
+              className={`${styles.profileCharacter} ${
+                isProfileCharacterActive ? styles.profileCharacterActive : ''
+              } ${isProfileCharacterReady ? styles.profileCharacterReady : ''}`}
+              aria-hidden="true"
+              onAnimationEnd={() => {
+                if (isProfileCharacterActive) {
+                  setIsProfileCharacterReady(true)
+                }
+              }}
+            />
 
-            <div className={styles.profileConsoleFrame}>
+            <div ref={profileConsoleFrameRef} className={styles.profileConsoleFrame}>
               <img
                 src="/home/character-stage/doodles/new-gameplayer-2-02.svg"
                 alt=""
@@ -962,11 +1271,7 @@ export default function HomeMinimalIndex() {
                   <button
                     type="button"
                     className={styles.profileLanguage}
-                    onClick={() =>
-                      setProfileLanguage((currentLanguage) =>
-                        currentLanguage === 'en' ? 'jp' : 'en',
-                      )
-                    }
+                    onClick={handleProfileLanguageToggle}
                   >
                     {profile.languageLabel}
                     <br />

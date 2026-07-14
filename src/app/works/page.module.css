@@ -386,6 +386,20 @@
   transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.workFlip {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+.workPlaceholder {
+  display: none;
+}
+
 .workPolaroid:nth-child(odd) {
   justify-self: end;
 }
@@ -443,8 +457,26 @@
 
 @media (prefers-reduced-motion: reduce) {
   .cameraTextRing,
-  .cameraPaper {
+  .cameraPaper,
+  .workFlip {
     animation: none;
+  }
+}
+
+@keyframes workPolaroidFlip {
+  0% {
+    opacity: 0;
+    transform: perspective(620px) rotateY(-88deg) scale(0.94);
+  }
+
+  62% {
+    opacity: 1;
+    transform: perspective(620px) rotateY(7deg) scale(1.02);
+  }
+
+  100% {
+    opacity: 1;
+    transform: perspective(620px) rotateY(0deg) scale(1);
   }
 }
 
@@ -515,40 +547,42 @@
     left: auto;
     z-index: 3;
     display: grid;
-    grid-template-columns: minmax(0, 49vw) minmax(142px, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     align-items: center;
     justify-items: center;
-    column-gap: clamp(18px, 4.8vw, 30px);
+    row-gap: clamp(8px, 2.4vw, 14px);
     width: 100%;
     min-height: 0;
-    padding: 16px 0 0 clamp(18px, 5.2vw, 30px);
+    padding: 8px 0 0;
   }
 
   .cameraStage {
-    justify-self: start;
-    width: min(52vw, 300px);
+    --paper-exit-top: 64.5%;
+
+    justify-self: center;
+    width: min(65vw, clamp(245px, 29.75dvh, 265px));
     margin-left: 0;
   }
 
   .cameraTextRing {
-    left: -30%;
-    top: -6%;
-    width: clamp(96px, 34vw, 152px);
-    font-size: 13px;
+    left: -20%;
+    top: -5%;
+    width: 55%;
+    font-size: clamp(11px, 1.4dvh, 12.5px);
   }
 
   .cameraCategoryLabel {
-    right: 8%;
+    right: 10%;
     top: 58%;
-    font-size: clamp(0.72rem, 3.6vw, 1rem);
+    font-size: clamp(0.8rem, 1.8dvh, 1rem);
   }
 
   .categoryNav {
-    justify-self: start;
+    justify-self: center;
     align-self: center;
-    gap: clamp(9px, 2.8vw, 15px);
-    width: auto;
-    margin-top: 0;
+    gap: clamp(5px, 1.8vw, 8px);
+    width: 100%;
+    margin-top: clamp(40px, 10.5vw, 44px);
     padding-right: 0;
   }
 
@@ -557,7 +591,7 @@
     min-height: 1.28em;
     padding: 0.08em 0.16em;
     font-family: 'Mini Wakuwaku Maru', 'WadaLabChuMaruGo2004P', Arial, sans-serif;
-    font-size: clamp(1.06rem, 5.35vw, 1.78rem);
+    font-size: clamp(1rem, 2.15dvh, 1.25rem);
     line-height: 1.03;
   }
 
@@ -597,21 +631,89 @@
 
   .workDisplay {
     grid-column: auto;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: start;
+    column-gap: clamp(7px, 2.4vw, 12px);
+    row-gap: 0;
     min-height: 0;
-    padding: clamp(62px, 14vw, 112px) 0 84px;
-    row-gap: clamp(44px, 12vw, 86px);
+    padding: clamp(40px, 5dvh, 46px) 0 28px;
+    perspective: 700px;
   }
 
   .workPolaroid,
   .workPolaroid:nth-child(n) {
     justify-self: center;
-    width: min(78vw, 440px);
+    width: 100%;
+    min-width: 0;
     transform: rotate(var(--work-rotate, 0deg));
+  }
+
+  .workFlip {
+    animation: workPolaroidFlip 480ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--work-flip-delay, 0ms);
+  }
+
+  .workPlaceholder {
+    display: block;
+    width: 100%;
+    aspect-ratio: 344.01 / 336.65;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .workMeta {
+    gap: 2px;
+    font-size: clamp(0.32rem, 1.35vw, 0.46rem);
+  }
+
+  .workMeta span:first-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .workPolaroid:hover,
   .workPolaroid:focus-visible {
     transform: rotate(var(--work-rotate, 0deg));
+  }
+}
+
+@media (max-width: 768px) and (max-height: 800px) {
+  .page {
+    padding-top: 84px;
+  }
+
+  .worksRail {
+    row-gap: 6px;
+    padding-top: 0;
+  }
+
+  .cameraStage {
+    width: min(220px, 56vw);
+  }
+
+  .cameraTextRing {
+    font-size: clamp(9px, 2.5vw, 11px);
+  }
+
+  .cameraCategoryLabel {
+    font-size: clamp(0.72rem, 3.2vw, 0.9rem);
+  }
+
+  .categoryNav {
+    gap: 3px;
+    margin-top: 40px;
+  }
+
+  .categoryNav button {
+    font-size: clamp(0.82rem, 4vw, 1.1rem);
+  }
+
+  .workDisplay {
+    width: 94%;
+    margin: 0 auto;
+    padding-top: 10px;
+    padding-bottom: 40px;
   }
 }
