@@ -1474,8 +1474,9 @@ export default function HomeMinimalIndex() {
 
               <Link className={styles.viewMoreLink} href="/works" aria-label="View more works">
                 <span className={styles.viewMoreText}>
-                 view
-                 <br />
+                  view
+                  <br className={styles.viewMoreDesktopBreak} />
+                  <span className={styles.viewMoreMobileSpace}> </span>
                   more
                 </span>
                 <svg

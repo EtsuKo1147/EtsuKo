@@ -4,6 +4,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { profileCopy, type ProfileLanguage } from '@/data/profile'
+import { useSiteTheme } from '@/components/theme/SiteThemeProvider'
 import styles from './page.module.css'
 
 type ProfileTypewriterSegment = {
@@ -294,7 +295,7 @@ function ProfileConsoleTypewriter({
 
 export default function ProfileView() {
   const [profileLanguage, setProfileLanguage] = useState<ProfileLanguage>('en')
-  const [isInverted, setIsInverted] = useState(false)
+  const { isInverted, toggleTheme } = useSiteTheme()
   const [designScale, setDesignScale] = useState(1)
   const profileConsoleFrameRef = useRef<HTMLDivElement>(null)
   const profile = profileCopy[profileLanguage]
@@ -315,14 +316,6 @@ export default function ProfileView() {
       window.removeEventListener('resize', updateDesignScale)
     }
   }, [])
-
-  useEffect(() => {
-    document.body.dataset.simpleNavInverted = isInverted ? 'true' : 'false'
-
-    return () => {
-      delete document.body.dataset.simpleNavInverted
-    }
-  }, [isInverted])
 
   useEffect(() => {
     const consoleFrame = profileConsoleFrameRef.current
@@ -396,7 +389,7 @@ export default function ProfileView() {
         className={styles.invertToggle}
         aria-pressed={isInverted}
         aria-label={isInverted ? 'Switch to light mode' : 'Switch to dark mode'}
-        onClick={() => setIsInverted((currentValue) => !currentValue)}
+        onClick={toggleTheme}
       />
 
       <section className={styles.header} aria-label="Profile">

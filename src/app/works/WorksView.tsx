@@ -5,6 +5,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import Link from 'next/link'
 import { type Work, type WorkCategory } from '@/data/works'
+import { useSiteTheme } from '@/components/theme/SiteThemeProvider'
 import styles from './page.module.css'
 
 type ActiveCategory = 'all' | WorkCategory
@@ -41,24 +42,18 @@ type WorksViewProps = {
 
 export default function WorksView({ works, initialCategory = 'all' }: WorksViewProps) {
   const [activeCategory, setActiveCategory] = useState<ActiveCategory>(initialCategory)
-  const [isInverted, setIsInverted] = useState(false)
+  const { isInverted, toggleTheme } = useSiteTheme()
   const [designScale, setDesignScale] = useState(1)
+  const [displayPanelScale, setDisplayPanelScale] = useState(1)
 
   const activeCategoryOption =
     categoryOptions.find((category) => category.slug === activeCategory) ?? categoryOptions[0]
 
   const visibleWorks = useMemo(() => {
-    const filteredWorks =
-      activeCategory === 'all'
-        ? works
-        : works.filter((work) => work.category === activeCategory)
-
-    return filteredWorks.slice(0, 4)
+    return activeCategory === 'all'
+      ? works
+      : works.filter((work) => work.category === activeCategory)
   }, [activeCategory, works])
-  const previewSlots = useMemo(
-    () => Array.from({ length: 4 }, (_, index) => visibleWorks[index] ?? null),
-    [visibleWorks],
-  )
 
   useEffect(() => {
     const updateDesignScale = () => {
@@ -67,6 +62,7 @@ export default function WorksView({ works, initialCategory = 'all' }: WorksViewP
       const nextScale = Math.max(0.78, Math.min(1, widthScale, heightScale))
 
       setDesignScale(Math.round(nextScale * 1000) / 1000)
+      setDisplayPanelScale(Math.round(Math.min(widthScale, heightScale) * 1000) / 1000)
     }
 
     updateDesignScale()
@@ -77,15 +73,9 @@ export default function WorksView({ works, initialCategory = 'all' }: WorksViewP
     }
   }, [])
 
-  useEffect(() => {
-    document.body.dataset.simpleNavInverted = isInverted ? 'true' : 'false'
-
-    return () => {
-      delete document.body.dataset.simpleNavInverted
-    }
-  }, [isInverted])
-
   const scaledPx = (value: number) => `${Math.round(value * designScale * 10) / 10}px`
+  const scaledDisplayPanelPx = (value: number) =>
+    `${Math.round(value * displayPanelScale * 10) / 10}px`
   const pageScaleStyle = {
     '--works-page-pad-top': scaledPx(44),
     '--works-page-pad-x': scaledPx(76),
@@ -108,7 +98,13 @@ export default function WorksView({ works, initialCategory = 'all' }: WorksViewP
     '--works-display-row-gap': scaledPx(96),
     '--works-display-pad-top': scaledPx(82),
     '--works-display-pad-bottom': scaledPx(140),
-    '--works-polaroid-width': scaledPx(420),
+    '--works-display-panel-width': scaledDisplayPanelPx(1400),
+    '--works-display-panel-height': scaledDisplayPanelPx(1000),
+    '--works-display-panel-right': scaledDisplayPanelPx(130),
+    '--works-display-panel-safe-left': scaledPx(594),
+    '--works-display-panel-radius': scaledDisplayPanelPx(40),
+    '--works-polaroid-width': scaledPx(480),
+    '--works-polaroid-row-overlap': scaledPx(60),
     '--works-polaroid-hover-y': scaledPx(8),
     '--works-meta-font-size': scaledPx(12.5),
   } as CSSProperties
@@ -123,7 +119,7 @@ export default function WorksView({ works, initialCategory = 'all' }: WorksViewP
         className={styles.invertToggle}
         aria-pressed={isInverted}
         aria-label={isInverted ? 'Switch to light mode' : 'Switch to dark mode'}
-        onClick={() => setIsInverted((currentValue) => !currentValue)}
+        onClick={toggleTheme}
       />
 
       <div className={styles.worksLayout}>
@@ -197,59 +193,59 @@ export default function WorksView({ works, initialCategory = 'all' }: WorksViewP
           </nav>
         </aside>
 
-        <section className={styles.workDisplay} aria-live="polite">
-          {previewSlots.map((work, index) => {
-            if (!work) {
-              return (
-                <span
-                  className={styles.workPlaceholder}
-                  key={`${activeCategory}-empty-${index}`}
-                  aria-hidden="true"
-                />
-              )
-            }
+        <section
+          key={activeCategory}
+          className={styles.workDisplayViewport}
+          aria-live="polite"
+          aria-label={`${activeCategoryOption.label} works`}
+          tabIndex={0}
+        >
+          <div className={styles.workDisplay}>
+            {visibleWorks.map((work, index) => {
+              const layoutIndex = index % 4
 
-            return (
-              <Link
-                href={work.href}
-                className={styles.workPolaroid}
-                key={`${activeCategory}-${work.id}`}
-                style={
-                  {
-                    '--work-rotate': `${[-7, 2, -2, 8][index] ?? 0}deg`,
-                    '--work-x': scaledPx([-18, 10, -4, 16][index] ?? 0),
-                    '--work-y': scaledPx([12, -8, 18, 28][index] ?? 0),
-                    '--work-flip-delay': `${index * 55}ms`,
-                  } as CSSProperties
-                }
-              >
-                <span className={styles.workFlip}>
-                  <span className={styles.workPaperViewport}>
-                    {work.coverImageUrl ? (
-                      <img
-                        src={work.coverImageUrl}
-                        alt={work.coverImageAlt || work.title}
-                        className={styles.workCoverImage}
-                        draggable={false}
-                      />
-                    ) : (
-                      <img
-                        src={projectPreviewImages[index % projectPreviewImages.length]}
-                        alt=""
-                        className={styles.workCoverImage}
-                        draggable={false}
-                      />
-                    )}
+              return (
+                <Link
+                  href={work.href}
+                  className={styles.workPolaroid}
+                  key={`${activeCategory}-${work.slug}`}
+                  style={
+                    {
+                      '--work-rotate': `${[-8, 10, 4, -8][layoutIndex]}deg`,
+                      '--work-x': scaledPx([-90, -70, 60, 80][layoutIndex]),
+                      '--work-y': scaledPx([-20, 10, -80, -90][layoutIndex]),
+                      '--work-flip-delay': `${layoutIndex * 55}ms`,
+                    } as CSSProperties
+                  }
+                >
+                  <span className={styles.workFlip}>
+                    <span className={styles.workImageViewport}>
+                      {work.coverImageUrl ? (
+                        <img
+                          src={work.coverImageUrl}
+                          alt={work.coverImageAlt || work.title}
+                          className={styles.workCoverImage}
+                          draggable={false}
+                        />
+                      ) : (
+                        <img
+                          src={projectPreviewImages[index % projectPreviewImages.length]}
+                          alt=""
+                          className={styles.workCoverImage}
+                          draggable={false}
+                        />
+                      )}
+                    </span>
+                    <span className={styles.paperSurfaceShadow} aria-hidden="true" />
+                    <span className={styles.workMeta}>
+                      <span>{work.title}</span>
+                      <span>{work.year}</span>
+                    </span>
                   </span>
-                  <span className={styles.workPaperFrame} aria-hidden="true" />
-                  <span className={styles.workMeta}>
-                    <span>{work.title}</span>
-                    <span>{work.year}</span>
-                  </span>
-                </span>
-              </Link>
-            )
-          })}
+                </Link>
+              )
+            })}
+          </div>
         </section>
       </div>
     </main>

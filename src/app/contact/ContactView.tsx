@@ -3,10 +3,11 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useState, type CSSProperties } from 'react'
+import { useSiteTheme } from '@/components/theme/SiteThemeProvider'
 import styles from './contact.module.css'
 
 export default function ContactView() {
-  const [isInverted, setIsInverted] = useState(false)
+  const { isInverted, toggleTheme } = useSiteTheme()
   const [designScale, setDesignScale] = useState(1)
 
   useEffect(() => {
@@ -25,14 +26,6 @@ export default function ContactView() {
       window.removeEventListener('resize', updateDesignScale)
     }
   }, [])
-
-  useEffect(() => {
-    document.body.dataset.simpleNavInverted = isInverted ? 'true' : 'false'
-
-    return () => {
-      delete document.body.dataset.simpleNavInverted
-    }
-  }, [isInverted])
 
   const scaledPx = (value: number) => `${Math.round(value * designScale * 10) / 10}px`
   const pageScaleStyle = {
@@ -75,7 +68,7 @@ export default function ContactView() {
         className={styles.invertToggle}
         aria-pressed={isInverted}
         aria-label={isInverted ? 'Switch to light mode' : 'Switch to dark mode'}
-        onClick={() => setIsInverted((currentValue) => !currentValue)}
+        onClick={toggleTheme}
       />
 
       <section className={styles.contactShell} aria-label="Contact">

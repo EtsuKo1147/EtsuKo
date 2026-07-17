@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import HomeEntryScrollController from '@/components/sections/HomeEntryScrollController'
 import HomeHero from '@/components/sections/HomeHero'
 import HomeMinimalIndex from '@/components/sections/HomeMinimalIndex'
+import { useSiteTheme } from '@/components/theme/SiteThemeProvider'
 import {
   clearHomeLoaderSkipRequest,
   markHomeLoaderPlayed,
@@ -20,7 +21,7 @@ const HandDrawnLoader = dynamic(
 export default function HomePage() {
   const [loaderDone,   setLoaderDone]   = useState(shouldSkipHomeLoader)
   const [homeRevealed, setHomeRevealed] = useState(shouldSkipHomeLoader)
-  const [isInverted, setIsInverted] = useState(false)
+  const { isInverted, toggleTheme } = useSiteTheme()
 
   const revealHome = () => {
     setHomeRevealed(true)
@@ -62,7 +63,7 @@ export default function HomePage() {
           className={styles.invertToggle}
           aria-pressed={isInverted}
           aria-label={isInverted ? 'Switch to light mode' : 'Switch to dark mode'}
-          onClick={() => setIsInverted((currentValue) => !currentValue)}
+          onClick={toggleTheme}
         />
         <HomeHero revealed={homeRevealed} />
         <HomeMinimalIndex />
