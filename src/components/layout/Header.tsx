@@ -49,6 +49,7 @@ function getRoadSignScale(viewportWidth: number, viewportHeight: number) {
 
 export default function Header() {
   const pathname = usePathname()
+  const isWorkDetailPage = pathname.startsWith('/works/')
   const usesSimpleNav = pathname === '/works'
     || pathname.startsWith('/works/')
     || pathname === '/profile'
@@ -434,6 +435,10 @@ export default function Header() {
     const roadSignSlideEl = roadSignSlideRef.current
     let scaleRaf: number | null = null
 
+    setRoadSignCollapsedState(false)
+    pastHeroRef.current = false
+    roadSignStateRef.current = 'expanded'
+
     const updateRoadSignScale = () => {
       root.style.setProperty(
         '--road-sign-scale',
@@ -590,33 +595,15 @@ export default function Header() {
 
     window.addEventListener('scroll', onScroll, { passive: true })
 
+    // Returning home skips the loader but replays the original road-sign entrance.
+    // First visit stays hidden until the loader signals homeReveal.
+    const bunnyEl = bunnyRef.current
     if (shouldSkip) {
-      gsap.set(root, { visibility: 'visible' })
-      bunnyReadyRef.current = true
-      roadSignReadyRef.current = true
-      roadSignStateRef.current = 'expanded'
-      handleRoadSignScrollRef.current()
-      return () => {
-        window.removeEventListener('scroll', onScroll)
-        if (scrollRafRef.current !== null) {
-          window.cancelAnimationFrame(scrollRafRef.current)
-          scrollRafRef.current = null
-        }
-        if (compactEl) {
-          gsap.killTweensOf(compactEl)
-        }
-        if (collapseControlEl) {
-          gsap.killTweensOf(collapseControlEl)
-        }
-        killRoadSignItemsTimeline()
-        cleanupRoadSignScale()
-        clearCollapseControlTimer()
-      }
+      runAnimation()
+    } else {
+      window.addEventListener('homeReveal', runAnimation, { once: true })
     }
 
-    // First visit to home: stay hidden until loader signals homeReveal
-    const bunnyEl = bunnyRef.current
-    window.addEventListener('homeReveal', runAnimation, { once: true })
     return () => {
       window.removeEventListener('homeReveal', runAnimation)
       window.removeEventListener('scroll', onScroll)
@@ -640,7 +627,11 @@ export default function Header() {
       cleanupRoadSignScale()
       clearCollapseControlTimer()
     }
-  }, [])
+  }, [pathname])
+
+  if (isWorkDetailPage) {
+    return null
+  }
 
   if (usesSimpleNav) {
     const activeHref = pathname.startsWith('/works') ? '/works' : pathname

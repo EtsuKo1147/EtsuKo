@@ -83,7 +83,7 @@ const featuredPolaroids = [
     role: 'VI / LOGO / Package',
     year: '2026',
     image: `${polaroidAssetPath}/featured-01.jpg`,
-    href: '/works/loop-identity-system',
+    href: '/works/text1',
   },
   {
     title: 'Type Signal Posters',
@@ -91,7 +91,7 @@ const featuredPolaroids = [
     role: 'LOGO / Typography / Poster',
     year: '2025',
     image: `${polaroidAssetPath}/featured-02.jpg`,
-    href: '/works/type-signal-posters',
+    href: '/works/text2',
   },
   {
     title: 'Etsu Portfolio System',
@@ -99,7 +99,7 @@ const featuredPolaroids = [
     role: 'Web / Interaction / Frontend',
     year: '2026',
     image: `${polaroidAssetPath}/featured-03.jpg`,
-    href: '/works/etsu-portfolio-system',
+    href: '/works/text3',
   },
   {
     title: 'North Pier Frames',
@@ -107,7 +107,7 @@ const featuredPolaroids = [
     role: 'Photography / Retouching',
     year: '2025',
     image: `${polaroidAssetPath}/featured-04.jpg`,
-    href: '/works/north-pier-frames',
+    href: '/works/text4',
   },
 ]
 
@@ -1435,7 +1435,7 @@ export default function HomeMinimalIndex() {
           >
               <Link
                 className={styles.featuredLargeFrame}
-                href="/works"
+                href="/works/text5"
                 aria-label="View Photography works"
                 onPointerMove={handlePolaroidPointerMove}
               >

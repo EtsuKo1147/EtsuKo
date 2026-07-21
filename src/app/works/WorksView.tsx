@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useEffect, useMemo, useState, type CSSProperties } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import Link from 'next/link'
 import { type Work, type WorkCategory } from '@/data/works'
 import { useSiteTheme } from '@/components/theme/SiteThemeProvider'
@@ -45,6 +45,7 @@ export default function WorksView({ works, initialCategory = 'all' }: WorksViewP
   const { isInverted, toggleTheme } = useSiteTheme()
   const [designScale, setDesignScale] = useState(1)
   const [displayPanelScale, setDisplayPanelScale] = useState(1)
+  const workDisplayViewportRef = useRef<HTMLElement>(null)
 
   const activeCategoryOption =
     categoryOptions.find((category) => category.slug === activeCategory) ?? categoryOptions[0]
@@ -70,6 +71,55 @@ export default function WorksView({ works, initialCategory = 'all' }: WorksViewP
 
     return () => {
       window.removeEventListener('resize', updateDesignScale)
+    }
+  }, [])
+
+  useEffect(() => {
+    const desktopQuery = window.matchMedia('(min-width: 1101px)')
+
+    const handlePageWheel = (event: WheelEvent) => {
+      const viewport = workDisplayViewportRef.current
+
+      if (
+        !desktopQuery.matches ||
+        !viewport ||
+        event.defaultPrevented ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        Math.abs(event.deltaX) > Math.abs(event.deltaY)
+      ) {
+        return
+      }
+
+      if (event.target instanceof Node && viewport.contains(event.target)) {
+        return
+      }
+
+      const maxScrollTop = viewport.scrollHeight - viewport.clientHeight
+
+      if (maxScrollTop <= 0 || event.deltaY === 0) {
+        return
+      }
+
+      const normalizedDelta =
+        event.deltaMode === WheelEvent.DOM_DELTA_LINE
+          ? event.deltaY * 16
+          : event.deltaMode === WheelEvent.DOM_DELTA_PAGE
+            ? event.deltaY * viewport.clientHeight
+            : event.deltaY
+
+      event.preventDefault()
+      viewport.scrollTop = Math.max(
+        0,
+        Math.min(maxScrollTop, viewport.scrollTop + normalizedDelta),
+      )
+    }
+
+    window.addEventListener('wheel', handlePageWheel, { passive: false })
+
+    return () => {
+      window.removeEventListener('wheel', handlePageWheel)
     }
   }, [])
 
@@ -194,6 +244,7 @@ export default function WorksView({ works, initialCategory = 'all' }: WorksViewP
         </aside>
 
         <section
+          ref={workDisplayViewportRef}
           key={activeCategory}
           className={styles.workDisplayViewport}
           aria-live="polite"
