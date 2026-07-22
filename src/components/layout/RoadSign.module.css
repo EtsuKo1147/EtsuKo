@@ -264,7 +264,7 @@
   color: #363636;
   font-family: var(--font-intel-mono), 'Courier New', monospace;
   font-size: clamp(0.72rem, 0.78vw, 0.98rem);
-  font-weight: 400;
+  font-weight: 500;
   line-height: 1;
   letter-spacing: 0;
   text-decoration: none;
@@ -336,19 +336,20 @@
 @media (max-width: 768px) {
   .simplePageNav {
     top: 0;
-    right: 0;
+    right: env(safe-area-inset-right, 0px);
     bottom: auto;
-    left: 0;
+    left: max(42px, calc(env(safe-area-inset-left, 0px) + 30px));
     justify-content: center;
-    padding: 24px 18px 10px;
+    padding: 24px 0 10px;
   }
 
   .simplePageNavList {
     flex-direction: row;
     align-items: flex-start;
-    justify-content: center;
+    justify-content: flex-start;
     gap: clamp(22px, 7vw, 54px);
-    width: 100%;
+    width: max-content;
+    max-width: 100%;
     min-height: 0;
   }
 
@@ -362,9 +363,6 @@
   }
 
   .simplePageNavLink::after {
-    margin-top: 2px;
-    border-right-width: 0.24em;
-    border-left-width: 0.24em;
-    border-bottom-width: 0.28em;
+    display: none;
   }
 }

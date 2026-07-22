@@ -26,6 +26,9 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
   const pageRef = useRef<HTMLElement>(null)
   const narrativeRef = useRef<HTMLElement>(null)
   const introTextRef = useRef<HTMLDivElement>(null)
+  const titleRef = useRef<HTMLHeadingElement>(null)
+  const categoryRef = useRef<HTMLParagraphElement>(null)
+  const descriptionRef = useRef<HTMLParagraphElement>(null)
   const coverPanelRef = useRef<HTMLDivElement>(null)
   const [preview, setPreview] = useState<PreviewState>(null)
 
@@ -54,14 +57,80 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
     const page = pageRef.current
     const narrative = narrativeRef.current
     const introText = introTextRef.current
+    const title = titleRef.current
+    const category = categoryRef.current
+    const description = descriptionRef.current
     const coverPanel = coverPanelRef.current
 
-    if (!page || !narrative || !introText || !coverPanel) {
+    if (!page || !narrative || !introText || !title || !category || !description || !coverPanel) {
       return
     }
 
     const context = gsap.context(() => {
       const media = gsap.matchMedia()
+
+      media.add('(prefers-reduced-motion: no-preference)', () => {
+        gsap.set(title, {
+          yPercent: 112,
+          visibility: 'visible',
+        })
+        gsap.set(category, {
+          y: () => window.innerHeight + category.offsetHeight + 48,
+          visibility: 'visible',
+        })
+        gsap.set(description, {
+          x: () => -(window.innerWidth + description.offsetWidth + 48),
+          visibility: 'visible',
+        })
+        gsap.set(coverPanel, {
+          xPercent: 100,
+          visibility: 'visible',
+        })
+
+        const introTimeline = gsap.timeline({
+          defaults: { overwrite: 'auto' },
+          onComplete: () => {
+            gsap.set([title, category, description, coverPanel], {
+              clearProps: 'transform',
+              visibility: 'visible',
+            })
+          },
+        })
+
+        introTimeline
+          .to(title, {
+            yPercent: 0,
+            duration: 0.4,
+            ease: 'power4.out',
+          })
+          .to(
+            category,
+            {
+              y: 0,
+              duration: 0.32,
+              ease: 'power3.out',
+            },
+            0.08,
+          )
+          .to(
+            description,
+            {
+              x: 0,
+              duration: 0.32,
+              ease: 'power3.out',
+            },
+            0.08,
+          )
+          .to(
+            coverPanel,
+            {
+              xPercent: 0,
+              duration: 0.4,
+              ease: 'power3.out',
+            },
+            0,
+          )
+      })
 
       media.add(
         '(min-width: 761px) and (prefers-reduced-motion: no-preference)',
@@ -168,11 +237,13 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
         <div className={styles.heroSticky}>
           <div className={styles.introPanel}>
             <div ref={introTextRef} className={styles.introContent}>
-              <h1 className={styles.title}>{work.title}</h1>
-              <p className={styles.category}>
+              <div className={styles.titleMask}>
+                <h1 ref={titleRef} className={styles.title}>{work.title}</h1>
+              </div>
+              <p ref={categoryRef} className={styles.category}>
                 {work.categoryLabel} / {work.year}
               </p>
-              <p className={styles.description}>{work.description}</p>
+              <p ref={descriptionRef} className={styles.description}>{work.description}</p>
             </div>
           </div>
 
@@ -214,19 +285,76 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
         </section>
       ) : null}
 
+      {nextWork ? (
+        <Link
+          href={nextWork.href}
+          className={styles.pageNext}
+          aria-label={`Next work: ${nextWork.title}`}
+        >
+          <span className={styles.pageNextLabel}>Next</span>
+          <svg className={styles.pageNextArrow} viewBox="0 0 64 34" aria-hidden="true">
+            <path d="M4 4 32 30 60 4" />
+          </svg>
+        </Link>
+      ) : null}
+
       <aside className={styles.navigator} aria-label="Work navigation">
+        <nav className={styles.mobileNavigator} aria-label="Mobile work navigation">
+          {previousWork ? (
+            <Link
+              href={previousWork.href}
+              className={`${styles.mobileNavLink} ${styles.mobileNavPrev}`}
+              aria-label={`Previous work: ${previousWork.title}`}
+            >
+              <span className={styles.mobileNavArrow} aria-hidden="true">◀</span>
+              <span>PREV</span>
+            </Link>
+          ) : (
+            <span
+              className={`${styles.mobileNavLink} ${styles.mobileNavPrev} ${styles.mobileNavDisabled}`}
+              aria-disabled="true"
+            >
+              <span className={styles.mobileNavArrow} aria-hidden="true">◀</span>
+              <span>PREV</span>
+            </span>
+          )}
+
+          <Link href="/works" className={`${styles.mobileNavLink} ${styles.mobileNavWorks}`}>
+            WORKS
+          </Link>
+
+          {nextWork ? (
+            <Link
+              href={nextWork.href}
+              className={`${styles.mobileNavLink} ${styles.mobileNavNext}`}
+              aria-label={`Next work: ${nextWork.title}`}
+            >
+              <span>NEXT</span>
+              <span className={styles.mobileNavArrow} aria-hidden="true">▶</span>
+            </Link>
+          ) : (
+            <span
+              className={`${styles.mobileNavLink} ${styles.mobileNavNext} ${styles.mobileNavDisabled}`}
+              aria-disabled="true"
+            >
+              <span>NEXT</span>
+              <span className={styles.mobileNavArrow} aria-hidden="true">▶</span>
+            </span>
+          )}
+        </nav>
+
         <div className={styles.navigatorMain}>
           {previousWork ? (
             <Link href={previousWork.href} className={styles.arrowAction} aria-label={`Previous work: ${previousWork.title}`}>
               <span className={`${styles.actionHint} ${styles.prevHint}`}>Prev</span>
-              <svg className={`${styles.chevron} ${styles.chevronUp}`} viewBox="0 0 20 10" aria-hidden="true">
-                <path className={styles.controlStroke} d="M0 10 10 0l10 10" />
+              <svg className={`${styles.chevron} ${styles.chevronUp}`} viewBox="0 0 20 12" aria-hidden="true">
+                <path className={styles.controlFill} d="M10 0 20 12H0Z" />
               </svg>
             </Link>
           ) : (
             <span className={`${styles.arrowAction} ${styles.actionDisabled}`} aria-label="No previous work" aria-disabled="true">
-              <svg className={`${styles.chevron} ${styles.chevronUp}`} viewBox="0 0 20 10" aria-hidden="true">
-                <path className={styles.controlStroke} d="M0 10 10 0l10 10" />
+              <svg className={`${styles.chevron} ${styles.chevronUp}`} viewBox="0 0 20 12" aria-hidden="true">
+                <path className={styles.controlFill} d="M10 0 20 12H0Z" />
               </svg>
             </span>
           )}
@@ -264,15 +392,15 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
 
           {nextWork ? (
             <Link href={nextWork.href} className={styles.arrowAction} aria-label={`Next work: ${nextWork.title}`}>
-              <svg className={`${styles.chevron} ${styles.chevronDown}`} viewBox="0 0 20 10" aria-hidden="true">
-                <path className={styles.controlStroke} d="M0 0 10 10 20 0" />
+              <svg className={`${styles.chevron} ${styles.chevronDown}`} viewBox="0 0 20 12" aria-hidden="true">
+                <path className={styles.controlFill} d="M0 0h20L10 12Z" />
               </svg>
               <span className={`${styles.actionHint} ${styles.nextHint}`}>Next</span>
             </Link>
           ) : (
             <span className={`${styles.arrowAction} ${styles.actionDisabled}`} aria-label="No next work" aria-disabled="true">
-              <svg className={`${styles.chevron} ${styles.chevronDown}`} viewBox="0 0 20 10" aria-hidden="true">
-                <path className={styles.controlStroke} d="M0 0 10 10 20 0" />
+              <svg className={`${styles.chevron} ${styles.chevronDown}`} viewBox="0 0 20 12" aria-hidden="true">
+                <path className={styles.controlFill} d="M0 0h20L10 12Z" />
               </svg>
             </span>
           )}

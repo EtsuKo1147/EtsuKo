@@ -6,7 +6,7 @@ import './globals.css'
 
 const intelMono = Intel_One_Mono({
   subsets: ['latin'],
-  weight: '400',
+  weight: ['400', '500'],
   variable: '--font-intel-mono',
 })
 
