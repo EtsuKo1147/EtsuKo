@@ -44,6 +44,41 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
     ? works[(currentIndex + 1) % works.length]
     : null
   const previewWork = preview ? works[preview.index] : null
+  const browserChromeColor = isInverted ? '#363636' : (work.surface || '#faf9f6')
+
+  useLayoutEffect(() => {
+    const root = document.documentElement
+    const body = document.body
+    const previousRootBackground = root.style.backgroundColor
+    const previousBodyBackground = body.style.backgroundColor
+    let themeColorMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
+    const createdThemeColorMeta = !themeColorMeta
+
+    if (!themeColorMeta) {
+      themeColorMeta = document.createElement('meta')
+      themeColorMeta.name = 'theme-color'
+      document.head.appendChild(themeColorMeta)
+    }
+
+    const previousThemeColor = themeColorMeta.getAttribute('content')
+
+    root.style.backgroundColor = browserChromeColor
+    body.style.backgroundColor = browserChromeColor
+    themeColorMeta.content = browserChromeColor
+
+    return () => {
+      root.style.backgroundColor = previousRootBackground
+      body.style.backgroundColor = previousBodyBackground
+
+      if (createdThemeColorMeta) {
+        themeColorMeta.remove()
+      } else if (previousThemeColor === null) {
+        themeColorMeta.removeAttribute('content')
+      } else {
+        themeColorMeta.content = previousThemeColor
+      }
+    }
+  }, [browserChromeColor])
 
   const getSafePreviewTop = (element: HTMLElement) => {
     const rect = element.getBoundingClientRect()
@@ -307,7 +342,7 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
               aria-label={`Previous work: ${previousWork.title}`}
             >
               <span className={styles.mobileNavArrow} aria-hidden="true">◀</span>
-              <span>PREV</span>
+              <span>Prev</span>
             </Link>
           ) : (
             <span
@@ -315,12 +350,15 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
               aria-disabled="true"
             >
               <span className={styles.mobileNavArrow} aria-hidden="true">◀</span>
-              <span>PREV</span>
+              <span>Prev</span>
             </span>
           )}
 
           <Link href="/works" className={`${styles.mobileNavLink} ${styles.mobileNavWorks}`}>
-            WORKS
+            <span>Works</span>
+            <svg className={styles.mobileWorksIcon} viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M6 3 2 7l4 4M2.5 7H10c2.6 0 4 1.3 4 3.5S12.6 14 10 14" />
+            </svg>
           </Link>
 
           {nextWork ? (
@@ -329,7 +367,7 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
               className={`${styles.mobileNavLink} ${styles.mobileNavNext}`}
               aria-label={`Next work: ${nextWork.title}`}
             >
-              <span>NEXT</span>
+              <span>Next</span>
               <span className={styles.mobileNavArrow} aria-hidden="true">▶</span>
             </Link>
           ) : (
@@ -337,7 +375,7 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
               className={`${styles.mobileNavLink} ${styles.mobileNavNext} ${styles.mobileNavDisabled}`}
               aria-disabled="true"
             >
-              <span>NEXT</span>
+              <span>Next</span>
               <span className={styles.mobileNavArrow} aria-hidden="true">▶</span>
             </span>
           )}

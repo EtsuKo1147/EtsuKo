@@ -655,9 +655,9 @@
   .navigator {
     inset:
       auto
-      max(20px, env(safe-area-inset-right))
-      max(8px, env(safe-area-inset-bottom))
-      max(20px, env(safe-area-inset-left));
+      max(28px, env(safe-area-inset-right))
+      max(28px, calc(env(safe-area-inset-bottom) + 16px))
+      max(28px, env(safe-area-inset-left));
     width: auto;
     height: 44px;
   }
@@ -669,8 +669,10 @@
 
   .mobileNavigator {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(3, max-content);
     align-items: stretch;
+    justify-content: center;
+    column-gap: clamp(20px, 6vw, 28px);
     width: 100%;
     min-height: 44px;
     pointer-events: auto;
@@ -682,7 +684,7 @@
     min-width: 0;
     min-height: 44px;
     color: inherit;
-    font-size: clamp(0.82rem, 3.8vw, 1rem);
+    font-size: clamp(0.76rem, 3.35vw, 0.92rem);
     font-weight: 500;
     line-height: 1;
     letter-spacing: 0;
@@ -708,22 +710,38 @@
   }
 
   .mobileNavArrow {
-    font-size: 0.72em;
+    font-size: 0.68em;
     line-height: 1;
   }
 
   .mobileNavPrev {
     justify-content: flex-start;
-    gap: 0.3em;
+    gap: 0.24em;
   }
 
   .mobileNavWorks {
     justify-content: center;
+    gap: 0.28em;
+  }
+
+  .mobileWorksIcon {
+    width: 0.82em;
+    height: 0.82em;
+    flex: 0 0 auto;
+    overflow: visible;
+  }
+
+  .mobileWorksIcon path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
 
   .mobileNavNext {
     justify-content: flex-end;
-    gap: 0.3em;
+    gap: 0.24em;
   }
 
   .mobileNavDisabled {
