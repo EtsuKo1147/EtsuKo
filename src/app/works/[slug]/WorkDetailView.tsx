@@ -445,7 +445,7 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
         </div>
 
         <Link href="/works" className={styles.backAction} aria-label="Back to works">
-          <span className={styles.backHint}>Back to works</span>
+          <span className={styles.backHint}>Works</span>
           <svg className={styles.backIcon} viewBox="0 0 96 96" aria-hidden="true">
             <path className={styles.controlStroke} d="M31 18 12 37l19 19M14 37h41c18 0 29 10 29 25S73 87 55 87H17" />
           </svg>
