@@ -1933,6 +1933,15 @@
     padding-left: 16px;
   }
 
+  .contactWorld {
+    --mobile-browser-floor-extension: max(
+      env(safe-area-inset-bottom, 0px),
+      calc(100lvh - 100dvh)
+    );
+
+    padding-bottom: var(--mobile-browser-floor-extension);
+  }
+
   .worksStampZoneCameraActive {
     cursor: auto;
   }
