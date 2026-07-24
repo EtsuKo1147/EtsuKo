@@ -606,7 +606,13 @@
   }
 
   .narrative {
-    height: 170svh;
+    height: 100lvh;
+  }
+
+  .heroSticky {
+    position: relative;
+    top: auto;
+    height: 100lvh;
   }
 
   .invertToggle {
