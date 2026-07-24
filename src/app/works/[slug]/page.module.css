@@ -603,10 +603,18 @@
   .page {
     --navigator-right: 7px;
     --navigator-width: 34px;
+    top: calc(-1 * env(safe-area-inset-top, 0px));
+    min-height: calc(100lvh + env(safe-area-inset-top, 0px));
+    margin-bottom: calc(-1 * env(safe-area-inset-top, 0px));
   }
 
   .narrative {
-    height: 170svh;
+    height: calc(100lvh + 70svh + env(safe-area-inset-top, 0px));
+  }
+
+  .heroSticky {
+    top: calc(-1 * env(safe-area-inset-top, 0px));
+    height: calc(100lvh + env(safe-area-inset-top, 0px));
   }
 
   .invertToggle {
