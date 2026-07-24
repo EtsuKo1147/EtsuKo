@@ -52,46 +52,6 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
   }
 
   useLayoutEffect(() => {
-    const root = document.documentElement
-    const body = document.body
-    const elements = [root, body]
-    const previousStyles = elements.map((element) => ({
-      backgroundAttachment: element.style.backgroundAttachment,
-      backgroundColor: element.style.backgroundColor,
-      backgroundImage: element.style.backgroundImage,
-      backgroundPosition: element.style.backgroundPosition,
-      backgroundRepeat: element.style.backgroundRepeat,
-      backgroundSize: element.style.backgroundSize,
-    }))
-    const backdropColor = isInverted ? '#363636' : '#faf9f6'
-    const backdropImage = work.coverImageUrl
-      ? `url(${JSON.stringify(work.coverImageUrl)})`
-      : 'none'
-
-    elements.forEach((element) => {
-      element.style.backgroundAttachment = 'fixed'
-      element.style.backgroundColor = backdropColor
-      element.style.backgroundImage = backdropImage
-      element.style.backgroundPosition = 'center'
-      element.style.backgroundRepeat = 'no-repeat'
-      element.style.backgroundSize = 'cover'
-    })
-
-    return () => {
-      elements.forEach((element, index) => {
-        const previous = previousStyles[index]
-
-        element.style.backgroundAttachment = previous.backgroundAttachment
-        element.style.backgroundColor = previous.backgroundColor
-        element.style.backgroundImage = previous.backgroundImage
-        element.style.backgroundPosition = previous.backgroundPosition
-        element.style.backgroundRepeat = previous.backgroundRepeat
-        element.style.backgroundSize = previous.backgroundSize
-      })
-    }
-  }, [isInverted, work.coverImageUrl])
-
-  useLayoutEffect(() => {
     gsap.registerPlugin(ScrollTrigger)
 
     const page = pageRef.current
