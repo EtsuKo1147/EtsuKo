@@ -657,7 +657,7 @@
     inset:
       auto
       max(28px, env(safe-area-inset-right))
-      max(28px, calc(env(safe-area-inset-bottom) + 16px))
+      max(72px, calc(env(safe-area-inset-bottom) + 44px))
       max(28px, env(safe-area-inset-left));
     width: auto;
     height: 44px;
