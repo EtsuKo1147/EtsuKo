@@ -52,34 +52,15 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
     const previousRootBackground = root.style.background
     const previousBodyBackground = body.style.background
     const previousOverscrollBehavior = body.style.overscrollBehaviorY
-    let themeColorMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
-    const createdThemeColorMeta = !themeColorMeta
-
-    if (!themeColorMeta) {
-      themeColorMeta = document.createElement('meta')
-      themeColorMeta.name = 'theme-color'
-      document.head.appendChild(themeColorMeta)
-    }
-
-    const previousThemeColor = themeColorMeta.getAttribute('content')
 
     root.style.background = browserChromeColor
     body.style.background = browserChromeColor
     body.style.overscrollBehaviorY = 'auto'
-    themeColorMeta.content = browserChromeColor
 
     return () => {
       root.style.background = previousRootBackground
       body.style.background = previousBodyBackground
       body.style.overscrollBehaviorY = previousOverscrollBehavior
-
-      if (createdThemeColorMeta) {
-        themeColorMeta.remove()
-      } else if (previousThemeColor === null) {
-        themeColorMeta.removeAttribute('content')
-      } else {
-        themeColorMeta.content = previousThemeColor
-      }
     }
   }, [browserChromeColor])
 
