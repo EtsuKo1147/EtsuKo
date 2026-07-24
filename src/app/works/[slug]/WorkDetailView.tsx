@@ -44,13 +44,14 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
     ? works[(currentIndex + 1) % works.length]
     : null
   const previewWork = preview ? works[preview.index] : null
-  const browserChromeColor = isInverted ? '#363636' : (work.surface || '#faf9f6')
+  const browserChromeColor = isInverted ? '#363636' : '#faf9f6'
 
   useLayoutEffect(() => {
     const root = document.documentElement
     const body = document.body
-    const previousRootBackground = root.style.backgroundColor
-    const previousBodyBackground = body.style.backgroundColor
+    const previousRootBackground = root.style.background
+    const previousBodyBackground = body.style.background
+    const previousOverscrollBehavior = body.style.overscrollBehaviorY
     let themeColorMeta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')
     const createdThemeColorMeta = !themeColorMeta
 
@@ -62,13 +63,15 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
 
     const previousThemeColor = themeColorMeta.getAttribute('content')
 
-    root.style.backgroundColor = browserChromeColor
-    body.style.backgroundColor = browserChromeColor
+    root.style.background = browserChromeColor
+    body.style.background = browserChromeColor
+    body.style.overscrollBehaviorY = 'auto'
     themeColorMeta.content = browserChromeColor
 
     return () => {
-      root.style.backgroundColor = previousRootBackground
-      body.style.backgroundColor = previousBodyBackground
+      root.style.background = previousRootBackground
+      body.style.background = previousBodyBackground
+      body.style.overscrollBehaviorY = previousOverscrollBehavior
 
       if (createdThemeColorMeta) {
         themeColorMeta.remove()

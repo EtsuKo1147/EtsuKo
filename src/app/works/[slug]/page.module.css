@@ -7,6 +7,7 @@
   --detail-text-rgb: 17, 17, 17;
   --detail-control: #faf9f6;
   position: relative;
+  isolation: isolate;
   width: 100%;
   min-height: 100svh;
   overflow-x: clip;
@@ -15,6 +16,32 @@
   transition:
     color 220ms ease,
     background-color 220ms ease;
+}
+
+:global(html):has(.page),
+:global(body):has(.page) {
+  background: #faf9f6;
+}
+
+:global(body):has(.page) {
+  overscroll-behavior-y: auto;
+}
+
+:global(html):has(.pageInverted),
+:global(body):has(.pageInverted) {
+  background: #363636;
+}
+
+.page::before {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  width: 100%;
+  min-height: 100lvh;
+  content: '';
+  background: var(--detail-bg);
+  transition: background-color 220ms ease;
+  pointer-events: none;
 }
 
 .pageInverted {
@@ -602,15 +629,16 @@
   .page {
     --navigator-right: 7px;
     --navigator-width: 34px;
+    min-height: 100lvh;
   }
 
   .narrative {
-    height: 170svh;
+    height: calc(100lvh + 70svh);
   }
 
   .invertToggle {
-    top: 17px;
-    left: 12px;
+    top: calc(env(safe-area-inset-top) + 17px);
+    left: max(12px, env(safe-area-inset-left));
   }
 
   .introPanel {
@@ -650,6 +678,10 @@
     width: 100%;
     height: 56%;
     will-change: top, height;
+  }
+
+  .heroSticky {
+    height: 100lvh;
   }
 
   .navigator {
