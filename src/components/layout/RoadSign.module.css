@@ -363,6 +363,7 @@
   }
 
   .simplePageNavLink::after {
-    display: none;
+    display: block;
+    margin-top: 3px;
   }
 }

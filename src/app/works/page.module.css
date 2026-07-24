@@ -797,3 +797,68 @@
     padding-bottom: 40px;
   }
 }
+
+@media (max-width: 640px) {
+  .page {
+    --works-card-fill: #363636;
+    --works-card-text: #faf9f6;
+  }
+
+  .worksRail {
+    margin-bottom: -14px;
+    transform: translateY(-14px);
+  }
+
+  .cameraStage {
+    transform: translateY(-8px) scale(0.96);
+    transform-origin: top center;
+  }
+
+  .cameraCategoryLabel {
+    right: 13%;
+    top: 56.5%;
+    font-size: clamp(0.8rem, 3.45vw, 0.96rem);
+  }
+
+  .categoryNav {
+    transform: translateY(-23px);
+  }
+
+  .workDisplayViewport {
+    overflow: visible;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .workDisplay {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: clamp(12px, 3.6vw, 16px);
+    row-gap: clamp(16px, 4vw, 20px);
+    transform: translateY(-18px) scale(0.84);
+    transform-origin: top center;
+  }
+
+  .workPolaroid:nth-child(6n + 1) {
+    transform: translate(1px, 3px) rotate(-4deg);
+  }
+
+  .workPolaroid:nth-child(6n + 2) {
+    transform: translateY(-2px) rotate(3deg);
+  }
+
+  .workPolaroid:nth-child(6n + 3) {
+    transform: translate(-1px, 4px) rotate(-3deg);
+  }
+
+  .workPolaroid:nth-child(6n + 4) {
+    transform: translate(2px, -1px) rotate(2deg);
+  }
+
+  .workPolaroid:nth-child(6n + 5) {
+    transform: translate(-1px, 4px) rotate(-2deg);
+  }
+
+  .workPolaroid:nth-child(6n) {
+    transform: translateX(-2px) rotate(4deg);
+  }
+}
