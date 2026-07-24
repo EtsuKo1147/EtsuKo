@@ -609,10 +609,6 @@
     height: 170svh;
   }
 
-  .heroSticky {
-    height: 100svh;
-  }
-
   .invertToggle {
     top: calc(env(safe-area-inset-top) + 17px);
     left: max(12px, env(safe-area-inset-left));
@@ -790,14 +786,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .narrative {
-    height: 100svh;
-  }
-
-  .heroSticky {
-    position: relative;
-  }
-
   .pageNextArrow {
     animation: none;
     opacity: 1;
@@ -836,6 +824,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .narrative {
+    height: 100svh;
+  }
+
+  .heroSticky {
+    position: relative;
+  }
+
   .arrowAction,
   .backAction,
   .indexLink,
