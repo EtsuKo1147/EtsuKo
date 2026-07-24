@@ -1,7 +1,3 @@
-.browserBleed {
-  display: none;
-}
-
 .page {
   --intro-panel-width: clamp(330px, 30.7vw, 620px);
   --navigator-right: clamp(14px, 2vw, 40px);
@@ -604,27 +600,9 @@
 }
 
 @media (max-width: 760px) {
-  .browserBleed {
-    position: fixed;
-    z-index: 0;
-    top: calc(-1 * env(safe-area-inset-top, 0px));
-    right: 0;
-    bottom: calc(-1 * env(safe-area-inset-bottom, 0px));
-    left: 0;
-    display: block;
-    overflow: hidden;
-    pointer-events: none;
-  }
-
-  .browserBleedImage {
-    object-fit: cover;
-    object-position: center;
-  }
-
   .page {
     --navigator-right: 7px;
     --navigator-width: 34px;
-    z-index: 1;
   }
 
   .narrative {
