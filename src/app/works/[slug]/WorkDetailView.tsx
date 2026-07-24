@@ -163,38 +163,6 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
         },
       )
 
-      media.add(
-        '(max-width: 760px) and (prefers-reduced-motion: no-preference)',
-        () => {
-          const timeline = gsap.timeline({
-            scrollTrigger: {
-              trigger: narrative,
-              start: 'top top',
-              end: 'bottom bottom',
-              scrub: 0.65,
-              invalidateOnRefresh: true,
-            },
-          })
-
-          timeline
-            .to(introText, {
-              xPercent: -108,
-              ease: 'none',
-              duration: 0.46,
-            })
-            .to(
-              coverPanel,
-              {
-                top: 0,
-                height: '100%',
-                ease: 'none',
-                duration: 0.84,
-              },
-              0.14,
-            )
-        },
-      )
-
       return () => media.revert()
     }, page)
 

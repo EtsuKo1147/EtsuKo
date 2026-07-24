@@ -603,18 +603,23 @@
   .page {
     --navigator-right: 7px;
     --navigator-width: 34px;
-    top: calc(-1 * env(safe-area-inset-top, 0px));
-    min-height: calc(100lvh + env(safe-area-inset-top, 0px));
-    margin-bottom: calc(-1 * env(safe-area-inset-top, 0px));
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: visible;
   }
 
   .narrative {
-    height: calc(100lvh + 70svh + env(safe-area-inset-top, 0px));
+    height: auto;
   }
 
   .heroSticky {
-    top: calc(-1 * env(safe-area-inset-top, 0px));
-    height: calc(100lvh + env(safe-area-inset-top, 0px));
+    position: relative;
+    top: auto;
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
   }
 
   .invertToggle {
@@ -623,16 +628,19 @@
   }
 
   .introPanel {
-    inset: 0 0 auto 0;
+    position: relative;
+    inset: auto;
+    order: 2;
     width: 100%;
-    height: 44%;
-    padding: 20px 62px 24px 20px;
+    height: auto;
+    padding: 32px 62px 36px 20px;
   }
 
   .introContent {
-    right: 62px;
-    bottom: 24px;
-    left: 20px;
+    position: relative;
+    right: auto;
+    bottom: auto;
+    left: auto;
   }
 
   .title {
@@ -655,10 +663,13 @@
   }
 
   .coverPanel {
-    inset: 44% 0 auto 0;
+    position: relative;
+    inset: auto;
+    order: 1;
     width: 100%;
-    height: 56%;
-    will-change: top, height;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    will-change: transform;
   }
 
   .navigator {
@@ -832,14 +843,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .narrative {
-    height: 100svh;
-  }
-
-  .heroSticky {
-    position: relative;
-  }
-
   .arrowAction,
   .backAction,
   .indexLink,
@@ -851,5 +854,15 @@
 
   .workPreview {
     animation: none;
+  }
+}
+
+@media (min-width: 761px) and (prefers-reduced-motion: reduce) {
+  .narrative {
+    height: 100svh;
+  }
+
+  .heroSticky {
+    position: relative;
   }
 }
