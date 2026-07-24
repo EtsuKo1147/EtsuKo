@@ -44,25 +44,6 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
     ? works[(currentIndex + 1) % works.length]
     : null
   const previewWork = preview ? works[preview.index] : null
-  const browserChromeColor = isInverted ? '#363636' : '#faf9f6'
-
-  useLayoutEffect(() => {
-    const root = document.documentElement
-    const body = document.body
-    const previousRootBackground = root.style.background
-    const previousBodyBackground = body.style.background
-    const previousOverscrollBehavior = body.style.overscrollBehaviorY
-
-    root.style.background = browserChromeColor
-    body.style.background = browserChromeColor
-    body.style.overscrollBehaviorY = 'auto'
-
-    return () => {
-      root.style.background = previousRootBackground
-      body.style.background = previousBodyBackground
-      body.style.overscrollBehaviorY = previousOverscrollBehavior
-    }
-  }, [browserChromeColor])
 
   const getSafePreviewTop = (element: HTMLElement) => {
     const rect = element.getBoundingClientRect()

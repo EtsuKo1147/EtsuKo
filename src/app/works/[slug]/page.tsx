@@ -1,4 +1,3 @@
-import type { Viewport } from 'next'
 import { notFound } from 'next/navigation'
 import { getWorkBySlug, getWorks } from '@/sanity/lib/works'
 import WorkDetailView from './WorkDetailView'
@@ -7,12 +6,6 @@ type WorkDetailPageProps = {
   params: Promise<{
     slug: string
   }>
-}
-
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  viewportFit: 'cover',
 }
 
 export async function generateMetadata({ params }: WorkDetailPageProps) {
