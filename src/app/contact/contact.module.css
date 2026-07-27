@@ -178,7 +178,7 @@
   color: rgba(var(--contact-text-rgb), 0.76);
   font-family: var(--font-intel-mono), 'Courier New', monospace;
   font-size: clamp(1.25rem, var(--contact-link-size, 2.5rem), 2.5rem);
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1;
   letter-spacing: 0.02em;
   text-decoration: none;

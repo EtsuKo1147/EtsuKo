@@ -12,7 +12,7 @@ import {
   type PointerEvent,
 } from 'react'
 import Link from 'next/link'
-import { profileCopy, type ProfileLanguage } from '@/data/profile'
+import { profileCopy } from '@/data/profile'
 import HomePhysicsFooter from './HomePhysicsFooter'
 import styles from './HomeMinimalIndex.module.css'
 
@@ -20,6 +20,11 @@ const polaroidAssetPath = '/home/images/works-polaroid'
 const worksCameraAssetPath = '/home/images/works-camera'
 const profileJapaneseFontSpec = '1rem "WadaLabChuMaruGo2004P"'
 const profileJapaneseFontSample = '日本語プロフィール制作スキル'
+const homeProfileParagraphs = [
+  '中国・安徽省出身、大阪府在住。2023年に神戸芸術工科大学大学院の修士課程を修了後、現在は大阪でブランディングデザインを中心に仕事をしています。グラフィックデザインのほか、写真やイラストレーションなどの制作にも取り組んでおり、今後はWeb・UIデザインにも活動の幅を広げていきたいと考えています。',
+  '情報が自然に伝わり、見る人の記憶にそっと残るようなデザインが好きです。目の前の課題に丁寧に向き合いながら、日々制作に取り組んでいます。',
+  'バイク、写真、絵、ゲームが好きで、休日はバイクで出かけたり、写真を撮ったり、絵を描いたり、ゲームをしたりして過ごしています。',
+] as const
 
 const stampPhotoAssets = [
   `${worksCameraAssetPath}/stamp-photo-01.svg`,
@@ -148,7 +153,6 @@ function ViewMoreWorksCue() {
 type ProfileTypewriterSegment = {
   key: string
   text: string
-  kind: 'label' | 'value'
   pauseAfter: number
 }
 
@@ -159,29 +163,12 @@ type ProfileTypewriterLineProps = {
   showEndCursor: boolean
 }
 
-function getProfileTypewriterSegments(language: ProfileLanguage) {
-  const segments: ProfileTypewriterSegment[] = []
-
-  profileCopy[language].items.forEach((item, itemIndex) => {
-    segments.push({
-      key: `${itemIndex}-label`,
-      text: item.label,
-      kind: 'label',
-      pauseAfter: 45,
-    })
-
-    item.value.forEach((line, lineIndex) => {
-      segments.push({
-        key: `${itemIndex}-value-${lineIndex}`,
-        text: line,
-        kind: 'value',
-        pauseAfter: lineIndex === item.value.length - 1 ? 65 : 24,
-      })
-    })
-  })
-
-  return segments
-}
+const profileTypewriterSegments: ProfileTypewriterSegment[] =
+  homeProfileParagraphs.map((text, index) => ({
+    key: `paragraph-${index}`,
+    text,
+    pauseAfter: 90,
+  }))
 
 function ProfileTypewriterLine({
   text,
@@ -206,38 +193,22 @@ function ProfileTypewriterLine({
   )
 }
 
-function ProfileConsoleTypewriter({
-  language,
-  onLanguageToggle,
-}: {
-  language: ProfileLanguage
-  onLanguageToggle: () => void
-}) {
+function ProfileConsoleTypewriter() {
   const [hasEnteredView, setHasEnteredView] = useState(false)
-  const [typingState, setTypingState] = useState({
-    language,
-    visibleCharacters: 0,
-  })
+  const [visibleCharacters, setVisibleCharacters] = useState(0)
   const screenRef = useRef<HTMLDivElement>(null)
-  const initialTypingLanguageRef = useRef(language)
   const hasConsumedInitialPlaybackRef = useRef(false)
-  const profile = profileCopy[language]
-  const segments = getProfileTypewriterSegments(language)
-  const totalCharacters = segments.reduce(
+  const totalCharacters = profileTypewriterSegments.reduce(
     (total, segment) => total + Array.from(segment.text).length,
     0,
   )
-  const visibleCharacters =
-    typingState.language === language
-      ? typingState.visibleCharacters
-      : totalCharacters
   const renderedSegments = new Map<
     string,
     { visibleText: string; showCursor: boolean; showEndCursor: boolean }
   >()
   let characterOffset = 0
 
-  segments.forEach((segment, segmentIndex) => {
+  profileTypewriterSegments.forEach((segment, segmentIndex) => {
     const characters = Array.from(segment.text)
     const segmentStart = characterOffset
     const visibleLength = Math.max(
@@ -252,7 +223,7 @@ function ProfileConsoleTypewriter({
         visibleCharacters >= segmentStart &&
         visibleCharacters < segmentStart + characters.length,
       showEndCursor:
-        segmentIndex === segments.length - 1 &&
+        segmentIndex === profileTypewriterSegments.length - 1 &&
         visibleCharacters >= totalCharacters,
     })
     characterOffset += characters.length
@@ -304,16 +275,13 @@ function ProfileConsoleTypewriter({
       return
     }
 
-    const typingSegments = getProfileTypewriterSegments(language)
     const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const shouldPlayInitialAnimation =
-      !hasConsumedInitialPlaybackRef.current &&
-      language === initialTypingLanguageRef.current
+    const shouldPlayInitialAnimation = !hasConsumedInitialPlaybackRef.current
 
     if (reducedMotionQuery.matches || !shouldPlayInitialAnimation) {
       hasConsumedInitialPlaybackRef.current = true
       const frame = window.requestAnimationFrame(() => {
-        setTypingState({ language, visibleCharacters: totalCharacters })
+        setVisibleCharacters(totalCharacters)
       })
 
       return () => {
@@ -328,33 +296,21 @@ function ProfileConsoleTypewriter({
     let isCancelled = false
 
     const typeNextCharacter = () => {
-      if (isCancelled || segmentIndex >= typingSegments.length) {
+      if (isCancelled || segmentIndex >= profileTypewriterSegments.length) {
         return
       }
 
       hasConsumedInitialPlaybackRef.current = true
 
-      const segment = typingSegments[segmentIndex]
+      const segment = profileTypewriterSegments[segmentIndex]
       const characters = Array.from(segment.text)
 
       if (characterIndex < characters.length) {
         characterIndex += 1
         nextVisibleCharacters += 1
-        setTypingState({
-          language,
-          visibleCharacters: nextVisibleCharacters,
-        })
+        setVisibleCharacters(nextVisibleCharacters)
 
-        const characterDelay =
-          language === 'jp'
-            ? segment.kind === 'label'
-              ? 18
-              : 8
-            : segment.kind === 'label'
-              ? 14
-              : 6
-
-        timeoutId = window.setTimeout(typeNextCharacter, characterDelay)
+        timeoutId = window.setTimeout(typeNextCharacter, 5)
         return
       }
 
@@ -372,67 +328,33 @@ function ProfileConsoleTypewriter({
         window.clearTimeout(timeoutId)
       }
     }
-  }, [hasEnteredView, language, totalCharacters])
+  }, [hasEnteredView, totalCharacters])
 
   return (
     <div ref={screenRef} className={styles.profileScreen} aria-live="polite">
-      <div
-        className={`${styles.profileScreenContent} ${
-          language === 'jp' ? styles.profileJapanese : ''
-        }`}
-      >
-        <dl className={styles.profileList}>
-          {profile.items.map((item, itemIndex) => {
-            const labelSegment = renderedSegments.get(`${itemIndex}-label`)
+      <div className={`${styles.profileScreenContent} ${styles.profileJapanese}`}>
+        <div className={styles.profileBiography}>
+          {homeProfileParagraphs.map((paragraph, index) => {
+            const segment = renderedSegments.get(`paragraph-${index}`)
 
             return (
-              <div key={item.label}>
-                <dt>
-                  <ProfileTypewriterLine
-                    text={item.label}
-                    visibleText={labelSegment?.visibleText ?? ''}
-                    showCursor={labelSegment?.showCursor ?? false}
-                    showEndCursor={labelSegment?.showEndCursor ?? false}
-                  />
-                </dt>
-                <dd>
-                  {item.value.map((line, lineIndex) => {
-                    const segment = renderedSegments.get(
-                      `${itemIndex}-value-${lineIndex}`,
-                    )
-
-                    return (
-                      <ProfileTypewriterLine
-                        key={line}
-                        text={line}
-                        visibleText={segment?.visibleText ?? ''}
-                        showCursor={segment?.showCursor ?? false}
-                        showEndCursor={segment?.showEndCursor ?? false}
-                      />
-                    )
-                  })}
-                </dd>
-              </div>
+              <p key={paragraph}>
+                <ProfileTypewriterLine
+                  text={paragraph}
+                  visibleText={segment?.visibleText ?? ''}
+                  showCursor={segment?.showCursor ?? false}
+                  showEndCursor={segment?.showEndCursor ?? false}
+                />
+              </p>
             )
           })}
-        </dl>
-
-        <button
-          type="button"
-          className={styles.profileLanguage}
-          onClick={onLanguageToggle}
-        >
-          {profile.languageLabel}
-          <br />
-          {profile.languageSwitch}
-        </button>
+        </div>
       </div>
     </div>
   )
 }
 
 export default function HomeMinimalIndex() {
-  const [profileLanguage, setProfileLanguage] = useState<ProfileLanguage>('en')
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(0)
   const [isWorkCueActive, setIsWorkCueActive] = useState(false)
   const [isFeaturedBoardActive, setIsFeaturedBoardActive] = useState(false)
@@ -462,7 +384,7 @@ export default function HomeMinimalIndex() {
   const hasDismissedWorksStampHintRef = useRef(false)
   const profileJapaneseFontReadyRef = useRef(false)
   const profileJapaneseFontLoadRef = useRef<Promise<void> | null>(null)
-  const profile = profileCopy[profileLanguage]
+  const profile = profileCopy.jp
   const activeCategory = polaroidCategories[activeCategoryIndex]
 
   const loadProfileJapaneseFont = useCallback(() => {
@@ -494,19 +416,6 @@ export default function HomeMinimalIndex() {
 
     return profileJapaneseFontLoadRef.current
   }, [])
-
-  const handleProfileLanguageToggle = useCallback(() => {
-    if (profileLanguage === 'jp') {
-      setProfileLanguage('en')
-      return
-    }
-
-    void loadProfileJapaneseFont().then(() => {
-      setProfileLanguage((currentLanguage) =>
-        currentLanguage === 'en' ? 'jp' : currentLanguage,
-      )
-    })
-  }, [loadProfileJapaneseFont, profileLanguage])
 
   useEffect(() => {
     const updateHomeDesignScale = () => {
@@ -1499,9 +1408,7 @@ export default function HomeMinimalIndex() {
             Profile
           </h2>
           <p
-            className={`${styles.profileLead} ${
-              profileLanguage === 'jp' ? styles.profileJapanese : ''
-            }`}
+            className={`${styles.profileLead} ${styles.profileJapanese}`}
           >
             {profile.lead.map((line) => (
               <span key={line}>
@@ -1535,10 +1442,7 @@ export default function HomeMinimalIndex() {
                 draggable={false}
               />
 
-              <ProfileConsoleTypewriter
-                language={profileLanguage}
-                onLanguageToggle={handleProfileLanguageToggle}
-              />
+              <ProfileConsoleTypewriter />
             </div>
           </div>
         </div>
