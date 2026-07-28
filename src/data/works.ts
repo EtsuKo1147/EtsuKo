@@ -16,6 +16,7 @@ export interface Work {
   coverImageUrl?: string
   coverImageAlt?: string
   galleryImages?: WorkImage[]
+  projectLinks?: WorkLink[]
 }
 
 export type WorkCategory = 'branding' | 'photography' | 'web' | 'graphic'
@@ -23,6 +24,11 @@ export type WorkCategory = 'branding' | 'photography' | 'web' | 'graphic'
 export interface WorkImage {
   url: string
   alt?: string
+}
+
+export interface WorkLink {
+  label: string
+  url: string
 }
 
 export const workCategories: { slug: WorkCategory; label: string }[] = [

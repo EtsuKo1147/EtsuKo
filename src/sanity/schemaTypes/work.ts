@@ -50,6 +50,43 @@ export const workType = defineType({
       rows: 2,
     }),
     defineField({
+      name: 'projectLinks',
+      title: 'Project Links',
+      type: 'array',
+      description: 'Add links such as Website, Amazon, or Rakuten.',
+      of: [
+        {
+          name: 'projectLink',
+          title: 'Project Link',
+          type: 'object',
+          fields: [
+            defineField({
+              name: 'label',
+              title: 'Label',
+              type: 'string',
+              description: 'For example: Website, Amazon, or Rakuten.',
+              validation: (Rule) => Rule.required(),
+            }),
+            defineField({
+              name: 'url',
+              title: 'URL',
+              type: 'url',
+              validation: (Rule) =>
+                Rule.required().uri({
+                  scheme: ['http', 'https'],
+                }),
+            }),
+          ],
+          preview: {
+            select: {
+              title: 'label',
+              subtitle: 'url',
+            },
+          },
+        },
+      ],
+    }),
+    defineField({
       name: 'summary',
       title: 'Project Summary',
       type: 'text',

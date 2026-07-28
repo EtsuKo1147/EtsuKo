@@ -8,7 +8,7 @@ import { useLayoutEffect, useRef, useState, type CSSProperties, type PointerEven
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/dist/ScrollTrigger'
 import { useSiteTheme } from '@/components/theme/SiteThemeProvider'
-import type { Work } from '@/data/works'
+import type { Work, WorkImage } from '@/data/works'
 import styles from './page.module.css'
 
 type WorkDetailViewProps = {
@@ -21,6 +21,255 @@ type PreviewState = {
   top: number
 } | null
 
+type SteppedGalleryProps = {
+  title: string
+  images: WorkImage[]
+}
+
+function SteppedGallery({ title, images }: SteppedGalleryProps) {
+  const galleryRef = useRef<HTMLElement>(null)
+  const figureRefs = useRef<(HTMLElement | null)[]>([])
+  const activeIndexRef = useRef(0)
+  const transitionRef = useRef(false)
+  const wheelAccumulatorRef = useRef(0)
+  const wheelLockedRef = useRef(false)
+  const wheelUnlockTimerRef = useRef<number | null>(null)
+  const touchStartYRef = useRef<number | null>(null)
+  const touchCurrentYRef = useRef<number | null>(null)
+  const [activeIndex, setActiveIndex] = useState(0)
+
+  useLayoutEffect(() => {
+    const gallery = galleryRef.current
+    const figures = figureRefs.current.filter(
+      (figure): figure is HTMLElement => figure !== null,
+    )
+
+    if (!gallery || figures.length === 0) {
+      return
+    }
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const wheelThreshold = 42
+    const touchThreshold = 48
+    const animationDuration = reducedMotion ? 0 : 0.5
+
+    activeIndexRef.current = 0
+    setActiveIndex(0)
+
+    gsap.set(figures, {
+      yPercent: (index) => (index === 0 ? 0 : 100),
+      zIndex: (index) => index + 1,
+    })
+
+    const updateAccessibility = (nextIndex: number) => {
+      figures.forEach((figure, index) => {
+        figure.setAttribute('aria-hidden', index === nextIndex ? 'false' : 'true')
+      })
+    }
+
+    updateAccessibility(0)
+
+    const scheduleWheelUnlock = (delay = 220) => {
+      if (wheelUnlockTimerRef.current !== null) {
+        window.clearTimeout(wheelUnlockTimerRef.current)
+      }
+
+      wheelUnlockTimerRef.current = window.setTimeout(() => {
+        if (transitionRef.current) {
+          scheduleWheelUnlock(100)
+          return
+        }
+
+        wheelLockedRef.current = false
+      }, delay)
+    }
+
+    const changeImage = (direction: 1 | -1) => {
+      if (transitionRef.current) {
+        return false
+      }
+
+      const currentIndex = activeIndexRef.current
+      const nextIndex = currentIndex + direction
+
+      if (nextIndex < 0 || nextIndex >= figures.length) {
+        return false
+      }
+
+      transitionRef.current = true
+      const animatedFigure = direction === 1 ? figures[nextIndex] : figures[currentIndex]
+
+      gsap.to(animatedFigure, {
+        yPercent: direction === 1 ? 0 : 100,
+        duration: animationDuration,
+        ease: reducedMotion ? 'none' : 'power3.inOut',
+        overwrite: true,
+        onComplete: () => {
+          activeIndexRef.current = nextIndex
+          setActiveIndex(nextIndex)
+          updateAccessibility(nextIndex)
+          transitionRef.current = false
+        },
+      })
+
+      return true
+    }
+
+    const galleryIsSettledInViewport = () => {
+      const rect = gallery.getBoundingClientRect()
+      return rect.top <= 2 && rect.bottom >= window.innerHeight - 2
+    }
+
+    const handleWheel = (event: WheelEvent) => {
+      if (!galleryIsSettledInViewport()) {
+        wheelAccumulatorRef.current = 0
+        return
+      }
+
+      const direction: 1 | -1 = event.deltaY >= 0 ? 1 : -1
+      const isLeavingTowardIntro = direction === -1 && activeIndexRef.current === 0
+
+      if (isLeavingTowardIntro && !transitionRef.current) {
+        wheelAccumulatorRef.current = 0
+        return
+      }
+
+      event.preventDefault()
+
+      if (wheelLockedRef.current || transitionRef.current) {
+        scheduleWheelUnlock()
+        return
+      }
+
+      wheelAccumulatorRef.current += event.deltaY
+
+      if (Math.abs(wheelAccumulatorRef.current) < wheelThreshold) {
+        return
+      }
+
+      const moved = changeImage(wheelAccumulatorRef.current > 0 ? 1 : -1)
+      wheelAccumulatorRef.current = 0
+
+      if (moved) {
+        wheelLockedRef.current = true
+        scheduleWheelUnlock(650)
+      }
+    }
+
+    const handleTouchStart = (event: TouchEvent) => {
+      const touch = event.touches[0]
+
+      if (!touch || !galleryIsSettledInViewport()) {
+        touchStartYRef.current = null
+        touchCurrentYRef.current = null
+        return
+      }
+
+      touchStartYRef.current = touch.clientY
+      touchCurrentYRef.current = touch.clientY
+    }
+
+    const handleTouchMove = (event: TouchEvent) => {
+      const touch = event.touches[0]
+      const startY = touchStartYRef.current
+
+      if (!touch || startY === null) {
+        return
+      }
+
+      touchCurrentYRef.current = touch.clientY
+      const isMovingToNext = touch.clientY < startY
+
+      if (activeIndexRef.current > 0 || isMovingToNext) {
+        event.preventDefault()
+      }
+    }
+
+    const handleTouchEnd = () => {
+      const startY = touchStartYRef.current
+      const endY = touchCurrentYRef.current
+
+      touchStartYRef.current = null
+      touchCurrentYRef.current = null
+
+      if (startY === null || endY === null || transitionRef.current) {
+        return
+      }
+
+      const distance = startY - endY
+
+      if (Math.abs(distance) >= touchThreshold) {
+        changeImage(distance > 0 ? 1 : -1)
+      }
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowDown' || event.key === 'PageDown') {
+        if (changeImage(1)) {
+          event.preventDefault()
+        }
+      }
+
+      if (event.key === 'ArrowUp' || event.key === 'PageUp') {
+        if (changeImage(-1)) {
+          event.preventDefault()
+        }
+      }
+    }
+
+    gallery.addEventListener('wheel', handleWheel, { passive: false })
+    gallery.addEventListener('touchstart', handleTouchStart, { passive: true })
+    gallery.addEventListener('touchmove', handleTouchMove, { passive: false })
+    gallery.addEventListener('touchend', handleTouchEnd, { passive: true })
+    gallery.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      if (wheelUnlockTimerRef.current !== null) {
+        window.clearTimeout(wheelUnlockTimerRef.current)
+      }
+
+      gsap.killTweensOf(figures)
+      gallery.removeEventListener('wheel', handleWheel)
+      gallery.removeEventListener('touchstart', handleTouchStart)
+      gallery.removeEventListener('touchmove', handleTouchMove)
+      gallery.removeEventListener('touchend', handleTouchEnd)
+      gallery.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [images])
+
+  return (
+    <section
+      ref={galleryRef}
+      className={styles.steppedGallery}
+      aria-label={`${title} project images`}
+      aria-roledescription="image gallery"
+      tabIndex={0}
+    >
+      {images.map((image, index) => (
+        <figure
+          ref={(figure) => {
+            figureRefs.current[index] = figure
+          }}
+          className={styles.steppedGalleryFigure}
+          aria-label={`${title} image ${index + 2} of ${images.length + 1}`}
+          aria-hidden={index !== activeIndex}
+          key={`${image.url}-${index}`}
+        >
+          <img
+            src={image.url}
+            alt={image.alt || `${title} image ${index + 2}`}
+            loading={index <= activeIndex + 1 ? 'eager' : 'lazy'}
+            decoding="async"
+          />
+        </figure>
+      ))}
+      <span className={styles.galleryAnnouncement} aria-live="polite">
+        Image {activeIndex + 1} of {images.length}
+      </span>
+    </section>
+  )
+}
+
 export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
   const { isInverted, toggleTheme } = useSiteTheme()
   const pageRef = useRef<HTMLElement>(null)
@@ -28,7 +277,7 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
   const introTextRef = useRef<HTMLDivElement>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)
   const categoryRef = useRef<HTMLParagraphElement>(null)
-  const descriptionRef = useRef<HTMLParagraphElement>(null)
+  const descriptionGroupRef = useRef<HTMLDivElement>(null)
   const coverPanelRef = useRef<HTMLDivElement>(null)
   const [preview, setPreview] = useState<PreviewState>(null)
 
@@ -44,6 +293,7 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
     ? works[(currentIndex + 1) % works.length]
     : null
   const previewWork = preview ? works[preview.index] : null
+  const usesSteppedGallery = currentIndex === 4 || currentIndex === 5
 
   const getSafePreviewTop = (element: HTMLElement) => {
     const rect = element.getBoundingClientRect()
@@ -59,10 +309,18 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
     const introText = introTextRef.current
     const title = titleRef.current
     const category = categoryRef.current
-    const description = descriptionRef.current
+    const descriptionGroup = descriptionGroupRef.current
     const coverPanel = coverPanelRef.current
 
-    if (!page || !narrative || !introText || !title || !category || !description || !coverPanel) {
+    if (
+      !page ||
+      !narrative ||
+      !introText ||
+      !title ||
+      !category ||
+      !descriptionGroup ||
+      !coverPanel
+    ) {
       return
     }
 
@@ -78,23 +336,25 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
           y: () => window.innerHeight + category.offsetHeight + 48,
           visibility: 'visible',
         })
-        gsap.set(description, {
-          x: () => -(window.innerWidth + description.offsetWidth + 48),
-          visibility: 'visible',
-        })
         gsap.set(coverPanel, {
           xPercent: 100,
           visibility: 'visible',
         })
 
+        const clearIntroAnimation = () => {
+          gsap.set([title, category, coverPanel], {
+            clearProps: 'transform',
+            visibility: 'visible',
+          })
+          gsap.set(descriptionGroup, {
+            clearProps: 'transform,opacity,visibility',
+          })
+        }
+
         const introTimeline = gsap.timeline({
           defaults: { overwrite: 'auto' },
-          onComplete: () => {
-            gsap.set([title, category, description, coverPanel], {
-              clearProps: 'transform',
-              visibility: 'visible',
-            })
-          },
+          onComplete: clearIntroAnimation,
+          onInterrupt: clearIntroAnimation,
         })
 
         introTimeline
@@ -112,10 +372,15 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
             },
             0.08,
           )
-          .to(
-            description,
+          .fromTo(
+            descriptionGroup,
+            {
+              x: () => -(window.innerWidth + descriptionGroup.offsetWidth + 48),
+              autoAlpha: 0,
+            },
             {
               x: 0,
+              autoAlpha: 1,
               duration: 0.32,
               ease: 'power3.out',
             },
@@ -211,7 +476,25 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
               <p ref={categoryRef} className={styles.category}>
                 {work.categoryLabel} / {work.year}
               </p>
-              <p ref={descriptionRef} className={styles.description}>{work.description}</p>
+              <div ref={descriptionGroupRef} className={styles.descriptionGroup}>
+                <p className={styles.description}>{work.description}</p>
+                {work.projectLinks && work.projectLinks.length > 0 ? (
+                  <nav className={styles.projectLinks} aria-label={`${work.title} project links`}>
+                    {work.projectLinks.map((link) => (
+                      <a
+                        href={link.url}
+                        className={styles.projectLink}
+                        target="_blank"
+                        rel="noreferrer"
+                        key={`${link.label}-${link.url}`}
+                      >
+                        <span>{link.label}</span>
+                        <span aria-hidden="true">↗</span>
+                      </a>
+                    ))}
+                  </nav>
+                ) : null}
+              </div>
             </div>
           </div>
 
@@ -239,18 +522,26 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
       </section>
 
       {work.galleryImages && work.galleryImages.length > 0 ? (
-        <section className={styles.gallery} aria-label={`${work.title} project images`}>
-          {work.galleryImages.map((image, index) => (
-            <figure className={styles.galleryFigure} key={`${image.url}-${index}`}>
-              <img
-                src={image.url}
-                alt={image.alt || `${work.title} image ${index + 2}`}
-                loading="lazy"
-                decoding="async"
-              />
-            </figure>
-          ))}
-        </section>
+        usesSteppedGallery ? (
+          <SteppedGallery
+            key={work.slug}
+            title={work.title}
+            images={work.galleryImages}
+          />
+        ) : (
+          <section className={styles.gallery} aria-label={`${work.title} project images`}>
+            {work.galleryImages.map((image, index) => (
+              <figure className={styles.galleryFigure} key={`${image.url}-${index}`}>
+                <img
+                  src={image.url}
+                  alt={image.alt || `${work.title} image ${index + 2}`}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </figure>
+            ))}
+          </section>
+        )
       ) : null}
 
       {nextWork ? (

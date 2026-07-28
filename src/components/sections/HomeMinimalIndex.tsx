@@ -13,6 +13,7 @@ import {
 } from 'react'
 import Link from 'next/link'
 import { profileCopy } from '@/data/profile'
+import type { Work } from '@/data/works'
 import HomePhysicsFooter from './HomePhysicsFooter'
 import styles from './HomeMinimalIndex.module.css'
 
@@ -78,41 +79,6 @@ const polaroidCategories = [
     label: 'Photography',
     image: `${polaroidAssetPath}/work-photography.jpg`,
     href: '/works?category=photography',
-  },
-]
-
-const featuredPolaroids = [
-  {
-    title: 'Loop Identity System',
-    ghost: 'Branding',
-    role: 'VI / LOGO / Package',
-    year: '2026',
-    image: `${polaroidAssetPath}/featured-01.jpg`,
-    href: '/works/text1',
-  },
-  {
-    title: 'Type Signal Posters',
-    ghost: 'Illustration',
-    role: 'LOGO / Typography / Poster',
-    year: '2025',
-    image: `${polaroidAssetPath}/featured-02.jpg`,
-    href: '/works/text2',
-  },
-  {
-    title: 'Etsu Portfolio System',
-    ghost: 'Web Design',
-    role: 'Web / Interaction / Frontend',
-    year: '2026',
-    image: `${polaroidAssetPath}/featured-03.jpg`,
-    href: '/works/text3',
-  },
-  {
-    title: 'North Pier Frames',
-    ghost: 'Photography',
-    role: 'Photography / Retouching',
-    year: '2025',
-    image: `${polaroidAssetPath}/featured-04.jpg`,
-    href: '/works/text4',
   },
 ]
 
@@ -354,7 +320,13 @@ function ProfileConsoleTypewriter() {
   )
 }
 
-export default function HomeMinimalIndex() {
+type HomeMinimalIndexProps = {
+  featuredWorks: Work[]
+}
+
+export default function HomeMinimalIndex({
+  featuredWorks,
+}: HomeMinimalIndexProps) {
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(0)
   const [isWorkCueActive, setIsWorkCueActive] = useState(false)
   const [isFeaturedBoardActive, setIsFeaturedBoardActive] = useState(false)
@@ -922,6 +894,10 @@ export default function HomeMinimalIndex() {
     '--home-featured-item-min-height': scaledPx(650),
     '--home-featured-item-y': scaledPx(170),
     '--home-featured-copy-width': scaledPx(340),
+    '--home-featured-strip-title-size': scaledPx(18),
+    '--home-featured-strip-title-y': scaledPx(-6),
+    '--home-featured-strip-detail-size': scaledPx(12),
+    '--home-featured-strip-detail-y': scaledPx(26),
     '--home-featured-large-width': scaledPx(1020),
     '--home-featured-large-margin': scaledPx(20),
     '--home-featured-large-stack-x': scaledPx(-24),
@@ -962,7 +938,7 @@ export default function HomeMinimalIndex() {
     '--featured-copy-1-stack-y': scaledPx(18),
     '--featured-copy-1-x': scaledPx(-130),
     '--featured-copy-1-y': scaledPx(50),
-    '--featured-copy-1-title-x': scaledPx(-5),
+    '--featured-copy-1-title-x': scaledPx(-20),
     '--featured-copy-1-title-y': scaledPx(-10),
     '--featured-copy-1-role-x': scaledPx(-15),
     '--featured-copy-1-role-y': scaledPx(46),
@@ -1305,10 +1281,10 @@ export default function HomeMinimalIndex() {
             ref={featuredBoardRef}
             className={featuredBoardClassName}
           >
-              {featuredPolaroids.map((work) => (
-                <article className={styles.featuredItem} key={work.title}>
+              {featuredWorks.map((work, index) => (
+                <article className={styles.featuredItem} key={work.slug}>
                   <div className={styles.featuredCopy}>
-                    <span className={styles.featuredGhost}>{work.ghost}</span>
+                    <span className={styles.featuredGhost}>{work.categoryLabel}</span>
                     <h3 className={styles.featuredTitle}>{work.title}</h3>
                     <p className={styles.featuredRole}>{work.role}</p>
                     <span className={styles.featuredYear}>{work.year}</span>
@@ -1322,15 +1298,21 @@ export default function HomeMinimalIndex() {
                   >
                     <span className={styles.featuredShell} aria-hidden="true" />
                     <img
-                      src={work.image}
+                      src={
+                        work.coverImageUrl ||
+                        `${polaroidAssetPath}/featured-0${index + 1}.jpg`
+                      }
                       alt=""
                       className={styles.featuredImage}
                       draggable={false}
                     />
                     <span className={styles.paperSurfaceShadow} aria-hidden="true" />
                     <span className={styles.featuredStrip}>
-                      <span>{work.title}</span>
-                      <span>{work.year}</span>
+                      <span className={styles.featuredStripTitle}>{work.title}</span>
+                      <span className={styles.featuredStripDetails}>
+                        <span className={styles.featuredStripCategory}>{work.categoryLabel}</span>
+                        <span className={styles.featuredStripYear}>{work.year}</span>
+                      </span>
                     </span>
                     <ViewMoreWorksCue />
                   </Link>
@@ -1344,7 +1326,7 @@ export default function HomeMinimalIndex() {
           >
               <Link
                 className={styles.featuredLargeFrame}
-                href="/works/text5"
+                href="/works"
                 aria-label="View Photography works"
                 onPointerMove={handlePolaroidPointerMove}
               >
@@ -1375,8 +1357,10 @@ export default function HomeMinimalIndex() {
                 </picture>
                 <span className={styles.featuredLargeSurfaceShadow} aria-hidden="true" />
                 <span className={styles.featuredLargeStrip}>
-                  <span>Photography</span>
-                  <span>2026</span>
+                  <span className={styles.featuredStripTitle}>Photography</span>
+                  <span className={styles.featuredStripDetails}>
+                    <span className={styles.featuredStripYear}>2026</span>
+                  </span>
                 </span>
                 <ViewMoreWorksCue />
               </Link>

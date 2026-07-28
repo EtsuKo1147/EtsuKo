@@ -93,9 +93,7 @@
 }
 
 .eyebrow,
-.profileLead,
-.profileList,
-.profileLanguage {
+.profileLead {
   font-family: var(--font-intel-mono), 'Courier New', monospace;
 }
 
@@ -232,7 +230,7 @@
 }
 
 .profileTypewriterEndCursor {
-  margin-left: 0.04em;
+  display: inline-block;
   animation: profileTypewriterCursorBlink 720ms steps(1, end) infinite;
 }
 
@@ -271,38 +269,28 @@
   }
 }
 
-.profileList {
+.profileBiography {
   position: absolute;
-  top: -4%;
+  top: -3%;
   left: 6%;
-  width: 91%;
+  width: 82%;
   display: grid;
-  gap: clamp(8px, var(--profile-list-gap, 14px), 14px);
+  gap: clamp(10px, 0.9vw, 16px);
   margin: 0;
+  -webkit-text-stroke: 0.2px currentColor;
+  text-stroke: 0.2px currentColor;
+  letter-spacing: 0.035em;
 }
 
-.profileList div {
-  display: grid;
-  gap: 1px;
-}
-
-.profileList dt {
+.profileBiography p {
   margin: 0;
   color: currentColor;
-  font-size: clamp(0.78rem, var(--profile-list-dt-size, 1.18rem), 1.18rem);
-  font-weight: 800;
-  line-height: 1.22;
-}
-
-.profileList dd {
-  margin: 0;
-  color: currentColor;
-  font-size: clamp(0.66rem, var(--profile-list-dd-size, 1.02rem), 1.02rem);
+  font-size: clamp(0.68rem, 0.86vw, 1rem);
   font-weight: 600;
-  line-height: 1.18;
+  line-height: 1.65;
 }
 
-.profileList dd > .profileTypewriterLine {
+.profileBiography .profileTypewriterLine {
   display: block;
   max-width: 100%;
   overflow-wrap: break-word;
@@ -315,61 +303,6 @@
     'Hiragino Maru Gothic ProN',
     'Yu Gothic',
     sans-serif;
-}
-
-.profileScreenContent.profileJapanese .profileList {
-  -webkit-text-stroke: 0.25px currentColor;
-  text-stroke: 0.25px currentColor;
-  letter-spacing: 0.045em;
-}
-
-.profileScreenContent.profileJapanese .profileList dt {
-  line-height: 1.3;
-}
-
-.profileScreenContent.profileJapanese .profileList dd {
-  font-size: clamp(0.64rem, var(--profile-list-dd-jp-size, 1rem), 1rem);
-  line-height: 1.34;
-}
-
-.profileLanguage {
-  position: absolute;
-  right: 10%;
-  bottom: 12%;
-  display: grid;
-  place-items: center;
-  width: clamp(74px, var(--profile-language-width, 112px), 112px);
-  min-height: clamp(70px, var(--profile-language-height, 120px), 120px);
-  margin: 0;
-  padding: 0;
-  border: 0;
-  color: currentColor;
-  background: transparent;
-  font-family: var(--font-intel-mono), 'Courier New', monospace;
-  font-size: clamp(0.48rem, var(--profile-language-font-size, 0.68rem), 0.68rem);
-  font-weight: 700;
-  line-height: 1.12;
-  text-align: center;
-  cursor: pointer;
-  appearance: none;
-  transform: translateY(0) scale(1);
-  transform-origin: center;
-  transition:
-    color 160ms ease,
-    font-size 160ms ease,
-    transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.profileLanguage:hover,
-.profileLanguage:focus-visible {
-  color: #ff840a;
-  outline: none;
-  transform: translateY(-2px) scale(1.04);
-}
-
-.profileLanguage:active {
-  color: #ff5a0a;
-  transform: translateY(1px) scale(0.98);
 }
 
 @media (max-width: 900px) {
@@ -487,41 +420,15 @@
     padding: 0;
   }
 
-  .profileList {
-    top: -2%;
+  .profileBiography {
+    top: 2%;
     left: 6%;
-    width: 90%;
-    gap: 4px;
+    width: 84%;
+    gap: 7px;
   }
 
-  .profileList div {
-    gap: 1px;
-  }
-
-  .profileList dt {
-    font-size: clamp(0.625rem, calc(1.85vw + 2px), 0.805rem);
-    line-height: 1.18;
-  }
-
-  .profileList dd {
-    font-size: clamp(0.545rem, calc(1.55vw + 2px), 0.705rem);
-    line-height: 1.18;
-  }
-
-  .profileScreenContent.profileJapanese .profileList dd {
-    font-size: clamp(0.525rem, calc(1.48vw + 2px), 0.685rem);
-    line-height: 1.28;
-  }
-
-  .profileScreenContent.profileJapanese .profileList dt {
-    line-height: 1.24;
-  }
-
-  .profileLanguage {
-    right: 9%;
-    bottom: -7%;
-    width: 52px;
-    min-height: 30px;
-    font-size: 0.5rem;
+  .profileBiography p {
+    font-size: clamp(0.54rem, calc(1.45vw + 1px), 0.76rem);
+    line-height: 1.5;
   }
 }

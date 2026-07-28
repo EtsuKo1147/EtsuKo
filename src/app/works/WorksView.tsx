@@ -156,7 +156,10 @@ export default function WorksView({ works, initialCategory = 'all' }: WorksViewP
     '--works-polaroid-width': scaledPx(480),
     '--works-polaroid-row-overlap': scaledPx(60),
     '--works-polaroid-hover-y': scaledPx(8),
-    '--works-meta-font-size': scaledPx(12.5),
+    '--works-meta-title-font-size': scaledPx(18),
+    '--works-meta-title-y': scaledPx(-6),
+    '--works-meta-detail-font-size': scaledPx(12),
+    '--works-meta-detail-y': scaledPx(26),
   } as CSSProperties
 
   return (
@@ -289,8 +292,11 @@ export default function WorksView({ works, initialCategory = 'all' }: WorksViewP
                     </span>
                     <span className={styles.paperSurfaceShadow} aria-hidden="true" />
                     <span className={styles.workMeta}>
-                      <span>{work.title}</span>
-                      <span>{work.year}</span>
+                      <span className={styles.workMetaTitle}>{work.title}</span>
+                      <span className={styles.workMetaDetails}>
+                        <span className={styles.workMetaCategory}>{work.categoryLabel}</span>
+                        <span className={styles.workMetaYear}>{work.year}</span>
+                      </span>
                     </span>
                   </span>
                 </Link>

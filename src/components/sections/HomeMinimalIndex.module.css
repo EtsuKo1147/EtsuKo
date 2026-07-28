@@ -780,7 +780,7 @@
   z-index: 1;
   display: block;
   font-family: var(--font-intel-mono), 'Courier New', monospace;
-  font-size: clamp(1.65rem, 2.65vw, 3.3rem);
+  font-size: clamp(1.35rem, 2.1vw, 2.7rem);
   font-weight: 400;
   line-height: 1.08;
   letter-spacing: 0.02em;
@@ -795,8 +795,8 @@
   max-width: 24ch;
   margin-top: 0;
   color: rgba(var(--home-text-rgb), 0.74);
-  font-size: clamp(0.72rem, 0.95vw, 0.96rem);
-  font-weight: 700;
+  font-size: clamp(0.66rem, 0.84vw, 0.86rem);
+  font-weight: 500;
   line-height: 1.45;
   transform: translate(var(--featured-role-x, 0), var(--featured-role-y, clamp(26px, 3vw, 44px))) rotate(var(--featured-role-rotate, 0deg));
   transform-origin: 0 50%;
@@ -808,8 +808,8 @@
   display: inline-block;
   margin-top: 0;
   color: rgba(var(--home-text-rgb), 0.7);
-  font-size: clamp(0.76rem, 1vw, 1rem);
-  font-weight: 700;
+  font-size: clamp(0.7rem, 0.9vw, 0.92rem);
+  font-weight: 500;
   transform: translate(var(--featured-year-x, 0), var(--featured-year-y, clamp(18px, 2.2vw, 34px))) rotate(var(--featured-year-rotate, 0deg));
   transform-origin: 0 50%;
 }
@@ -882,17 +882,47 @@
 
 .featuredStrip {
   position: absolute;
-  left: 5.6%;
-  right: 5.6%;
-  bottom: 5.2%;
+  left: 3%;
+  right: 3%;
+  bottom: 8%;
   z-index: 5;
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: center;
+  column-gap: 12px;
   color: var(--home-button-text);
-  font-size: clamp(0.56rem, 0.72vw, 0.75rem);
-  font-weight: 700;
-  line-height: 1.15;
+}
+
+.featuredStripTitle {
+  min-width: 0;
+  font-size: clamp(
+    0.66rem,
+    var(--home-featured-strip-title-size, 0.875rem),
+    0.9rem
+  );
+  font-weight: 400;
+  line-height: 1.12;
+  transform: translateY(var(--home-featured-strip-title-y, -6px));
+}
+
+.featuredStripDetails {
+  display: grid;
+  justify-items: end;
+  row-gap: 0.22em;
+  font-size: clamp(
+    0.66rem,
+    var(--home-featured-strip-detail-size, 0.625rem),
+    0.75rem
+  );
+  font-weight: 400;
+  line-height: 1.05;
+  text-align: right;
+  transform: translateY(var(--home-featured-strip-detail-y, 12px));
+}
+
+.featuredStripCategory,
+.featuredStripYear {
+  display: block;
 }
 
 .viewMoreWorksCue {
@@ -1105,18 +1135,16 @@
 
 .featuredLargeStrip {
   position: absolute;
-  left: 5.6%;
-  right: 5.6%;
-  bottom: 5.6%;
+  left: 3%;
+  right: 3%;
+  bottom: 8%;
   z-index: 5;
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: center;
+  column-gap: 12px;
   color: var(--home-button-text);
   font-family: var(--font-intel-mono), 'Courier New', monospace;
-  font-size: clamp(0.56rem, 0.72vw, 0.75rem);
-  font-weight: 700;
-  line-height: 1.15;
   pointer-events: none;
   user-select: none;
 }
@@ -2210,7 +2238,9 @@
   }
 
   .featuredLargeStrip {
-    bottom: 4.8%;
+    left: 3%;
+    right: 3%;
+    bottom: 8%;
   }
 
   .featuredLargeFrame .viewMoreWorksCue {

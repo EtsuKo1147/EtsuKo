@@ -4,12 +4,18 @@ import {
   type Work,
   type WorkCategory,
   type WorkImage,
+  type WorkLink,
 } from '@/data/works'
 import { client } from './client'
 
 type SanityWorkImage = {
   url?: string
   alt?: string
+}
+
+type SanityWorkLink = {
+  label?: string
+  url?: string
 }
 
 type SanityWork = {
@@ -28,6 +34,7 @@ type SanityWork = {
   order?: number
   coverImage?: SanityWorkImage
   galleryImages?: SanityWorkImage[]
+  projectLinks?: SanityWorkLink[]
 }
 
 const worksQuery = `*[_type == "work"] | order(order asc, _createdAt asc) {
@@ -37,6 +44,10 @@ const worksQuery = `*[_type == "work"] | order(order asc, _createdAt asc) {
   category,
   year,
   description,
+  projectLinks[] {
+    label,
+    url
+  },
   summary,
   role,
   tools,
@@ -61,6 +72,10 @@ const workBySlugQuery = `*[_type == "work" && slug.current == $slug][0] {
   category,
   year,
   description,
+  projectLinks[] {
+    label,
+    url
+  },
   summary,
   role,
   tools,
@@ -100,6 +115,17 @@ function normalizeWorkImage(image: SanityWorkImage | undefined): WorkImage | und
   }
 }
 
+function normalizeWorkLink(link: SanityWorkLink | undefined): WorkLink | undefined {
+  if (!link?.label || !link.url) {
+    return undefined
+  }
+
+  return {
+    label: link.label,
+    url: link.url,
+  }
+}
+
 function isPresent<T>(value: T | null | undefined): value is T {
   return value !== null && value !== undefined
 }
@@ -112,6 +138,7 @@ function normalizeSanityWork(work: SanityWork, index: number): Work | null {
   const id = String(work.order || index + 1).padStart(2, '0')
   const coverImage = normalizeWorkImage(work.coverImage)
   const galleryImages = work.galleryImages?.map(normalizeWorkImage).filter(isPresent)
+  const projectLinks = work.projectLinks?.map(normalizeWorkLink).filter(isPresent)
 
   return {
     id,
@@ -131,6 +158,7 @@ function normalizeSanityWork(work: SanityWork, index: number): Work | null {
     coverImageUrl: coverImage?.url,
     coverImageAlt: coverImage?.alt || work.title,
     galleryImages,
+    projectLinks,
   }
 }
 
