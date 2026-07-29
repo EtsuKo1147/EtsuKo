@@ -177,7 +177,7 @@
 
 .projectLink:hover,
 .projectLink:focus-visible {
-  color: #f26a2f;
+  color: #FF840A;
   outline: none;
   transform: translateY(-1px);
 }
@@ -330,7 +330,7 @@
 
 .pageNext:hover,
 .pageNext:focus-visible {
-  color: #f26a2f;
+  color: #FF840A;
   outline: none;
   transform: translateX(-50%) scale(1.04);
 }
@@ -411,7 +411,7 @@
 
 .arrowAction:hover,
 .arrowAction:focus-visible {
-  color: #f26a2f;
+  color: #FF840A;
   opacity: 1;
   outline: none;
   transform: scale(1.08);
@@ -526,11 +526,11 @@
 
 .indexLink:hover,
 .indexLink:focus-visible {
-  color: #f26a2f;
+  color: #FF840A;
 }
 
 .indexCurrent {
-  color: #f26a2f;
+  color: #FF840A;
 }
 
 .indexLink:hover .indexLine,
@@ -559,7 +559,7 @@
 
 .backAction:hover,
 .backAction:focus-visible {
-  color: #f26a2f;
+  color: #FF840A;
   opacity: 1;
   outline: none;
   transform: scale(1.08);
@@ -803,14 +803,14 @@
   }
 
   .mobileNavLink:focus-visible {
-    color: #f26a2f;
+    color: #FF840A;
     opacity: 1;
     outline: 2px solid currentColor;
     outline-offset: 2px;
   }
 
   .mobileNavLink:active {
-    color: #f26a2f;
+    color: #FF840A;
     opacity: 1;
   }
 

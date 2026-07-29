@@ -390,7 +390,7 @@
   right: 10%;
   top: 58%;
   z-index: 6;
-  color: #F26A2F;
+  color: #363636;
   font-family: 'Mini Wakuwaku Maru', 'WadaLabChuMaruGo2004P', Arial, sans-serif;
   font-size: clamp(1.05rem, 2vw, 2rem);
   font-weight: 800;
@@ -564,7 +564,7 @@
 .polaroidCategories a:hover,
 .polaroidCategories a:focus-visible,
 .polaroidCategories .activeCategory {
-  color: #F26A2F;
+  color: #FF840A;
   outline: none;
   transform: rotate(var(--category-tilt, -1deg)) translateY(-3px);
 }
@@ -933,7 +933,7 @@
   display: block;
   width: clamp(112px, 28%, 158px);
   aspect-ratio: 1;
-  color: #F26A2F;
+  color: #FF840A;
   opacity: 0;
   pointer-events: none;
   user-select: none;
@@ -1256,7 +1256,7 @@
 
 .viewMoreLink:hover,
 .viewMoreLink:focus-visible {
-  color: #F26A2F;
+  color: #FF840A;
   outline: none;
   transform: translateX(var(--home-view-more-hover-x, 32px)) rotate(13deg);
 }
@@ -1715,25 +1715,25 @@
 
 .directMailLink:hover,
 .directMailLink:focus-visible {
-  color: #ff840a;
+  color: #FF840A;
   transform: translateY(-3px) scale(1.045);
 }
 
 .directMailLink:hover::after,
 .directMailLink:focus-visible::after {
-  --direct-mail-underline-color: #ff840a;
+  --direct-mail-underline-color: #FF840A;
 
   opacity: 0.9;
   transform: scaleX(1.08);
 }
 
 .directMailLink:active {
-  color: #ff5a0a;
+  color: #FF840A;
   transform: translateY(1px) scale(0.98);
 }
 
 .directMailLink:active::after {
-  --direct-mail-underline-color: #ff5a0a;
+  --direct-mail-underline-color: #FF840A;
 }
 
 .topButton {
@@ -2213,7 +2213,7 @@
   }
 
   .viewMoreLink:active {
-    color: #F26A2F;
+    color: #FF840A;
     transform: translateY(1px) rotate(3deg) scale(0.98);
   }
 

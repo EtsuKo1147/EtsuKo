@@ -51,7 +51,7 @@ export const works: Work[] = [
       'Logo direction, color rules, and a compact visual language built for print and web touchpoints.',
     role: 'Logo / Visual Identity / Art Direction',
     tools: 'Illustrator / Photoshop',
-    accent: '#ff8a3d',
+    accent: '#FF840A',
     surface: '#eee8df',
     featured: true,
     href: '/works/loop-identity-system',

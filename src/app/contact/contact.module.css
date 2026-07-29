@@ -213,26 +213,26 @@
 
 .directMailLink:hover,
 .directMailLink:focus-visible {
-  color: #ff840a;
+  color: #FF840A;
   outline: none;
   transform: translateY(-3px) scale(1.045);
 }
 
 .directMailLink:hover::after,
 .directMailLink:focus-visible::after {
-  --direct-mail-underline-color: #ff840a;
+  --direct-mail-underline-color: #FF840A;
 
   opacity: 0.9;
   transform: scaleX(1.08);
 }
 
 .directMailLink:active {
-  color: #ff5a0a;
+  color: #FF840A;
   transform: translateY(1px) scale(0.98);
 }
 
 .directMailLink:active::after {
-  --direct-mail-underline-color: #ff5a0a;
+  --direct-mail-underline-color: #FF840A;
 }
 
 .contactForm {

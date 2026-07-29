@@ -303,11 +303,11 @@
 }
 
 .simplePageNavLinkActive {
-  color: #F26A2F;
+  color: #FF840A;
 }
 
 :global(body[data-simple-nav-inverted='true']) .simplePageNavLinkActive {
-  color: #F26A2F;
+  color: #FF840A;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -319,7 +319,7 @@
 
   .simplePageNavLinkActive:hover,
   .simplePageNavLinkActive:focus-visible {
-    color: #F26A2F;
+    color: #FF840A;
   }
 
   :global(body[data-simple-nav-inverted='true']) .simplePageNavLink:hover,
@@ -329,7 +329,7 @@
 
   :global(body[data-simple-nav-inverted='true']) .simplePageNavLinkActive:hover,
   :global(body[data-simple-nav-inverted='true']) .simplePageNavLinkActive:focus-visible {
-    color: #F26A2F;
+    color: #FF840A;
   }
 }
 

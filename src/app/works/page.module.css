@@ -21,7 +21,7 @@
   --works-card-fill: #faf9f6;
   --works-card-text: #363636;
   --works-doodle-filter: none;
-  --works-orange: #F26A2F;
+  --works-orange: #FF840A;
   --works-display-bg: #363636;
 
   position: relative;
@@ -228,7 +228,7 @@
   right: 10%;
   top: 58%;
   z-index: 6;
-  color: var(--works-orange);
+  color: #363636;
   font-family: 'Mini Wakuwaku Maru', 'WadaLabChuMaruGo2004P', Arial, sans-serif;
   font-size: clamp(0.9rem, var(--works-category-label-size, 1.45rem), 1.45rem);
   font-weight: 800;

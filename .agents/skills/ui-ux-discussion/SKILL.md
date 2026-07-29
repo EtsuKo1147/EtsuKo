@@ -1,6 +1,6 @@
 ---
 name: ui-ux-discussion
-description: Use this skill when the user wants to discuss UI/UX, visual design, layout, interaction design, animation ideas, responsive design, page structure, or technical planning for UI implementation. This skill may discuss implementation strategy, but must not write code or modify files unless the user explicitly asks to implement.
+description: Use this skill when the user wants to discuss UI/UX, visual design, layout, interaction design, animation ideas, responsive design, page structure, or technical planning for UI implementation. This skill may inspect relevant source files and a live local preview, including starting one existing development server when rendered visual evidence is needed, but must not write code or modify source files unless the user explicitly asks to implement.
 ---
 
 # UI/UX Discussion & Technical Planning Skill
@@ -15,7 +15,14 @@ Do not write code.
 
 Do not modify files.
 
-Do not run terminal commands.
+Do not run commands that modify source code, configuration, dependencies,
+assets, package files, or lockfiles.
+
+Read-only inspection commands and browser inspection are allowed.
+
+When reliable visual analysis requires a rendered page, you may start exactly
+one local development server with the project's existing development script.
+Starting a preview does not count as implementation.
 
 Do not output CSS, TSX, JS, GSAP, React, Next.js, or shell commands unless the user explicitly asks to implement.
 
@@ -93,6 +100,32 @@ Common mistake to call out:
 - Using `vw` everywhere, which can make elements too large or too small at mid-sized laptop widths.
 - Treating 14-inch and 16-inch screens as separate designs instead of using one continuous scaling system.
 
+## 3.2 Live visual preview rule
+
+When the request depends on rendered appearance, such as composition, image
+ratios, spacing, page rhythm, responsive behavior, hover states, or motion:
+
+1. Use the Browser skill before concluding that no preview is available.
+2. Reuse an accessible existing local preview or a local URL supplied by the
+   user.
+3. Check whether the project's expected local preview is reachable before
+   starting another server.
+4. If no usable preview can be reached, start exactly one development server
+   with the project's existing development script without asking for additional
+   permission.
+5. Use the URL reported by the development server and inspect the actual page
+   in the browser.
+6. Keep the analysis read-only. Do not edit source files, configuration,
+   assets, package files, or lockfiles.
+7. Do not install, remove, or update dependencies.
+8. Never run multiple development servers.
+9. Stop only the server process started for the current analysis when the
+   visual review is complete. Never stop a server that was already running.
+
+The development server may create generated cache output such as `.next/`.
+Treat that as an automatic preview side effect, not permission to inspect or
+modify generated directories.
+
 ## 4. Trigger examples
 
 Stay in this mode when the user says:
@@ -138,6 +171,9 @@ Prefer this structure:
 You may:
 
 - analyze the design problem
+- inspect directly relevant source files with read-only commands
+- inspect a live local page with the Browser skill
+- start one local development server when rendered visual evidence is needed
 - explain layout logic
 - compare different UI structures
 - suggest visual hierarchy
@@ -157,7 +193,9 @@ You must not:
 - output CSS snippets
 - output TSX / JSX / JS snippets
 - output GSAP timelines
-- run commands
+- run commands that modify source files, configuration, dependencies, assets,
+  package files, or lockfiles
+- start more than one development server
 - modify files
 - give a final Codex implementation prompt
 - start implementation automatically

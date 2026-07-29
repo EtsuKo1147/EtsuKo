@@ -101,6 +101,26 @@ yarn install
 * If a command may modify `package.json`, lockfiles, or `node_modules`, ask first.
 * 如果命令可能修改 `package.json`、lockfile 或 `node_modules`，必须先询问用户。
 
+### UI/UX read-only visual preview exception
+
+When `ui-ux-discussion` or `editorial-web-ui-ux` is active and a reliable
+design judgment requires seeing the rendered page:
+
+* First reuse an accessible existing local preview or the local URL supplied by
+  the user.
+* If no usable preview can be reached, starting exactly one development server
+  with the project's existing `npm run dev` script is pre-approved.
+* Do not ask for additional permission before starting that single preview
+  server.
+* Treat the preview as read-only visual inspection, not implementation.
+* Do not modify source code, configuration, assets, `package.json`, or lockfiles.
+* Do not install, remove, or update dependencies.
+* Never start multiple development servers.
+* Stop only the server process started for the current analysis. Never stop a
+  server that was already running before the analysis.
+* The development server may generate `.next/` output automatically, but do not
+  read, search, edit, scan, or summarize `.next/`.
+
 ---
 
 ## 6. Git / Git 规则
@@ -167,4 +187,4 @@ Do only what the user asked.
 
 ## UI/UX discussion and technical planning
 
-When the user asks to discuss UI/UX, layout, interaction, animation, responsive behavior, or technical implementation strategy, answer from both design and technical-planning perspectives, but do not write code, modify files, or run commands unless the user explicitly asks to implement.
+When the user asks to discuss UI/UX, layout, interaction, animation, responsive behavior, or technical implementation strategy, answer from both design and technical-planning perspectives, but do not write code or modify files unless the user explicitly asks to implement. Read-only inspection commands, browser inspection, and the single preview-server exception defined above are allowed when rendered visual evidence is needed.

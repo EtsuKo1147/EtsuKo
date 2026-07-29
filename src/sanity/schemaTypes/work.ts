@@ -107,7 +107,7 @@ export const workType = defineType({
       title: 'Accent Color',
       type: 'string',
       initialValue: '#363636',
-      description: 'Hex color used by the placeholder design, for example #ff8a3d.',
+      description: 'Hex color used by the placeholder design, for example #FF840A.',
     }),
     defineField({
       name: 'surface',
