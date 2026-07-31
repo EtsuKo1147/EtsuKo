@@ -21,9 +21,13 @@ const HandDrawnLoader = dynamic(
 
 type HomePageClientProps = {
   featuredWorks: Work[]
+  featuredLargeWorkHref: string
 }
 
-export default function HomePageClient({ featuredWorks }: HomePageClientProps) {
+export default function HomePageClient({
+  featuredWorks,
+  featuredLargeWorkHref,
+}: HomePageClientProps) {
   const [loaderDone,   setLoaderDone]   = useState(shouldSkipHomeLoader)
   const [homeRevealed, setHomeRevealed] = useState(shouldSkipHomeLoader)
   const { isInverted, toggleTheme } = useSiteTheme()
@@ -71,7 +75,10 @@ export default function HomePageClient({ featuredWorks }: HomePageClientProps) {
           onClick={toggleTheme}
         />
         <HomeHero revealed={homeRevealed} />
-        <HomeMinimalIndex featuredWorks={featuredWorks} />
+        <HomeMinimalIndex
+          featuredWorks={featuredWorks}
+          featuredLargeWorkHref={featuredLargeWorkHref}
+        />
       </main>
     </>
   )

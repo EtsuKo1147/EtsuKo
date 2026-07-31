@@ -7,6 +7,12 @@ export default async function HomePage() {
     ...works.filter((work) => work.featured),
     ...works.filter((work) => !work.featured),
   ].slice(0, 4)
+  const featuredLargeWorkHref = works[4]?.href ?? '/works'
 
-  return <HomePageClient featuredWorks={featuredWorks} />
+  return (
+    <HomePageClient
+      featuredWorks={featuredWorks}
+      featuredLargeWorkHref={featuredLargeWorkHref}
+    />
+  )
 }

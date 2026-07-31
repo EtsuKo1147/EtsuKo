@@ -345,10 +345,12 @@ function HomeScrollCue({ visible }: { visible: boolean }) {
 
 type HomeMinimalIndexProps = {
   featuredWorks: Work[]
+  featuredLargeWorkHref: string
 }
 
 export default function HomeMinimalIndex({
   featuredWorks,
+  featuredLargeWorkHref,
 }: HomeMinimalIndexProps) {
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(0)
   const [isWorkCueActive, setIsWorkCueActive] = useState(false)
@@ -1463,8 +1465,9 @@ export default function HomeMinimalIndex({
           >
               <Link
                 className={styles.featuredLargeFrame}
-                href="/works"
-                aria-label="View Photography works"
+                href={featuredLargeWorkHref}
+                aria-label="View the fifth work"
+                onClick={rememberHomeHistoryPosition}
                 onPointerMove={handlePolaroidPointerMove}
               >
                 <span className={styles.featuredLargeViewport} aria-hidden="true">
