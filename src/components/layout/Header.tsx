@@ -27,8 +27,9 @@ const ROAD_SIGN_MAX_SCALE = 1.45
 const ROAD_SIGN_MOBILE_SCALE = 0.55
 const ROAD_SIGN_SAFE_LEFT_MARGIN = 24
 const COMPACT_NAV_DESIGN_WIDTH = 590
-const COMPACT_NAV_CIRCLE_SIZE = 96
-const COMPACT_NAV_CONTACT_WIDTH = 170
+const COMPACT_NAV_CIRCLE_SIZE = 88
+const COMPACT_NAV_CONTACT_WIDTH = 182
+const COMPACT_NAV_TRIANGLE_ROTATION = -22
 const SIMPLE_NAV_ITEMS = [
   { label: 'HOME', href: '/' },
   { label: 'WORKS', href: '/works' },
@@ -354,7 +355,13 @@ export default function Header() {
       })
     }
     if (triangle) {
-      gsap.set(triangle, { x: 0, y: 0, rotate: -12, scale: 1, autoAlpha: 1 })
+      gsap.set(triangle, {
+        x: 0,
+        y: 0,
+        rotate: COMPACT_NAV_TRIANGLE_ROTATION,
+        scale: 1,
+        autoAlpha: 1,
+      })
     }
     if (rabbit) {
       gsap.set(rabbit, { x: 0, y: 0, rotate: 0, scale: 1, autoAlpha: 1 })
@@ -446,7 +453,11 @@ export default function Header() {
     })
     gsap.set(travel, { x: startX, y: startY })
     gsap.set(circle, { autoAlpha: 0, scale: 0.18 })
-    gsap.set(triangle, { autoAlpha: 0, scale: 0.18, rotate: -28 })
+    gsap.set(triangle, {
+      autoAlpha: 0,
+      scale: 0.18,
+      rotate: COMPACT_NAV_TRIANGLE_ROTATION - 16,
+    })
     gsap.set(rabbit, { autoAlpha: 1, visibility: 'visible', scale: startRabbitScale })
 
     const tl = gsap.timeline({
@@ -462,7 +473,11 @@ export default function Header() {
       tl.set(travel, { x: 0, y: 0 })
         .set(compact, { autoAlpha: 1, pointerEvents: 'auto' })
         .set(circle, { autoAlpha: 1, scale: 1 })
-        .set(triangle, { autoAlpha: 1, scale: 1, rotate: -12 })
+        .set(triangle, {
+          autoAlpha: 1,
+          scale: 1,
+          rotate: COMPACT_NAV_TRIANGLE_ROTATION,
+        })
         .set(rabbit, { autoAlpha: 1, visibility: 'visible', scale: 1 })
         .set(bunnyRef.current, { autoAlpha: 0, pointerEvents: 'none' })
       return
@@ -471,7 +486,13 @@ export default function Header() {
     tl.to(rabbit, { scale: 1, duration: 0.5, ease: 'power3.inOut' }, 0)
       .to(bunnyRef.current, { autoAlpha: 0, pointerEvents: 'none', duration: 0.12 }, 0)
       .to(circle, { autoAlpha: 1, scale: 1, duration: 0.28, ease: 'back.out(2.1)' }, 0.04)
-      .to(triangle, { autoAlpha: 1, scale: 1, rotate: -12, duration: 0.22, ease: 'back.out(2)' }, 0.14)
+      .to(triangle, {
+        autoAlpha: 1,
+        scale: 1,
+        rotate: COMPACT_NAV_TRIANGLE_ROTATION,
+        duration: 0.22,
+        ease: 'back.out(2)',
+      }, 0.14)
       .to(travel, { x: 0, y: 0, duration: 0.56, ease: 'power3.inOut' }, 0.14)
       .set(compact, { pointerEvents: 'auto' })
       .to(rabbit, { y: -5, duration: 0.1, ease: 'power2.out' }, 0.58)
@@ -548,6 +569,7 @@ export default function Header() {
       })
         .set(triangle, { autoAlpha: 0, scale: 0.4 })
         .set(links, { autoAlpha: 1, x: 0 })
+        .set(circle, { autoAlpha: 0 })
       return
     }
 
@@ -570,6 +592,7 @@ export default function Header() {
         stagger: 0.055,
         ease: 'back.out(1.35)',
       }, 0.13)
+      .to(circle, { autoAlpha: 0, duration: 0.12, ease: 'power1.out' }, 0.39)
       .to(rabbit, { y: 0, scaleX: 1, scaleY: 1, duration: 0.22, ease: 'back.out(2)' }, 0.31)
   }
 
@@ -602,6 +625,7 @@ export default function Header() {
     if (reducedMotion) {
       tl.set(links, { autoAlpha: 0, x: 24 })
         .set(circle, {
+          autoAlpha: 1,
           width: COMPACT_NAV_CIRCLE_SIZE,
           height: COMPACT_NAV_CIRCLE_SIZE,
           borderRadius: '50%',
@@ -610,7 +634,8 @@ export default function Header() {
       return
     }
 
-    tl.to(links, {
+    tl.set(circle, { autoAlpha: 1 }, 0)
+      .to(links, {
       autoAlpha: 0,
       x: 24,
       duration: 0.16,
