@@ -636,22 +636,23 @@ export default function Header() {
 
     tl.set(circle, { autoAlpha: 1 }, 0)
       .to(links, {
-      autoAlpha: 0,
-      x: 24,
-      duration: 0.16,
-      stagger: 0.035,
-      ease: 'power2.in',
-    }, 0)
+        autoAlpha: 0,
+        x: 0,
+        duration: 0.12,
+        stagger: 0.025,
+        ease: 'power2.in',
+      }, 0)
+      .set(links, { x: 24 }, 0.2)
       .to(circle, {
         width: COMPACT_NAV_CIRCLE_SIZE,
         height: COMPACT_NAV_CIRCLE_SIZE,
         borderRadius: '50%',
         duration: 0.3,
         ease: 'power3.inOut',
-      }, 0.08)
-      .to(rabbit, { y: 4, scaleX: 0.96, scaleY: 1.04, duration: 0.12, ease: 'power2.out' }, 0.08)
-      .to(triangle, { autoAlpha: 1, x: 0, scale: 1, duration: 0.2, ease: 'back.out(2)' }, 0.25)
-      .to(rabbit, { y: 0, scaleX: 1, scaleY: 1, duration: 0.2, ease: 'back.out(2)' }, 0.24)
+      }, 0.2)
+      .to(rabbit, { y: 4, scaleX: 0.96, scaleY: 1.04, duration: 0.12, ease: 'power2.out' }, 0.2)
+      .to(triangle, { autoAlpha: 1, x: 0, scale: 1, duration: 0.2, ease: 'back.out(2)' }, 0.37)
+      .to(rabbit, { y: 0, scaleX: 1, scaleY: 1, duration: 0.2, ease: 'back.out(2)' }, 0.36)
   }
 
   const getRoadSignItems = () => {
