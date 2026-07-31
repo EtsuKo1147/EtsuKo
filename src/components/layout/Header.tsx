@@ -154,7 +154,6 @@ export default function Header() {
     })
     compactNavRabbitHoverTlRef.current = tl
     addBunnySquash(tl, rabbit, true)
-    addBunnySquash(tl, rabbit, true)
   }
 
   const setRoadSignCollapsedState = (next: boolean) => {

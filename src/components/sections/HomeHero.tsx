@@ -149,9 +149,11 @@ export default function HomeHero({ revealed = false }: HomeHeroProps) {
             </div>
 
             <div className={styles.minimap} aria-hidden="true">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/hero/ui/minimap-base.svg" alt="" className={styles.minimapBase} />
-              <span className={styles.minimapDot} />
+              <div className={styles.minimapVisual}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/hero/ui/minimap-base.svg" alt="" className={styles.minimapBase} />
+                <span className={styles.minimapDot} />
+              </div>
             </div>
 
             <div ref={timerRef} className={styles.timerReadout} aria-label="Homepage timer">

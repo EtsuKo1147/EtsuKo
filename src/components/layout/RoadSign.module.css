@@ -262,7 +262,7 @@
   width: 10px;
   height: 12px;
   z-index: 0;
-  background: var(--compact-nav-stroke);
+  background: var(--compact-nav-accent);
   clip-path: polygon(100% 0, 100% 100%, 0 58%);
   transform: rotate(-35deg);
   transform-origin: center center;
