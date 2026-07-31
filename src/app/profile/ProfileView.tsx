@@ -220,6 +220,9 @@ function ProfileConsoleTypewriter() {
 export default function ProfileView() {
   const { isInverted, toggleTheme } = useSiteTheme()
   const [designScale, setDesignScale] = useState(1)
+  const [isEntranceActive, setIsEntranceActive] = useState(false)
+  const [isProfileCharacterReady, setIsProfileCharacterReady] = useState(false)
+  const [isProfileGameCardReady, setIsProfileGameCardReady] = useState(false)
   const profileConsoleFrameRef = useRef<HTMLDivElement>(null)
   const profile = profileCopy.jp
 
@@ -237,6 +240,22 @@ export default function ProfileView() {
 
     return () => {
       window.removeEventListener('resize', updateDesignScale)
+    }
+  }, [])
+
+  useEffect(() => {
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const frame = window.requestAnimationFrame(() => {
+      setIsEntranceActive(true)
+
+      if (reducedMotionQuery.matches) {
+        setIsProfileCharacterReady(true)
+        setIsProfileGameCardReady(true)
+      }
+    })
+
+    return () => {
+      window.cancelAnimationFrame(frame)
     }
   }, [])
 
@@ -291,6 +310,16 @@ export default function ProfileView() {
     '--profile-character-left': scaledPx(34),
     '--profile-character-bottom': scaledPx(176),
     '--profile-character-width': scaledPx(600),
+    '--profile-character-enter-x': scaledPx(132),
+    '--profile-character-enter-y': scaledPx(96),
+    '--profile-character-overshoot-x': scaledPx(-14),
+    '--profile-character-overshoot-y': scaledPx(-16),
+    '--profile-character-settle-x': scaledPx(5),
+    '--profile-character-settle-y': scaledPx(6),
+    '--profile-character-fine-x': scaledPx(-3),
+    '--profile-character-fine-y': scaledPx(-5),
+    '--profile-character-hover-y': scaledPx(-18),
+    '--profile-character-hover-y-small': scaledPx(-8),
     '--profile-console-width': scaledPx(980),
     '--profile-console-margin': scaledPx(-76),
   } as CSSProperties
@@ -324,8 +353,15 @@ export default function ProfileView() {
           <img
             src="/home/character-stage/doodles/character-3.svg"
             alt=""
-            className={styles.profileCharacter}
+            className={`${styles.profileCharacter} ${
+              isEntranceActive ? styles.profileCharacterActive : ''
+            } ${isProfileCharacterReady ? styles.profileCharacterReady : ''}`}
             draggable={false}
+            onAnimationEnd={() => {
+              if (isEntranceActive) {
+                setIsProfileCharacterReady(true)
+              }
+            }}
           />
 
           <div ref={profileConsoleFrameRef} className={styles.profileConsoleFrame}>
@@ -335,6 +371,26 @@ export default function ProfileView() {
               className={styles.profileConsole}
               draggable={false}
             />
+
+            <span className={styles.profileGameCardClip} aria-hidden="true">
+              <span
+                className={`${styles.profileGameCardMotion} ${
+                  isEntranceActive ? styles.profileGameCardActive : ''
+                } ${isProfileGameCardReady ? styles.profileGameCardReady : ''}`}
+                onAnimationEnd={() => {
+                  if (isEntranceActive) {
+                    setIsProfileGameCardReady(true)
+                  }
+                }}
+              >
+                <img
+                  src="/home/character-stage/doodles/gamecard.svg"
+                  alt=""
+                  className={styles.profileGameCard}
+                  draggable={false}
+                />
+              </span>
+            </span>
 
             <ProfileConsoleTypewriter />
           </div>

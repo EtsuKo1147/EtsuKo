@@ -1,8 +1,7 @@
 'use client'
 
-/* eslint-disable @next/next/no-img-element */
-
 import { useEffect, useState, type CSSProperties } from 'react'
+import ContactInteractiveHelmet from '@/components/sections/ContactInteractiveHelmet'
 import { useSiteTheme } from '@/components/theme/SiteThemeProvider'
 import styles from './contact.module.css'
 
@@ -62,6 +61,7 @@ export default function ContactView() {
     <main
       className={`${styles.contactPage} ${isInverted ? styles.contactPageInverted : ''}`}
       style={pageScaleStyle}
+      data-contact-interactive
     >
       <button
         type="button"
@@ -73,21 +73,19 @@ export default function ContactView() {
 
       <section className={styles.contactShell} aria-label="Contact">
         <section className={styles.directMailPanel} aria-labelledby="contact-direct-mail-title">
-          <img
-            src="/home/character-stage/doodles/character-6.svg"
-            alt=""
-            className={styles.directMailDoodle}
-            draggable={false}
-          />
-          <h2 id="contact-direct-mail-title" className={styles.directMailTitle}>
-            Direct Mail
-          </h2>
-          <a
-            className={styles.directMailLink}
-            href="mailto:koetsu1147@gmail.com?subject=Portfolio%20Contact"
-          >
-            koetsu1147@gmail.com
-          </a>
+          <ContactInteractiveHelmet className={styles.directMailHelmet} />
+
+          <div className={styles.directMailDetails} data-contact-glove-exclude>
+            <h2 id="contact-direct-mail-title" className={styles.directMailTitle}>
+              Direct Mail
+            </h2>
+            <a
+              className={styles.directMailLink}
+              href="mailto:koetsu1147@gmail.com?subject=Portfolio%20Contact"
+            >
+              koetsu1147@gmail.com
+            </a>
+          </div>
         </section>
 
         <form
@@ -95,6 +93,7 @@ export default function ContactView() {
           action="mailto:koetsu1147@gmail.com"
           method="post"
           encType="text/plain"
+          data-contact-glove-exclude
         >
           <p className={styles.contactIntro}>
             ご相談やご質問など、下記フォームよりお気軽にお問い合わせください！内容を確認後、折り返しご連絡いたします。

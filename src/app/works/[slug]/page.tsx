@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation'
 import { getWorkBySlug, getWorks } from '@/sanity/lib/works'
 import EditorialPhotographyDetail from './EditorialPhotographyDetail'
-import WorkDetailView from './WorkDetailView'
 
 type WorkDetailPageProps = {
   params: Promise<{
@@ -39,21 +38,19 @@ export default async function WorkDetailPage({ params }: WorkDetailPageProps) {
       ? detailWorks[(currentIndex + 1 + detailWorks.length) % detailWorks.length]
       : null
 
-  if (
-    (currentIndex === 4 || currentIndex === 5) &&
-    work.galleryImages &&
-    work.galleryImages.length > 0
-  ) {
-    return (
-      <EditorialPhotographyDetail
-        work={work}
-        works={detailWorks}
-        nextWork={nextWork}
-        displayIndex={currentIndex + 1}
-        layoutVariant={currentIndex === 4 ? 'alternate' : 'standard'}
-      />
-    )
-  }
+  const editorialVariants = ['offset', 'split', 'poster', 'quiet'] as const
+  const layoutVariant =
+    work.slug === 'commercial-photography'
+      ? 'commercial'
+      : editorialVariants[currentIndex % editorialVariants.length]
 
-  return <WorkDetailView work={work} works={detailWorks} />
+  return (
+    <EditorialPhotographyDetail
+      work={work}
+      works={detailWorks}
+      nextWork={nextWork}
+      displayIndex={currentIndex + 1}
+      layoutVariant={layoutVariant}
+    />
+  )
 }

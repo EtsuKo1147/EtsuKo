@@ -98,8 +98,10 @@ export default function HomeHero({ revealed = false }: HomeHeroProps) {
       const minimapY = progress * -5
       const minimapRotate = progress * -75
       const motorRotate = progress * 0.3
+      const scrollCueOpacity = window.scrollY > 4 ? 0 : 1
 
       hero.style.setProperty('--hero-scroll-progress', progress.toFixed(3))
+      hero.style.setProperty('--scroll-cue-opacity', scrollCueOpacity.toFixed(3))
       hero.style.setProperty('--frame-x', '0px')
       hero.style.setProperty('--frame-y', '0px')
       hero.style.setProperty('--motor-x', '0px')
@@ -226,6 +228,13 @@ export default function HomeHero({ revealed = false }: HomeHeroProps) {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className={styles.scrollCue} aria-hidden="true">
+        <span className={styles.scrollCueLabel}>Scroll</span>
+        <svg className={styles.scrollCueArrow} viewBox="0 0 64 34">
+          <path d="M4 4 32 30 60 4" />
+        </svg>
       </div>
     </section>
   )

@@ -666,7 +666,7 @@ export default function HandDrawnLoader({
               fontSize: `${loadingFontSize}px`,
               fontWeight: 900,
               color: '#363636',
-              fontFamily: '"Impact", "Arial Black", "Helvetica Neue", sans-serif',
+              fontFamily: '"Impact", "elido", "Helvetica Neue", sans-serif',
               letterSpacing: '-0.02em',
               lineHeight: 1,
               pointerEvents: 'none',

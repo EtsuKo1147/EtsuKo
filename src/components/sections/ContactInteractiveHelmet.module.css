@@ -1,0 +1,145 @@
+.root {
+  position: relative;
+  display: block;
+  width: min(
+    var(--contact-helmet-width, var(--home-direct-mail-doodle-width, 520px)),
+    var(--contact-helmet-max-width, 64vw)
+  );
+  aspect-ratio: 218 / 276;
+  user-select: none;
+}
+
+.helmetButton {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.helmetButton:focus-visible {
+  outline: 2px solid rgba(var(--home-text-rgb), 0.62);
+  outline-offset: 8px;
+}
+
+.eyeLayer,
+.visorClip,
+.layerImage {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.eyeLayer {
+  z-index: 1;
+}
+
+.layerImage {
+  object-fit: contain;
+  filter: var(--contact-helmet-filter, none);
+  pointer-events: none;
+  user-select: none;
+}
+
+.eyeLayer .layerImage {
+  transition: opacity 120ms ease;
+}
+
+.eyeVisible {
+  opacity: 1;
+}
+
+.eyeHidden {
+  opacity: 0;
+}
+
+.visorClip {
+  z-index: 2;
+  mask-image: url('/contact/visor-clip.svg');
+  mask-position: center;
+  mask-repeat: no-repeat;
+  mask-size: 100% 100%;
+  -webkit-mask-image: url('/contact/visor-clip.svg');
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+}
+
+.visor {
+  transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.visorOpen {
+  transform: translateY(-32%);
+}
+
+.visorClosed {
+  transform: translateY(0);
+}
+
+.shellLayer {
+  z-index: 3;
+}
+
+.gloveCursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 60;
+  width: clamp(
+    var(--contact-glove-min-width, 190px),
+    var(--contact-glove-fluid-width, 18vw),
+    var(--contact-glove-max-width, 345px)
+  );
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(-100vw, -100vh, 0);
+  transition: opacity 120ms ease;
+  will-change: transform;
+}
+
+.gloveCursor > img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: var(--contact-helmet-filter, none);
+  transform: translate(-44%, -23%);
+  user-select: none;
+}
+
+.gloveVisible {
+  opacity: 1;
+}
+
+.contactGloveActive,
+.contactGloveActive * {
+  cursor: none !important;
+}
+
+@media (max-width: 640px) {
+  .root {
+    width: min(360px, 74vw);
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .gloveCursor {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eyeLayer .layerImage,
+  .visor,
+  .gloveCursor {
+    transition: none;
+  }
+}

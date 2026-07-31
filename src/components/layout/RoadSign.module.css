@@ -177,8 +177,10 @@
 
 .compactNav {
   --compact-nav-scale: 1;
-  --compact-nav-fill: #363636;
-  --compact-nav-text: #faf9f6;
+  --compact-nav-fill: #faf9f6;
+  --compact-nav-text: #363636;
+  --compact-nav-stroke: #363636;
+  --compact-nav-accent: #FF840A;
   position: fixed;
   right: max(24px, env(safe-area-inset-right, 0px));
   bottom: max(24px, env(safe-area-inset-bottom, 0px));
@@ -197,9 +199,24 @@
   visibility: visible !important;
 }
 
+.compactNavTransitionRabbit {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 56;
+  display: block;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  user-select: none;
+  transform-origin: top left;
+  will-change: transform, opacity;
+}
+
 :global(body[data-simple-nav-inverted='true']) .compactNav {
-  --compact-nav-fill: #faf9f6;
-  --compact-nav-text: #363636;
+  --compact-nav-fill: #363636;
+  --compact-nav-text: #faf9f6;
+  --compact-nav-stroke: #faf9f6;
 }
 
 .compactNavTravel {
@@ -230,7 +247,9 @@
   width: 88px;
   height: 88px;
   z-index: 1;
-  border-radius: 50%;
+  box-sizing: border-box;
+  border: 3px solid var(--compact-nav-stroke);
+  border-radius: 999px;
   background: var(--compact-nav-fill);
   transform-origin: right bottom;
   will-change: width, height, border-radius, transform, opacity;
@@ -238,15 +257,15 @@
 
 .compactNavTriangle {
   position: absolute;
-  right: 79px;
-  bottom: -1px;
-  width: 16px;
-  height: 18px;
+  right: 80px;
+  bottom: 4px;
+  width: 10px;
+  height: 12px;
   z-index: 0;
-  background: var(--compact-nav-fill);
+  background: var(--compact-nav-stroke);
   clip-path: polygon(100% 0, 100% 100%, 0 58%);
-  transform: rotate(-22deg);
-  transform-origin: right top;
+  transform: rotate(-35deg);
+  transform-origin: center center;
   will-change: transform, opacity;
 }
 
@@ -276,7 +295,7 @@
   color: var(--compact-nav-text);
   font-family: 'elido', 'Helvetica Neue', Helvetica, sans-serif;
   font-size: 18px;
-  font-weight: 500;
+  font-weight: 700;
   line-height: 1;
   letter-spacing: 0.055em;
   text-decoration: none;
@@ -284,6 +303,18 @@
   opacity: 0;
   touch-action: manipulation;
   will-change: transform, opacity;
+}
+
+.compactNavLinkActive {
+  color: var(--compact-nav-accent);
+}
+
+.compactNavLinkActive:not(.compactNavLinkContact) .compactNavPill {
+  border-color: var(--compact-nav-accent);
+}
+
+.compactNavOpen.compactNavContactActive .compactNavMorphShape {
+  border-color: var(--compact-nav-accent);
 }
 
 .compactNavLinkContact {
@@ -297,6 +328,11 @@
   transform: translateX(-6px);
 }
 
+.compactNavLinkContact .compactNavPill {
+  border-color: transparent;
+  background: transparent;
+}
+
 .compactNavLabel {
   position: relative;
   z-index: 2;
@@ -306,6 +342,8 @@
   position: absolute;
   inset: 0;
   z-index: 0;
+  box-sizing: border-box;
+  border: 3px solid var(--compact-nav-stroke);
   border-radius: inherit;
   background: var(--compact-nav-fill);
   pointer-events: none;
@@ -331,7 +369,7 @@
 
 .compactNavRabbit {
   position: absolute;
-  right: 12px;
+  right: 18px;
   bottom: 6px;
   width: 52px;
   height: auto;
@@ -381,140 +419,5 @@
     right: max(12px, env(safe-area-inset-right, 0px));
     bottom: max(12px, env(safe-area-inset-bottom, 0px));
     width: min(590px, calc(100vw - 24px));
-  }
-}
-
-.simplePageNav {
-  position: fixed;
-  top: clamp(28px, 2.8vw, 54px);
-  right: clamp(18px, 1.7vw, 34px);
-  bottom: clamp(28px, 2.8vw, 54px);
-  z-index: 50;
-  display: flex;
-  align-items: stretch;
-  justify-content: flex-end;
-  pointer-events: none;
-}
-
-.simplePageNavList {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: space-between;
-  min-height: min(760px, calc(100vh - clamp(56px, 5.6vw, 108px)));
-  pointer-events: auto;
-}
-
-.simplePageNavLink {
-  position: relative;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  width: max-content;
-  color: #363636;
-  font-family: var(--font-intel-mono), 'Courier New', monospace;
-  font-size: clamp(0.72rem, 0.78vw, 0.98rem);
-  font-weight: 500;
-  line-height: 1;
-  letter-spacing: 0;
-  text-decoration: none;
-  text-transform: uppercase;
-  transition: color 220ms ease;
-}
-
-:global(body[data-simple-nav-inverted='true']) .simplePageNavLink {
-  color: #faf9f6;
-}
-
-.simplePageNavLink::before {
-  content: '';
-  display: block;
-  order: 2;
-  width: 100%;
-  height: 1px;
-  background: currentColor;
-}
-
-.simplePageNavLink::after {
-  content: '';
-  display: block;
-  order: 3;
-  width: 0;
-  height: 0;
-  margin-top: 5px;
-  border-right: 0.28em solid transparent;
-  border-left: 0.28em solid transparent;
-  border-bottom: 0.34em solid currentColor;
-  opacity: 0;
-}
-
-.simplePageNavLinkActive::after {
-  opacity: 1;
-}
-
-.simplePageNavLinkActive {
-  color: #FF840A;
-}
-
-:global(body[data-simple-nav-inverted='true']) .simplePageNavLinkActive {
-  color: #FF840A;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .simplePageNavLink:hover,
-  .simplePageNavLink:focus-visible {
-    outline: none;
-    color: #363636;
-  }
-
-  .simplePageNavLinkActive:hover,
-  .simplePageNavLinkActive:focus-visible {
-    color: #FF840A;
-  }
-
-  :global(body[data-simple-nav-inverted='true']) .simplePageNavLink:hover,
-  :global(body[data-simple-nav-inverted='true']) .simplePageNavLink:focus-visible {
-    color: #faf9f6;
-  }
-
-  :global(body[data-simple-nav-inverted='true']) .simplePageNavLinkActive:hover,
-  :global(body[data-simple-nav-inverted='true']) .simplePageNavLinkActive:focus-visible {
-    color: #FF840A;
-  }
-}
-
-@media (max-width: 768px) {
-  .simplePageNav {
-    top: 0;
-    right: env(safe-area-inset-right, 0px);
-    bottom: auto;
-    left: max(42px, calc(env(safe-area-inset-left, 0px) + 30px));
-    justify-content: center;
-    padding: 24px 0 10px;
-  }
-
-  .simplePageNavList {
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: flex-start;
-    gap: clamp(22px, 7vw, 54px);
-    width: max-content;
-    max-width: 100%;
-    min-height: 0;
-  }
-
-  .simplePageNavLink {
-    gap: 2px;
-    font-size: clamp(0.86rem, 3.2vw, 1.3rem);
-  }
-
-  .simplePageNavLink::before {
-    display: none;
-  }
-
-  .simplePageNavLink::after {
-    display: block;
-    margin-top: 3px;
   }
 }

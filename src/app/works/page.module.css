@@ -228,8 +228,8 @@
   right: 10%;
   top: 58%;
   z-index: 6;
-  color: #363636;
-  font-family: 'Mini Wakuwaku Maru', 'WadaLabChuMaruGo2004P', Arial, sans-serif;
+  color: var(--works-text);
+  font-family: 'Mini Wakuwaku Maru', 'WadaLabChuMaruGo2004P', 'elido', sans-serif;
   font-size: clamp(0.9rem, var(--works-category-label-size, 1.45rem), 1.45rem);
   font-weight: 800;
   line-height: 1;
@@ -358,7 +358,7 @@
   border: 0;
   color: var(--works-text);
   background: transparent;
-  font-family: 'Mini Wakuwaku Maru', 'WadaLabChuMaruGo2004P', Arial, sans-serif;
+  font-family: 'Mini Wakuwaku Maru', 'WadaLabChuMaruGo2004P', 'elido', sans-serif;
   font-size: clamp(1.15rem, var(--works-category-font-size, 2.05rem), 2.05rem);
   font-weight: 800;
   line-height: 1;
@@ -677,7 +677,7 @@
     gap: 5px;
     min-height: 1.28em;
     padding: 0.08em 0.16em;
-    font-family: 'Mini Wakuwaku Maru', 'WadaLabChuMaruGo2004P', Arial, sans-serif;
+    font-family: 'Mini Wakuwaku Maru', 'WadaLabChuMaruGo2004P', 'elido', sans-serif;
     font-size: clamp(1rem, 2.15dvh, 1.25rem);
     line-height: 1.03;
   }

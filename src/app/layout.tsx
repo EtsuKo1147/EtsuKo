@@ -32,6 +32,9 @@ export default function RootLayout({
       className={`${intelMono.variable} h-full`}
       data-site-theme="light"
     >
+      <head>
+        <link rel="stylesheet" href="https://use.typekit.net/fes1sia.css" />
+      </head>
       <body
         className="min-h-full flex flex-col"
         data-simple-nav-inverted="false"

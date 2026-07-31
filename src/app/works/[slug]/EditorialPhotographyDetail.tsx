@@ -2,6 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
+import Image from 'next/image'
 import Link from 'next/link'
 import {
   useCallback,
@@ -9,9 +10,12 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  type CSSProperties,
   type MouseEvent,
+  type PointerEvent,
 } from 'react'
 import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/dist/ScrollTrigger'
 import { useSiteTheme } from '@/components/theme/SiteThemeProvider'
 import type { Work } from '@/data/works'
 import detailStyles from './page.module.css'
@@ -22,7 +26,25 @@ type EditorialPhotographyDetailProps = {
   works: Work[]
   nextWork: Work | null
   displayIndex: number
-  layoutVariant: 'standard' | 'alternate'
+  layoutVariant: 'commercial' | 'offset' | 'split' | 'poster' | 'quiet'
+}
+
+type PreviewState = {
+  index: number
+  top: number
+} | null
+
+function getImageDimensions(url: string) {
+  const match = url.match(/-(\d+)x(\d+)\.(?:avif|gif|jpe?g|png|webp)(?:\?.*)?$/i)
+
+  if (!match) {
+    return { width: 1600, height: 1200 }
+  }
+
+  return {
+    width: Number(match[1]),
+    height: Number(match[2]),
+  }
 }
 
 export default function EditorialPhotographyDetail({
@@ -34,11 +56,30 @@ export default function EditorialPhotographyDetail({
 }: EditorialPhotographyDetailProps) {
   const { isInverted, toggleTheme } = useSiteTheme()
   const images = work.galleryImages || []
+  const lightboxImages = work.coverImageUrl
+    ? [
+        {
+          url: work.coverImageUrl,
+          alt: work.coverImageAlt || work.title,
+        },
+        ...images,
+      ]
+    : images
+  const galleryLightboxOffset = work.coverImageUrl ? 1 : 0
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
+  const [preview, setPreview] = useState<PreviewState>(null)
+  const pageRef = useRef<HTMLElement>(null)
+  const heroStageRef = useRef<HTMLDivElement>(null)
+  const coverRef = useRef<HTMLElement>(null)
+  const metaRef = useRef<HTMLParagraphElement>(null)
+  const descriptionRef = useRef<HTMLDivElement>(null)
+  const galleryRef = useRef<HTMLElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
   const mediaRef = useRef<HTMLButtonElement>(null)
+  const lightboxImageRef = useRef<HTMLImageElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const openerRef = useRef<HTMLElement | null>(null)
+  const sourceRectRef = useRef<DOMRect | null>(null)
   const wasOpenRef = useRef(false)
   const closingRef = useRef(false)
   const currentIndex = displayIndex - 1
@@ -46,11 +87,51 @@ export default function EditorialPhotographyDetail({
     works.length > 1
       ? works[(currentIndex - 1 + works.length) % works.length]
       : null
+  const previewWork = preview ? works[preview.index] : null
 
-  const activeImage = activeIndex === null ? null : images[activeIndex]
+  const activeImage =
+    activeIndex === null ? null : lightboxImages[activeIndex]
+  const titleWords = work.title.trim().split(/\s+/)
+  const titleTail = titleWords.pop() || work.title
+  const variantClass = {
+    commercial: styles.pageCommercial,
+    offset: styles.pageOffset,
+    split: styles.pageSplit,
+    poster: styles.pagePoster,
+    quiet: styles.pageQuiet,
+  }[layoutVariant]
+  const galleryOffset = {
+    commercial: 0,
+    offset: 0,
+    split: 4,
+    poster: 8,
+    quiet: 11,
+  }[layoutVariant]
+
+  const getSafePreviewTop = (element: HTMLElement) => {
+    const rect = element.getBoundingClientRect()
+    const edge = Math.min(180, window.innerHeight / 3)
+
+    return Math.max(
+      edge,
+      Math.min(window.innerHeight - edge, rect.top + rect.height / 2),
+    )
+  }
+
+  const showPreview = (
+    index: number,
+    event: PointerEvent<HTMLAnchorElement>,
+  ) => {
+    if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      return
+    }
+
+    setPreview({ index, top: getSafePreviewTop(event.currentTarget) })
+  }
 
   const openImage = (index: number, event: MouseEvent<HTMLButtonElement>) => {
     openerRef.current = event.currentTarget
+    sourceRectRef.current = event.currentTarget.getBoundingClientRect()
     closingRef.current = false
     setActiveIndex(index)
   }
@@ -62,36 +143,88 @@ export default function EditorialPhotographyDetail({
 
     const overlay = overlayRef.current
     const media = mediaRef.current
+    const image = lightboxImageRef.current
 
     if (!overlay || !media) {
       wasOpenRef.current = false
+      sourceRectRef.current = null
       setActiveIndex(null)
       return
     }
 
+    const finishClose = () => {
+      wasOpenRef.current = false
+      closingRef.current = false
+      sourceRectRef.current = null
+      setActiveIndex(null)
+      openerRef.current?.focus()
+    }
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      finishClose()
+      return
+    }
+
     closingRef.current = true
+    const sourceRect = sourceRectRef.current
+    const currentSourceRect =
+      sourceRect && openerRef.current
+        ? openerRef.current.getBoundingClientRect()
+        : sourceRect
+    const imageRect = image?.getBoundingClientRect()
+    const canReturnToSource =
+      image &&
+      imageRect &&
+      imageRect.width > 0 &&
+      imageRect.height > 0 &&
+      currentSourceRect &&
+      currentSourceRect.width > 0 &&
+      currentSourceRect.height > 0
+
+    if (canReturnToSource) {
+      const sourceCenterX =
+        currentSourceRect.left + currentSourceRect.width / 2
+      const sourceCenterY =
+        currentSourceRect.top + currentSourceRect.height / 2
+      const imageCenterX = imageRect.left + imageRect.width / 2
+      const imageCenterY = imageRect.top + imageRect.height / 2
+
+      gsap
+        .timeline({ onComplete: finishClose })
+        .to(image, {
+          x: sourceCenterX - imageCenterX,
+          y: sourceCenterY - imageCenterY,
+          scaleX: currentSourceRect.width / imageRect.width,
+          scaleY: currentSourceRect.height / imageRect.height,
+          transformOrigin: 'center center',
+          duration: 0.42,
+          ease: 'power3.inOut',
+        })
+        .to(
+          overlay,
+          {
+            autoAlpha: 0,
+            duration: 0.24,
+            ease: 'power2.in',
+          },
+          0.14,
+        )
+      return
+    }
 
     gsap
-      .timeline({
-        onComplete: () => {
-          wasOpenRef.current = false
-          closingRef.current = false
-          setActiveIndex(null)
-          openerRef.current?.focus()
-        },
-      })
+      .timeline({ onComplete: finishClose })
       .to(media, {
-        scale: 0.965,
-        y: 12,
-        autoAlpha: 0,
-        duration: 0.22,
+        scale: 0.985,
+        y: 8,
+        duration: 0.2,
         ease: 'power2.in',
       })
       .to(
         overlay,
         {
           autoAlpha: 0,
-          duration: 0.2,
+          duration: 0.18,
           ease: 'power2.in',
         },
         0,
@@ -99,32 +232,293 @@ export default function EditorialPhotographyDetail({
   }, [activeIndex])
 
   const showPrevious = useCallback(() => {
-    if (images.length < 2) {
+    if (lightboxImages.length < 2) {
       return
     }
 
+    sourceRectRef.current = null
     setActiveIndex((current) => {
       if (current === null) {
         return 0
       }
 
-      return (current - 1 + images.length) % images.length
+      return (current - 1 + lightboxImages.length) % lightboxImages.length
     })
-  }, [images.length])
+  }, [lightboxImages.length])
 
   const showNext = useCallback(() => {
-    if (images.length < 2) {
+    if (lightboxImages.length < 2) {
       return
     }
 
+    sourceRectRef.current = null
     setActiveIndex((current) => {
       if (current === null) {
         return 0
       }
 
-      return (current + 1) % images.length
+      return (current + 1) % lightboxImages.length
     })
-  }, [images.length])
+  }, [lightboxImages.length])
+
+  useLayoutEffect(() => {
+    const heroStage = heroStageRef.current
+    const cover = coverRef.current
+    const meta = metaRef.current
+    const description = descriptionRef.current
+
+    if (!heroStage || !cover || !meta || !description) {
+      return
+    }
+
+    const media = gsap.matchMedia()
+    const context = gsap.context(() => {
+      media.add('(prefers-reduced-motion: no-preference)', () => {
+        const titleWordElements = gsap.utils.toArray<HTMLElement>(
+          '[data-title-word]',
+          heroStage,
+        )
+        const titleWordDuration =
+          titleWordElements.length > 1 ? 0.5 : 0.6
+        const titleWordStagger =
+          titleWordElements.length > 1
+            ? 0.1 / (titleWordElements.length - 1)
+            : 0
+        const animatedElements = [
+          ...titleWordElements,
+          cover,
+          meta,
+          description,
+        ]
+        const clearMotionStyles = () => {
+          gsap.set(animatedElements, {
+            clearProps:
+              'transform,willChange,transformOrigin,transformPerspective',
+          })
+        }
+
+        gsap.set(titleWordElements, {
+          rotationX: -110,
+          yPercent: 118,
+          scaleY: 0.82,
+          transformOrigin: '50% 100%',
+          transformPerspective: 700,
+          willChange: 'transform',
+        })
+        gsap.set(cover, {
+          y: () => -(cover.getBoundingClientRect().bottom + 32),
+          willChange: 'transform',
+        })
+        gsap.set(description, {
+          x: () => {
+            const rect = description.getBoundingClientRect()
+            const distanceToLeft = rect.left
+            const distanceToRight = window.innerWidth - rect.right
+
+            return distanceToLeft <= distanceToRight
+              ? -(rect.right + 48)
+              : window.innerWidth - rect.left + 48
+          },
+          willChange: 'transform',
+        })
+        const metaRect = meta.getBoundingClientRect()
+        const isHorizontalMeta = window
+          .getComputedStyle(meta)
+          .writingMode.startsWith('horizontal')
+        const metaDistanceToLeft = metaRect.left
+        const metaDistanceToRight = window.innerWidth - metaRect.right
+        const metaEntranceX = isHorizontalMeta
+          ? metaDistanceToLeft <= metaDistanceToRight
+            ? -(metaRect.right + 48)
+            : window.innerWidth - metaRect.left + 48
+          : 0
+
+        gsap.set(meta, {
+          x: metaEntranceX,
+          y: isHorizontalMeta ? 0 : -(metaRect.bottom + 32),
+          willChange: 'transform',
+        })
+
+        const timeline = gsap.timeline({
+          defaults: { overwrite: 'auto' },
+          onComplete: clearMotionStyles,
+          onInterrupt: clearMotionStyles,
+        })
+
+        timeline
+          .to(
+            cover,
+            {
+              y: 0,
+              duration: 0.6,
+              ease: 'power4.out',
+            },
+            0,
+          )
+          .to(
+            titleWordElements,
+            {
+              keyframes: [
+                {
+                  rotationX: 6,
+                  yPercent: 0,
+                  scaleY: 1.035,
+                  duration: titleWordDuration * 0.82,
+                  ease: 'power2.inOut',
+                },
+                {
+                  rotationX: 0,
+                  yPercent: 0,
+                  scaleY: 1,
+                  duration: titleWordDuration * 0.18,
+                  ease: 'power1.out',
+                },
+              ],
+              stagger: titleWordStagger,
+            },
+            0,
+          )
+          .to(
+            description,
+            {
+              x: 0,
+              duration: 0.46,
+              ease: 'power3.out',
+            },
+            0.14,
+          )
+          .to(
+            meta,
+            {
+              x: 0,
+              y: 0,
+              duration: 0.38,
+              ease: 'power3.out',
+            },
+            0.22,
+          )
+
+        return () => {
+          timeline.kill()
+          clearMotionStyles()
+        }
+      })
+    }, heroStage)
+
+    return () => {
+      media.revert()
+      context.revert()
+    }
+  }, [work.slug])
+
+  useLayoutEffect(() => {
+    gsap.registerPlugin(ScrollTrigger)
+
+    const page = pageRef.current
+    const gallery = galleryRef.current
+
+    if (!page || !gallery) {
+      return
+    }
+
+    const context = gsap.context(() => {
+      const media = gsap.matchMedia()
+
+      media.add('(prefers-reduced-motion: no-preference)', () => {
+        const items = gsap.utils.toArray<HTMLElement>(
+          `.${styles.commercialGalleryItem}`,
+          gallery,
+        )
+
+        items.forEach((item, index) => {
+          const image = item.querySelector('img')
+
+          if (!image) {
+            return
+          }
+
+          const rect = item.getBoundingClientRect()
+          const isMobile = window.matchMedia('(max-width: 700px)').matches
+          const centerRatio = (rect.left + rect.width / 2) / window.innerWidth
+          const origin = isMobile
+            ? 'top'
+            : centerRatio < 0.43
+              ? 'left'
+              : centerRatio > 0.57
+                ? 'right'
+                : 'top'
+          const initialClip =
+            origin === 'left'
+              ? 'inset(0 100% 0 0)'
+              : origin === 'right'
+                ? 'inset(0 0 0 100%)'
+                : 'inset(0 0 100% 0)'
+          const imageOffset =
+            origin === 'left'
+              ? { xPercent: -2.5, yPercent: 0 }
+              : origin === 'right'
+                ? { xPercent: 2.5, yPercent: 0 }
+                : { xPercent: 0, yPercent: isMobile ? -1.5 : -2.5 }
+
+          gsap.set(item, {
+            clipPath: initialClip,
+            willChange: 'clip-path',
+          })
+          gsap.set(image, {
+            ...imageOffset,
+            willChange: 'transform',
+          })
+
+          const timeline = gsap.timeline({
+            scrollTrigger: {
+              trigger: item,
+              start: 'top 88%',
+              once: true,
+            },
+            defaults: {
+              overwrite: 'auto',
+            },
+          })
+
+          timeline
+            .to(item, {
+              clipPath: 'inset(0 0 0 0)',
+              duration: 0.58,
+              delay: (index % 2) * 0.07,
+              ease: 'power3.out',
+              onComplete: () => {
+                gsap.set(item, { clearProps: 'clipPath,willChange' })
+              },
+            })
+            .to(
+              image,
+              {
+                xPercent: 0,
+                yPercent: 0,
+                duration: 0.68,
+                ease: 'power3.out',
+                onComplete: () => {
+                  gsap.set(image, { clearProps: 'transform,willChange' })
+                },
+              },
+              0,
+            )
+        })
+
+      })
+
+      return () => media.revert()
+    }, page)
+
+    const refreshFrame = window.requestAnimationFrame(() =>
+      ScrollTrigger.refresh(),
+    )
+
+    return () => {
+      window.cancelAnimationFrame(refreshFrame)
+      context.revert()
+    }
+  }, [images.length, work.slug])
 
   useLayoutEffect(() => {
     if (activeIndex === null) {
@@ -138,34 +532,90 @@ export default function EditorialPhotographyDetail({
       return
     }
 
+    gsap.killTweensOf([overlay, media])
+    gsap.set(media, { visibility: 'hidden' })
+
     if (!wasOpenRef.current) {
       wasOpenRef.current = true
+      gsap.fromTo(overlay, { autoAlpha: 0 }, {
+        autoAlpha: 1,
+        duration: 0.22,
+        ease: 'power2.out',
+      })
+      return
+    }
+
+    gsap.set(overlay, { autoAlpha: 1 })
+  }, [activeIndex])
+
+  const animateLightboxImage = () => {
+    const media = mediaRef.current
+    const image = lightboxImageRef.current
+
+    if (!media || !image) {
+      return
+    }
+
+    gsap.killTweensOf([media, image])
+    gsap.set(media, { visibility: 'visible' })
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      gsap.set(image, { clearProps: 'transform' })
+      closeButtonRef.current?.focus()
+      return
+    }
+
+    const sourceRect = sourceRectRef.current
+    const imageRect = image.getBoundingClientRect()
+    const canExpandFromSource =
+      sourceRect &&
+      sourceRect.width > 0 &&
+      sourceRect.height > 0 &&
+      imageRect.width > 0 &&
+      imageRect.height > 0
+
+    if (canExpandFromSource) {
+      const sourceCenterX = sourceRect.left + sourceRect.width / 2
+      const sourceCenterY = sourceRect.top + sourceRect.height / 2
+      const imageCenterX = imageRect.left + imageRect.width / 2
+      const imageCenterY = imageRect.top + imageRect.height / 2
+
       gsap.fromTo(
-        overlay,
-        { autoAlpha: 0 },
-        { autoAlpha: 1, duration: 0.28, ease: 'power2.out' },
-      )
-      gsap.fromTo(
-        media,
-        { scale: 0.94, y: 18, autoAlpha: 0 },
+        image,
         {
-          scale: 1,
+          x: sourceCenterX - imageCenterX,
+          y: sourceCenterY - imageCenterY,
+          scaleX: sourceRect.width / imageRect.width,
+          scaleY: sourceRect.height / imageRect.height,
+          transformOrigin: 'center center',
+        },
+        {
+          x: 0,
           y: 0,
-          autoAlpha: 1,
-          duration: 0.38,
-          ease: 'power3.out',
+          scaleX: 1,
+          scaleY: 1,
+          duration: 0.46,
+          ease: 'power3.inOut',
+          clearProps: 'transform',
+          onComplete: () => closeButtonRef.current?.focus(),
         },
       )
-      closeButtonRef.current?.focus()
       return
     }
 
     gsap.fromTo(
       media,
-      { autoAlpha: 0.35, scale: 0.988 },
-      { autoAlpha: 1, scale: 1, duration: 0.24, ease: 'power2.out' },
+      { scale: 0.985, y: 8 },
+      {
+        scale: 1,
+        y: 0,
+        duration: 0.24,
+        ease: 'power2.out',
+        clearProps: 'transform',
+        onComplete: () => closeButtonRef.current?.focus(),
+      },
     )
-  }, [activeIndex])
+  }
 
   useEffect(() => {
     if (activeIndex === null) {
@@ -199,9 +649,11 @@ export default function EditorialPhotographyDetail({
 
   return (
     <main
-      className={`${styles.page} ${
-        layoutVariant === 'alternate' ? styles.pageAlternate : ''
-      } ${isInverted ? styles.pageInverted : ''}`}
+      ref={pageRef}
+      className={`${styles.page} ${styles.pageEditorial} ${variantClass} ${
+        isInverted ? styles.pageInverted : ''
+      }`}
+      style={{ '--work-accent': work.accent } as CSSProperties}
     >
       <button
         type="button"
@@ -211,80 +663,169 @@ export default function EditorialPhotographyDetail({
         onClick={toggleTheme}
       />
 
-      <header className={styles.intro}>
-        <div className={styles.introTitle}>
-          <p className={styles.eyebrow}>
-            Photo essay
+      <header className={styles.commercialHero}>
+        <div
+          ref={heroStageRef}
+          className={styles.commercialHeroStage}
+          key={work.slug}
+        >
+          <h1 className={styles.commercialTitle} aria-label={work.title}>
+            {titleWords.length > 0 ? (
+              <span className={styles.commercialTitleLead}>
+                {titleWords.map((word, index) => (
+                  <span
+                    className={styles.commercialTitleWordMask}
+                    key={`${word}-${index}`}
+                  >
+                    <span
+                      className={styles.commercialTitleWord}
+                      data-title-word
+                    >
+                      {word}
+                    </span>
+                  </span>
+                ))}
+              </span>
+            ) : null}
+            <span className={styles.commercialTitleTail}>
+              <span className={styles.commercialTitleWordMask}>
+                <span
+                  className={styles.commercialTitleWord}
+                  data-title-word
+                >
+                  {titleTail}
+                </span>
+              </span>
+            </span>
+          </h1>
+
+          <figure ref={coverRef} className={styles.commercialCover}>
+            {work.coverImageUrl ? (
+              <button
+                type="button"
+                className={styles.commercialCoverButton}
+                aria-label={`Open cover image 1 of ${lightboxImages.length}`}
+                onClick={(event) => openImage(0, event)}
+              >
+                <Image
+                  src={work.coverImageUrl}
+                  alt={work.coverImageAlt || work.title}
+                  fill
+                  priority
+                  sizes="(max-width: 700px) calc(100vw - 40px), (max-width: 1050px) 60vw, 46vw"
+                  className={styles.commercialCoverImage}
+                />
+              </button>
+            ) : (
+              <span
+                className={styles.commercialCoverFallback}
+                style={{ background: work.surface }}
+                role="img"
+                aria-label={work.coverImageAlt || work.title}
+              />
+            )}
+          </figure>
+
+          <p ref={metaRef} className={styles.commercialMeta}>
+            <span>{work.categoryLabel}</span>
+            {work.year ? <span>{work.year}</span> : null}
           </p>
-          <h1>{work.title}</h1>
-        </div>
 
-        <p className={styles.meta}>
-          {work.categoryLabel}
-          <span aria-hidden="true"> / </span>
-          {work.year}
-        </p>
-
-        <div className={styles.descriptionGroup}>
-          <p>{work.description}</p>
+          <div
+            ref={descriptionRef}
+            className={styles.commercialDescription}
+          >
+            <p>{work.description}</p>
+            {work.role ? <p className={styles.commercialRole}>{work.role}</p> : null}
+            {work.projectLinks && work.projectLinks.length > 0 ? (
+              <nav
+                className={styles.commercialProjectLinks}
+                aria-label={`${work.title} project links`}
+              >
+                {work.projectLinks.map((link) => (
+                  <a
+                    href={link.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    key={`${link.label}-${link.url}`}
+                  >
+                    <span>{link.label}</span>
+                    <span aria-hidden="true">↗</span>
+                  </a>
+                ))}
+              </nav>
+            ) : null}
+          </div>
         </div>
       </header>
 
-      <section
-        className={styles.gallerySection}
-        aria-label={`${work.title} image overview`}
-      >
-        <svg
-          className={styles.compositionLines}
-          viewBox="0 0 1000 2200"
-          preserveAspectRatio="none"
-          aria-hidden="true"
+      {images.length > 0 ? (
+        <section
+          ref={galleryRef}
+          className={styles.commercialGallerySection}
+          aria-label={`${work.title} image overview`}
         >
-          <path d="M62 126C245 65 242 430 482 395S722 248 934 372" />
-          <circle cx="478" cy="395" r="31" />
-        </svg>
+          <div className={styles.commercialGalleryGrid}>
+            {images.map((image, index) => {
+              const layoutClass =
+                styles[
+                  `commercialLayout${
+                    ((index + galleryOffset) % 15) + 1
+                  }` as keyof typeof styles
+                ]
+              const dimensions = getImageDimensions(image.url)
 
-        <span className={`${styles.accentBlock} ${styles.accentBlockOne}`} aria-hidden="true" />
-        <span className={`${styles.accentBar} ${styles.accentBarOne}`} aria-hidden="true" />
-
-        <div className={styles.galleryGrid}>
-          {images.map((image, index) => {
-            const layoutClass =
-              styles[`layout${(index % 6) + 1}` as keyof typeof styles]
-
-            return (
-              <button
-                type="button"
-                className={`${styles.galleryItem} ${layoutClass}`}
-                aria-label={`Open image ${index + 1} of ${images.length}`}
-                onClick={(event) => openImage(index, event)}
-                key={`${image.url}-${index}`}
-              >
-                <span className={styles.imageFrame}>
-                  <img
-                    src={image.url}
-                    alt={image.alt || `${work.title} image ${index + 1}`}
-                    loading={index < 4 ? 'eager' : 'lazy'}
-                    decoding="async"
-                  />
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      </section>
+              return (
+                <button
+                  type="button"
+                  className={`${styles.commercialGalleryItem} ${layoutClass}`}
+                  aria-label={`Open image ${
+                    index + 1 + galleryLightboxOffset
+                  } of ${lightboxImages.length}`}
+                  onClick={(event) =>
+                    openImage(index + galleryLightboxOffset, event)
+                  }
+                  key={`${image.url}-${index}`}
+                >
+                  <span className={styles.commercialImageFrame}>
+                    <Image
+                      src={image.url}
+                      alt={image.alt || `${work.title} image ${index + 1}`}
+                      width={dimensions.width}
+                      height={dimensions.height}
+                      sizes="(max-width: 700px) calc(100vw - 40px), (max-width: 1050px) 78vw, 64vw"
+                    />
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </section>
+      ) : null}
 
       <footer className={styles.footer}>
         <Link href="/works" className={styles.footerLink}>
           <span>All works</span>
-          <span aria-hidden="true">↖</span>
+          <svg
+            className={styles.footerWorksIcon}
+            viewBox="0 0 16 16"
+            aria-hidden="true"
+          >
+            <path d="M6 3 2 7l4 4M2.5 7H10c2.6 0 4 1.3 4 3.5S12.6 14 10 14" />
+          </svg>
         </Link>
 
         {nextWork ? (
           <Link href={nextWork.href} className={styles.nextProject}>
             <span className={styles.nextLabel}>Next project</span>
-            <span>{nextWork.title}</span>
-            <span aria-hidden="true">↗</span>
+            <span className={styles.nextProjectTitle}>{nextWork.title}</span>
+            <svg
+              className={styles.nextProjectArrow}
+              viewBox="0 0 16 16"
+              aria-hidden="true"
+            >
+              <path d="M4 12 12 4M9 4h3v3" />
+            </svg>
           </Link>
         ) : null}
       </footer>
@@ -370,6 +911,15 @@ export default function EditorialPhotographyDetail({
                   }`}
                   aria-label={`${String(index + 1).padStart(2, '0')}: ${item.title}`}
                   aria-current={isCurrent ? 'page' : undefined}
+                  onPointerEnter={(event) => showPreview(index, event)}
+                  onPointerLeave={() => setPreview(null)}
+                  onFocus={(event) => {
+                    setPreview({
+                      index,
+                      top: getSafePreviewTop(event.currentTarget),
+                    })
+                  }}
+                  onBlur={() => setPreview(null)}
                 >
                   <svg
                     className={detailStyles.indexLine}
@@ -428,6 +978,36 @@ export default function EditorialPhotographyDetail({
         </Link>
       </aside>
 
+      {previewWork && preview ? (
+        <div
+          className={detailStyles.workPreview}
+          style={{ '--preview-top': `${preview.top}px` } as CSSProperties}
+          aria-hidden="true"
+        >
+          <div className={detailStyles.previewImage}>
+            {previewWork.coverImageUrl ? (
+              <Image
+                src={previewWork.coverImageUrl}
+                alt=""
+                fill
+                sizes="(max-width: 900px) 220px, 360px"
+                className={detailStyles.previewCover}
+              />
+            ) : (
+              <span
+                className={detailStyles.previewFallback}
+                style={{ background: previewWork.surface }}
+              >
+                {previewWork.title}
+              </span>
+            )}
+          </div>
+          <span className={detailStyles.previewCaption}>
+            {previewWork.title}
+          </span>
+        </div>
+      ) : null}
+
       {activeImage && activeIndex !== null ? (
         <div
           ref={overlayRef}
@@ -456,7 +1036,7 @@ export default function EditorialPhotographyDetail({
             className={`${styles.lightboxNav} ${styles.lightboxPrevious}`}
             aria-label="Previous image"
             onClick={showPrevious}
-            disabled={images.length < 2}
+            disabled={lightboxImages.length < 2}
           >
             <span aria-hidden="true">←</span>
           </button>
@@ -469,9 +1049,12 @@ export default function EditorialPhotographyDetail({
             onClick={closeImage}
           >
             <img
+              ref={lightboxImageRef}
+              key={activeImage.url}
               src={activeImage.url}
               alt={activeImage.alt || `${work.title} image ${activeIndex + 1}`}
               decoding="async"
+              onLoad={animateLightboxImage}
             />
           </button>
 
@@ -480,16 +1063,10 @@ export default function EditorialPhotographyDetail({
             className={`${styles.lightboxNav} ${styles.lightboxNext}`}
             aria-label="Next image"
             onClick={showNext}
-            disabled={images.length < 2}
+            disabled={lightboxImages.length < 2}
           >
             <span aria-hidden="true">→</span>
           </button>
-
-          <p className={styles.lightboxCount}>
-            {String(activeIndex + 1).padStart(2, '0')}
-            <span aria-hidden="true"> / </span>
-            {String(images.length).padStart(2, '0')}
-          </p>
         </div>
       ) : null}
     </main>

@@ -111,7 +111,7 @@
 .title {
   margin: 0;
   color: var(--profile-text);
-  font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+  font-family: 'elido', 'Helvetica Neue', Helvetica, sans-serif;
   font-size: clamp(4.5rem, 16vw, 18rem);
   font-weight: 900;
   line-height: 0.78;
@@ -147,6 +147,8 @@
 }
 
 .profileCharacter {
+  --profile-character-rest-rotate: -8deg;
+
   position: absolute;
   left: clamp(-28px, var(--profile-character-left, 34px), 34px);
   bottom: clamp(116px, var(--profile-character-bottom, 176px), 176px);
@@ -155,10 +157,115 @@
   height: auto;
   display: block;
   filter: var(--profile-doodle-filter);
-  transform: rotate(-8deg);
+  transform: translate3d(
+      var(--profile-character-enter-x, 132px),
+      var(--profile-character-enter-y, 96px),
+      0
+    )
+    rotate(calc(var(--profile-character-rest-rotate) + 7deg))
+    scale(0.92);
   transform-origin: 50% 72%;
+  will-change: transform;
   user-select: none;
   pointer-events: none;
+}
+
+.profileCharacterActive {
+  animation: profileCharacterPopIn 920ms cubic-bezier(0.2, 0.82, 0.24, 1) both;
+}
+
+.profileCharacterReady {
+  animation: none;
+  transform: rotate(var(--profile-character-rest-rotate));
+  will-change: auto;
+  pointer-events: auto;
+}
+
+@keyframes profileCharacterPopIn {
+  0% {
+    transform: translate3d(
+        var(--profile-character-enter-x, 132px),
+        var(--profile-character-enter-y, 96px),
+        0
+      )
+      rotate(calc(var(--profile-character-rest-rotate) + 7deg))
+      scale(0.92);
+  }
+
+  52% {
+    transform: translate3d(
+        var(--profile-character-overshoot-x, -14px),
+        var(--profile-character-overshoot-y, -16px),
+        0
+      )
+      rotate(calc(var(--profile-character-rest-rotate) - 2deg))
+      scale(1.022);
+  }
+
+  70% {
+    transform: translate3d(
+        var(--profile-character-settle-x, 5px),
+        var(--profile-character-settle-y, 6px),
+        0
+      )
+      rotate(calc(var(--profile-character-rest-rotate) + 0.8deg))
+      scale(0.993);
+  }
+
+  84% {
+    transform: translate3d(
+        var(--profile-character-fine-x, -3px),
+        var(--profile-character-fine-y, -5px),
+        0
+      )
+      rotate(calc(var(--profile-character-rest-rotate) - 0.35deg))
+      scale(1.006);
+  }
+
+  100% {
+    transform: translate3d(0, 0, 0) rotate(var(--profile-character-rest-rotate)) scale(1);
+  }
+}
+
+@keyframes profileCharacterDoubleBounce {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(var(--profile-character-rest-rotate)) scale(1);
+  }
+
+  15% {
+    transform: translate3d(0, 0, 0)
+      rotate(calc(var(--profile-character-rest-rotate) + 0.5deg))
+      scale(1.018, 0.982);
+  }
+
+  34% {
+    transform: translate3d(0, var(--profile-character-hover-y, -18px), 0)
+      rotate(calc(var(--profile-character-rest-rotate) - 1.4deg))
+      scale(0.988, 1.018);
+  }
+
+  52% {
+    transform: translate3d(0, 0, 0)
+      rotate(calc(var(--profile-character-rest-rotate) + 0.45deg))
+      scale(1.012, 0.988);
+  }
+
+  69% {
+    transform: translate3d(0, var(--profile-character-hover-y-small, -8px), 0)
+      rotate(calc(var(--profile-character-rest-rotate) - 0.65deg))
+      scale(0.995, 1.008);
+  }
+
+  100% {
+    transform: translate3d(0, 0, 0) rotate(var(--profile-character-rest-rotate)) scale(1);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .profileCharacterReady:hover {
+    animation: profileCharacterDoubleBounce 640ms cubic-bezier(0.2, 0.78, 0.25, 1) both;
+    will-change: transform;
+  }
 }
 
 .profileConsoleFrame {
@@ -174,6 +281,93 @@
   display: block;
   user-select: none;
   pointer-events: none;
+}
+
+.profileGameCardClip {
+  position: absolute;
+  left: 38.3%;
+  top: 68.2%;
+  z-index: 3;
+  display: block;
+  width: 21.8%;
+  height: 12.7%;
+  overflow: hidden;
+  pointer-events: auto;
+  user-select: none;
+}
+
+.profileGameCardMotion {
+  display: block;
+  width: 100%;
+  transform: translate3d(0, 110%, 0);
+  transform-origin: 50% 100%;
+  will-change: transform;
+}
+
+.profileGameCard {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: none;
+  pointer-events: none;
+  user-select: none;
+}
+
+.profileGameCardActive {
+  animation: profileGameCardPopIn 820ms 120ms cubic-bezier(0.2, 0.82, 0.24, 1) both;
+}
+
+.profileGameCardReady {
+  animation: none;
+  transform: translate3d(0, 0, 0);
+  will-change: auto;
+}
+
+@keyframes profileGameCardPopIn {
+  0% {
+    transform: translate3d(0, 110%, 0);
+  }
+
+  58% {
+    transform: translate3d(0, -7%, 0);
+  }
+
+  78% {
+    transform: translate3d(0, 2.5%, 0);
+  }
+
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes profileGameCardPressBounce {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  36% {
+    transform: translate3d(0, 14%, 0);
+  }
+
+  64% {
+    transform: translate3d(0, -4%, 0);
+  }
+
+  82% {
+    transform: translate3d(0, 1.5%, 0);
+  }
+
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .profileGameCardClip:hover .profileGameCardReady {
+    animation: profileGameCardPressBounce 520ms cubic-bezier(0.2, 0.78, 0.25, 1) both;
+    will-change: transform;
+  }
 }
 
 .profileScreen {
@@ -259,6 +453,24 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .profileCharacter,
+  .profileCharacterActive,
+  .profileCharacterReady,
+  .profileCharacterReady:hover {
+    animation: none;
+    transform: rotate(var(--profile-character-rest-rotate));
+    transition: none;
+  }
+
+  .profileGameCardMotion,
+  .profileGameCardActive,
+  .profileGameCardReady,
+  .profileGameCardClip:hover .profileGameCardReady {
+    animation: none;
+    transform: translate3d(0, 0, 0);
+    transition: none;
+  }
+
   .profileTypewriterCursor {
     display: none;
     animation: none;
@@ -320,10 +532,11 @@
   }
 
   .profileCharacter {
+    --profile-character-rest-rotate: -5deg;
+
     left: clamp(-42px, -2vw, -14px);
     bottom: clamp(78px, 14vw, 126px);
     width: min(340px, 40vw);
-    transform: rotate(-5deg);
   }
 
   .profileConsoleFrame {
@@ -368,6 +581,10 @@
   }
 
   .profileCharacter {
+    --profile-character-rest-rotate: -16deg;
+    --profile-character-enter-x: clamp(70px, 22vw, 100px);
+    --profile-character-enter-y: clamp(56px, 17vw, 82px);
+
     position: relative;
     left: auto;
     bottom: auto;
@@ -376,7 +593,6 @@
     width: min(430px, 82vw);
     margin: clamp(-10px, -2vw, 8px) clamp(-38px, -8vw, -22px)
       clamp(-30px, -16vw, -48px) 0;
-    transform: rotate(-16deg);
   }
 
   .profileConsoleFrame {

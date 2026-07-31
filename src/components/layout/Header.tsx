@@ -29,7 +29,8 @@ const ROAD_SIGN_SAFE_LEFT_MARGIN = 24
 const COMPACT_NAV_DESIGN_WIDTH = 590
 const COMPACT_NAV_CIRCLE_SIZE = 88
 const COMPACT_NAV_CONTACT_WIDTH = 182
-const COMPACT_NAV_TRIANGLE_ROTATION = -22
+const COMPACT_NAV_TRIANGLE_ROTATION = -35
+const COMPACT_NAV_STATE_STORAGE_KEY = 'etsu-compact-nav-expanded'
 const SIMPLE_NAV_ITEMS = [
   { label: 'HOME', href: '/' },
   { label: 'WORKS', href: '/works' },
@@ -94,10 +95,13 @@ export default function Header() {
   const compactNavCircleRef = useRef<HTMLDivElement>(null)
   const compactNavTriangleRef = useRef<HTMLSpanElement>(null)
   const compactNavRabbitRef = useRef<HTMLImageElement>(null)
+  const compactNavTransitionRabbitRef = useRef<HTMLImageElement>(null)
   const compactNavLinksRef = useRef<HTMLElement>(null)
   const compactNavTlRef = useRef<gsap.core.Timeline | null>(null)
+  const compactNavRabbitHoverTlRef = useRef<gsap.core.Timeline | null>(null)
   const compactNavStateRef = useRef<CompactNavState>('closed')
   const compactNavActiveIndexRef = useRef<number | null>(null)
+  const compactNavUserExpandedRef = useRef(false)
   const [isRoadSignCollapsed, setIsRoadSignCollapsed] = useState(false)
   const [isCompactNavVisible, setIsCompactNavVisible] = useState(false)
   const [isCompactNavExpanded, setIsCompactNavExpanded] = useState(false)
@@ -109,7 +113,7 @@ export default function Header() {
     roadSignItemsTlRef.current = null
   }
 
-  const addBunnySquash = (tl: gsap.core.Timeline, bunny: HTMLDivElement, isMobile: boolean) => {
+  const addBunnySquash = (tl: gsap.core.Timeline, bunny: HTMLElement, isMobile: boolean) => {
     tl.to(bunny, { scaleX: 1.08, scaleY: 0.9, y: isMobile ? 3 : 5, duration: 0.08, ease: 'power1.out' })
       .to(bunny, { scaleX: 0.96, scaleY: 1.08, y: isMobile ? -2 : -4, duration: 0.12, ease: 'power1.out' })
       .to(bunny, { scaleX: 1, scaleY: 1, y: 0, rotate: 0, duration: 0.22, ease: 'elastic.out(1, 0.45)' })
@@ -126,9 +130,45 @@ export default function Header() {
     addBunnySquash(tl, bunny, isMobile)
   }
 
+  const playCompactNavRabbitBounce = () => {
+    const rabbit = compactNavRabbitRef.current
+    const state = compactNavStateRef.current
+    if (!rabbit || !canUseHover()) return
+    if (state !== 'closed' && state !== 'open') return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    compactNavRabbitHoverTlRef.current?.kill()
+    gsap.killTweensOf(rabbit)
+    gsap.set(rabbit, {
+      x: state === 'open' ? 6 : 0,
+      y: 0,
+      scaleX: 1,
+      scaleY: 1,
+      rotate: 0,
+    })
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        compactNavRabbitHoverTlRef.current = null
+      },
+    })
+    compactNavRabbitHoverTlRef.current = tl
+    addBunnySquash(tl, rabbit, true)
+    addBunnySquash(tl, rabbit, true)
+  }
+
   const setRoadSignCollapsedState = (next: boolean) => {
     roadSignCollapsedRef.current = next
     setIsRoadSignCollapsed(next)
+  }
+
+  const rememberCompactNavExpanded = (expanded: boolean) => {
+    compactNavUserExpandedRef.current = expanded
+    try {
+      window.sessionStorage.setItem(COMPACT_NAV_STATE_STORAGE_KEY, String(expanded))
+    } catch {
+      // Keep the in-memory preference when session storage is unavailable.
+    }
   }
 
   const getCompactNavLinks = () => compactNavLinksRef.current
@@ -139,21 +179,46 @@ export default function Header() {
     ? Array.from(compactNavLinksRef.current.querySelectorAll(`.${styles.compactNavPill}`))
     : []
 
+  const getCompactNavMagnetShapes = () => {
+    const pills = getCompactNavPills()
+    const circle = compactNavCircleRef.current
+    if (!circle || !pills.length) return pills
+    return pills.map((pill, index) => index === pills.length - 1 ? circle : pill)
+  }
+
   const getCompactNavTethers = () => compactNavLinksRef.current
     ? Array.from(compactNavLinksRef.current.querySelectorAll(`.${styles.compactNavTether}`))
     : []
 
   const killCompactNavTimeline = () => {
+    compactNavRabbitHoverTlRef.current?.kill()
+    compactNavRabbitHoverTlRef.current = null
     compactNavTlRef.current?.kill()
     compactNavTlRef.current = null
   }
 
-  const resetCompactNavMagnet = () => {
-    const pills = getCompactNavPills()
+  const resetCompactNavMagnet = (immediate = false) => {
+    const shapes = getCompactNavMagnetShapes()
     const tethers = getCompactNavTethers()
     compactNavActiveIndexRef.current = null
-    gsap.killTweensOf([...pills, ...tethers])
-    gsap.to(pills, {
+    gsap.killTweensOf([...shapes, ...tethers])
+
+    if (immediate) {
+      gsap.set(shapes, {
+        x: 0,
+        y: 0,
+        scaleX: 1,
+        scaleY: 1,
+        transformOrigin: 'center center',
+      })
+      gsap.set(tethers, {
+        autoAlpha: 0,
+        scaleX: 0,
+      })
+      return
+    }
+
+    gsap.to(shapes, {
       x: 0,
       y: 0,
       scaleX: 1,
@@ -178,16 +243,16 @@ export default function Header() {
     const previousIndex = compactNavActiveIndexRef.current
     if (previousIndex === activeIndex) return
 
-    const pills = getCompactNavPills()
+    const shapes = getCompactNavMagnetShapes()
     const tethers = getCompactNavTethers()
-    const activePill = pills[activeIndex]
+    const activePill = shapes[activeIndex]
     if (!activePill) return
 
     compactNavActiveIndexRef.current = activeIndex
-    gsap.killTweensOf([...pills, ...tethers])
+    gsap.killTweensOf([...shapes, ...tethers])
     gsap.to(tethers, { autoAlpha: 0, scaleX: 0, duration: 0.08, overwrite: true })
 
-    pills.forEach((pill, index) => {
+    shapes.forEach((pill, index) => {
       if (index === activeIndex || index === previousIndex) return
       gsap.to(pill, {
         x: 0,
@@ -199,7 +264,7 @@ export default function Header() {
       })
     })
 
-    if (previousIndex === null || !pills[previousIndex]) {
+    if (previousIndex === null || !shapes[previousIndex]) {
       gsap.to(activePill, {
         scaleX: 1.025,
         scaleY: 1.02,
@@ -211,7 +276,7 @@ export default function Header() {
     }
 
     const direction = activeIndex > previousIndex ? 1 : -1
-    const previousPill = pills[previousIndex]
+    const previousPill = shapes[previousIndex]
     const tetherIndex = direction > 0 ? activeIndex - 1 : activeIndex
     const tether = tethers[tetherIndex]
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -271,13 +336,13 @@ export default function Header() {
   const releaseCompactNavMagnet = (event: ReactPointerEvent<HTMLElement>) => {
     if (!canUseHover()) return
     const activeIndex = compactNavActiveIndexRef.current
-    const pills = getCompactNavPills()
+    const shapes = getCompactNavMagnetShapes()
     const tethers = getCompactNavTethers()
-    const activePill = activeIndex === null ? null : pills[activeIndex]
+    const activePill = activeIndex === null ? null : shapes[activeIndex]
     const activeLink = activeIndex === null ? null : getCompactNavLinks()[activeIndex]
     compactNavActiveIndexRef.current = null
 
-    gsap.killTweensOf([...pills, ...tethers])
+    gsap.killTweensOf([...shapes, ...tethers])
     gsap.to(tethers, {
       autoAlpha: 0,
       scaleX: 0,
@@ -285,7 +350,7 @@ export default function Header() {
       ease: 'power2.in',
       overwrite: true,
     })
-    pills.forEach((pill, index) => {
+    shapes.forEach((pill, index) => {
       if (index === activeIndex) return
       gsap.to(pill, {
         x: 0,
@@ -324,6 +389,7 @@ export default function Header() {
     const circle = compactNavCircleRef.current
     const triangle = compactNavTriangleRef.current
     const rabbit = compactNavRabbitRef.current
+    const transitionRabbit = compactNavTransitionRabbitRef.current
     const links = getCompactNavLinks()
     const pills = getCompactNavPills()
     const tethers = getCompactNavTethers()
@@ -348,7 +414,7 @@ export default function Header() {
       gsap.set(circle, {
         width: COMPACT_NAV_CIRCLE_SIZE,
         height: COMPACT_NAV_CIRCLE_SIZE,
-        borderRadius: '50%',
+        borderRadius: '999px',
         scaleX: 1,
         scaleY: 1,
         autoAlpha: 1,
@@ -365,6 +431,16 @@ export default function Header() {
     }
     if (rabbit) {
       gsap.set(rabbit, { x: 0, y: 0, rotate: 0, scale: 1, autoAlpha: 1 })
+    }
+    if (transitionRabbit) {
+      gsap.set(transitionRabbit, {
+        x: 0,
+        y: 0,
+        scaleX: 1,
+        scaleY: 1,
+        autoAlpha: 0,
+        visibility: 'hidden',
+      })
     }
     gsap.set(links, {
       x: 24,
@@ -419,7 +495,8 @@ export default function Header() {
     const circle = compactNavCircleRef.current
     const triangle = compactNavTriangleRef.current
     const rabbit = compactNavRabbitRef.current
-    if (!compact || !travel || !circle || !triangle || !rabbit) return
+    const transitionRabbit = compactNavTransitionRabbitRef.current
+    if (!compact || !travel || !circle || !triangle || !rabbit || !transitionRabbit) return
     if (roadSignStateRef.current !== 'collapsed') {
       forceHideCompactNav()
       return
@@ -433,15 +510,13 @@ export default function Header() {
 
     const sourceRect = bunnyRef.current?.getBoundingClientRect()
     const targetRect = rabbit.getBoundingClientRect()
-    const startX = sourceRect
-      ? sourceRect.left + sourceRect.width / 2 - (targetRect.left + targetRect.width / 2)
-      : 64
-    const startY = sourceRect
-      ? sourceRect.top + sourceRect.height / 2 - (targetRect.top + targetRect.height / 2)
-      : -120
-    const startRabbitScale = sourceRect && targetRect.width > 0
-      ? sourceRect.width / targetRect.width
-      : 1.16
+    const hasValidTransitionRects = Boolean(
+      sourceRect
+      && sourceRect.width > 0
+      && sourceRect.height > 0
+      && targetRect.width > 0
+      && targetRect.height > 0
+    )
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     gsap.set(compact, {
@@ -451,14 +526,38 @@ export default function Header() {
       visibility: 'visible',
       pointerEvents: 'none',
     })
-    gsap.set(travel, { x: startX, y: startY })
-    gsap.set(circle, { autoAlpha: 0, scale: 0.18 })
+    gsap.set(travel, { x: 0, y: 0 })
+    gsap.set(circle, { autoAlpha: 0, scale: 0.42 })
     gsap.set(triangle, {
       autoAlpha: 0,
-      scale: 0.18,
+      scale: 0.42,
       rotate: COMPACT_NAV_TRIANGLE_ROTATION - 16,
     })
-    gsap.set(rabbit, { autoAlpha: 1, visibility: 'visible', scale: startRabbitScale })
+    gsap.set(rabbit, {
+      x: 0,
+      y: 0,
+      scale: 1,
+      autoAlpha: hasValidTransitionRects ? 0 : 1,
+      visibility: 'visible',
+    })
+
+    if (hasValidTransitionRects && sourceRect) {
+      gsap.set(transitionRabbit, {
+        left: sourceRect.left,
+        top: sourceRect.top,
+        width: sourceRect.width,
+        height: sourceRect.height,
+        x: 0,
+        y: 0,
+        scaleX: 1,
+        scaleY: 1,
+        autoAlpha: 1,
+        visibility: 'visible',
+        transformOrigin: 'top left',
+        force3D: true,
+      })
+      gsap.set(bunnyRef.current, { autoAlpha: 0, pointerEvents: 'none' })
+    }
 
     const tl = gsap.timeline({
       defaults: { overwrite: 'auto' },
@@ -479,24 +578,39 @@ export default function Header() {
           rotate: COMPACT_NAV_TRIANGLE_ROTATION,
         })
         .set(rabbit, { autoAlpha: 1, visibility: 'visible', scale: 1 })
+        .set(transitionRabbit, { autoAlpha: 0, visibility: 'hidden' })
         .set(bunnyRef.current, { autoAlpha: 0, pointerEvents: 'none' })
       return
     }
 
-    tl.to(rabbit, { scale: 1, duration: 0.5, ease: 'power3.inOut' }, 0)
-      .to(bunnyRef.current, { autoAlpha: 0, pointerEvents: 'none', duration: 0.12 }, 0)
-      .to(circle, { autoAlpha: 1, scale: 1, duration: 0.28, ease: 'back.out(2.1)' }, 0.04)
+    if (hasValidTransitionRects && sourceRect) {
+      tl.to(transitionRabbit, {
+        x: targetRect.left - sourceRect.left,
+        y: targetRect.top - sourceRect.top,
+        scaleX: targetRect.width / sourceRect.width,
+        scaleY: targetRect.height / sourceRect.height,
+        duration: 0.38,
+        ease: 'power2.out',
+        force3D: true,
+      }, 0)
+        .set(rabbit, { autoAlpha: 1 }, 0.38)
+        .set(transitionRabbit, { autoAlpha: 0, visibility: 'hidden' }, 0.38)
+    } else {
+      tl.set(rabbit, { autoAlpha: 1 }, 0)
+        .set(bunnyRef.current, { autoAlpha: 0, pointerEvents: 'none' }, 0)
+    }
+
+    tl.to(circle, { autoAlpha: 1, scale: 1, duration: 0.18, ease: 'back.out(1.8)' }, 0.2)
       .to(triangle, {
         autoAlpha: 1,
         scale: 1,
         rotate: COMPACT_NAV_TRIANGLE_ROTATION,
-        duration: 0.22,
+        duration: 0.13,
         ease: 'back.out(2)',
-      }, 0.14)
-      .to(travel, { x: 0, y: 0, duration: 0.56, ease: 'power3.inOut' }, 0.14)
-      .set(compact, { pointerEvents: 'auto' })
-      .to(rabbit, { y: -5, duration: 0.1, ease: 'power2.out' }, 0.58)
-      .to(rabbit, { y: 0, duration: 0.2, ease: 'back.out(2)' }, 0.68)
+      }, 0.25)
+      .set(compact, { pointerEvents: 'auto' }, 0.38)
+      .to(rabbit, { y: -4, duration: 0.06, ease: 'power2.out' }, 0.39)
+      .to(rabbit, { y: 0, duration: 0.12, ease: 'back.out(1.8)' }, 0.45)
   }
 
   const hideCompactNavForHero = () => {
@@ -563,28 +677,28 @@ export default function Header() {
 
     if (reducedMotion) {
       tl.set(circle, {
+        autoAlpha: 1,
         width: COMPACT_NAV_CONTACT_WIDTH,
         height: 36,
-        borderRadius: 18,
+        borderRadius: '18px',
       })
         .set(triangle, { autoAlpha: 0, scale: 0.4 })
         .set(links, { autoAlpha: 1, x: 0 })
-        .set(circle, { autoAlpha: 0 })
+        .set(rabbit, { x: 6 })
       return
     }
 
-    tl.to(circle, { scaleX: 0.9, scaleY: 0.82, duration: 0.08, ease: 'power2.in' }, 0)
-      .to(circle, {
+    tl.to(circle, {
         width: COMPACT_NAV_CONTACT_WIDTH,
         height: 36,
-        borderRadius: 18,
         scaleX: 1,
         scaleY: 1,
-        duration: 0.32,
+        duration: 0.39,
         ease: 'power3.inOut',
-      }, 0.07)
+      }, 0)
+      .set(circle, { borderRadius: '18px' }, 0.39)
       .to(triangle, { autoAlpha: 0, x: 8, scale: 0.35, duration: 0.14, ease: 'power2.in' }, 0)
-      .to(rabbit, { y: -6, scaleX: 1.04, scaleY: 0.96, duration: 0.16, ease: 'power2.out' }, 0.08)
+      .to(rabbit, { x: 6, y: -6, scaleX: 1.04, scaleY: 0.96, duration: 0.16, ease: 'power2.out' }, 0.08)
       .to([...links].reverse(), {
         autoAlpha: 1,
         x: 0,
@@ -592,8 +706,7 @@ export default function Header() {
         stagger: 0.055,
         ease: 'back.out(1.35)',
       }, 0.13)
-      .to(circle, { autoAlpha: 0, duration: 0.12, ease: 'power1.out' }, 0.39)
-      .to(rabbit, { y: 0, scaleX: 1, scaleY: 1, duration: 0.22, ease: 'back.out(2)' }, 0.31)
+      .to(rabbit, { x: 6, y: 0, scaleX: 1, scaleY: 1, duration: 0.22, ease: 'back.out(2)' }, 0.31)
   }
 
   const collapseCompactNav = () => {
@@ -605,7 +718,7 @@ export default function Header() {
     if (compactNavStateRef.current === 'closed' || compactNavStateRef.current === 'closing') return
 
     killCompactNavTimeline()
-    resetCompactNavMagnet()
+    resetCompactNavMagnet(true)
     compactNavStateRef.current = 'closing'
     setIsCompactNavExpanded(false)
     if (compactNavLinksRef.current) {
@@ -628,13 +741,14 @@ export default function Header() {
           autoAlpha: 1,
           width: COMPACT_NAV_CIRCLE_SIZE,
           height: COMPACT_NAV_CIRCLE_SIZE,
-          borderRadius: '50%',
+          borderRadius: '999px',
         })
         .set(triangle, { autoAlpha: 1, x: 0, scale: 1 })
+        .set(rabbit, { x: 0 })
       return
     }
 
-    tl.set(circle, { autoAlpha: 1 }, 0)
+    tl.set(circle, { borderRadius: '999px' }, 0)
       .to(links, {
         autoAlpha: 0,
         x: 0,
@@ -646,13 +760,12 @@ export default function Header() {
       .to(circle, {
         width: COMPACT_NAV_CIRCLE_SIZE,
         height: COMPACT_NAV_CIRCLE_SIZE,
-        borderRadius: '50%',
         duration: 0.3,
         ease: 'power3.inOut',
       }, 0.2)
-      .to(rabbit, { y: 4, scaleX: 0.96, scaleY: 1.04, duration: 0.12, ease: 'power2.out' }, 0.2)
+      .to(rabbit, { x: 0, y: 4, scaleX: 0.96, scaleY: 1.04, duration: 0.12, ease: 'power2.out' }, 0.2)
       .to(triangle, { autoAlpha: 1, x: 0, scale: 1, duration: 0.2, ease: 'back.out(2)' }, 0.37)
-      .to(rabbit, { y: 0, scaleX: 1, scaleY: 1, duration: 0.2, ease: 'back.out(2)' }, 0.36)
+      .to(rabbit, { x: 0, y: 0, scaleX: 1, scaleY: 1, duration: 0.2, ease: 'back.out(2)' }, 0.36)
   }
 
   const getRoadSignItems = () => {
@@ -782,12 +895,14 @@ export default function Header() {
 
   const handleCompactNavToggleClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation()
-    if (!roadSignCollapsedRef.current) return
+    if (!usesSimpleNav && !roadSignCollapsedRef.current) return
     if (compactNavStateRef.current === 'arriving') return
     if (compactNavStateRef.current === 'open' || compactNavStateRef.current === 'opening') {
+      rememberCompactNavExpanded(false)
       collapseCompactNav()
       return
     }
+    rememberCompactNavExpanded(true)
     expandCompactNav()
   }
 
@@ -801,19 +916,26 @@ export default function Header() {
   }
 
   useEffect(() => {
+    const isWorkDetailPath = pathname.startsWith('/works/')
+    const usesCompactPageNav = pathname === '/works'
+      || pathname === '/profile'
+      || pathname === '/contact'
     const root = asideRef.current
-    if (!root) return
     const compactNavEl = compactNavRef.current
     const roadSignSlideEl = roadSignSlideRef.current
     let scaleRaf: number | null = null
 
-    setRoadSignCollapsedState(false)
-    pastHeroRef.current = false
-    roadSignStateRef.current = 'expanded'
-    forceHideCompactNavRef.current({ restoreHeroBunny: false })
+    try {
+      const savedPreference = window.sessionStorage.getItem(COMPACT_NAV_STATE_STORAGE_KEY)
+      if (savedPreference !== null) {
+        compactNavUserExpandedRef.current = savedPreference === 'true'
+      }
+    } catch {
+      // Continue with the in-memory preference when session storage is unavailable.
+    }
 
     const updateNavigationScale = () => {
-      root.style.setProperty(
+      root?.style.setProperty(
         '--road-sign-scale',
         String(getRoadSignScale(window.innerWidth, window.innerHeight))
       )
@@ -838,6 +960,82 @@ export default function Header() {
         scaleRaf = null
       }
     }
+
+    if (isWorkDetailPath) return
+
+    if (usesCompactPageNav) {
+      if (!compactNavEl) return
+
+      forceHideCompactNavRef.current({ restoreHeroBunny: false, syncState: false })
+      const circle = compactNavCircleRef.current
+      const triangle = compactNavTriangleRef.current
+      const rabbit = compactNavRabbitRef.current
+      const links = compactNavLinksRef.current
+        ? Array.from(compactNavLinksRef.current.querySelectorAll('a'))
+        : []
+      const restoreExpanded = compactNavUserExpandedRef.current
+        && Boolean(circle && triangle && rabbit && links.length)
+
+      setRoadSignCollapsedState(true)
+      pastHeroRef.current = true
+      roadSignStateRef.current = 'collapsed'
+      setIsCompactNavVisible(true)
+
+      if (restoreExpanded && circle && triangle && rabbit) {
+        gsap.set(circle, {
+          autoAlpha: 1,
+          width: COMPACT_NAV_CONTACT_WIDTH,
+          height: 36,
+          borderRadius: '18px',
+          scaleX: 1,
+          scaleY: 1,
+        })
+        gsap.set(triangle, {
+          autoAlpha: 0,
+          x: 8,
+          scale: 0.35,
+        })
+        gsap.set(links, {
+          autoAlpha: 1,
+          x: 0,
+        })
+        gsap.set(rabbit, {
+          x: 6,
+          y: 0,
+          scaleX: 1,
+          scaleY: 1,
+        })
+        compactNavStateRef.current = 'open'
+        setIsCompactNavExpanded(true)
+        compactNavLinksRef.current?.style.setProperty('pointer-events', 'auto')
+      } else {
+        compactNavStateRef.current = 'closed'
+        setIsCompactNavExpanded(false)
+      }
+
+      gsap.set(compactNavEl, {
+        autoAlpha: 1,
+        visibility: 'visible',
+        pointerEvents: 'auto',
+      })
+
+      updateNavigationScale()
+      window.addEventListener('resize', onResize, { passive: true })
+
+      return () => {
+        killCompactNavTimeline()
+        forceHideCompactNavRef.current({ restoreHeroBunny: false, syncState: false })
+        roadSignCollapsedRef.current = false
+        cleanupNavigationScale()
+      }
+    }
+
+    if (!root) return
+
+    setRoadSignCollapsedState(false)
+    pastHeroRef.current = false
+    roadSignStateRef.current = 'expanded'
+    forceHideCompactNavRef.current({ restoreHeroBunny: false })
 
     updateNavigationScale()
     window.addEventListener('resize', onResize, { passive: true })
@@ -974,95 +1172,82 @@ export default function Header() {
     return null
   }
 
-  if (usesSimpleNav) {
-    const activeHref = pathname.startsWith('/works') ? '/works' : pathname
-
-    return (
-      <aside className={styles.simplePageNav} aria-label="Main navigation">
-        <nav className={styles.simplePageNavList}>
-          {SIMPLE_NAV_ITEMS.map((item) => {
-            const isActive = activeHref === item.href
-
-            return (
-              <Link
-                key={item.href}
-                className={`${styles.simplePageNavLink} ${isActive ? styles.simplePageNavLinkActive : ''}`}
-                href={item.href}
-                aria-current={isActive ? 'page' : undefined}
-                onClick={item.href === '/' ? handleHomeClick : undefined}
-              >
-                {item.label}
-              </Link>
-            )
-          })}
-        </nav>
-      </aside>
-    )
-  }
-
   return (
     <>
-      <aside ref={asideRef} className={styles.roadSign} aria-label="Main navigation">
-        <div ref={roadSignSlideRef} className={styles.roadSignSlide}>
-          <div className={styles.roadSignGroup}>
-            {/* Layer 1: clock sign with live time overlay */}
-            <RoadSignClock
-              className={styles.clock}
-              clockRef={clockRef}
-              bunnyRef={bunnyRef}
-              onBunnyPointerEnter={() => {
-                if (!bunnyReadyRef.current) return
-                playBunnySquash()
-              }}
-            />
+      {/* A viewport-level handoff prevents the road-sign and compact rabbits from overlapping. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        ref={compactNavTransitionRabbitRef}
+        className={styles.compactNavTransitionRabbit}
+        src="/road-sign/clock-rabbit.svg"
+        alt=""
+        draggable={false}
+        aria-hidden="true"
+      />
 
-            {/* Layer 2: nav signs */}
-            <nav ref={navRef} className={styles.nav} aria-label="Primary navigation">
-              <Link
-                className={`${styles.link} ${styles.linkHome}`}
-                href="/"
-                onClick={handleHomeClick}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className={`${styles.img} ${styles.imgDefault}`} src="/road-sign/home-sign-default.svg" alt="" draggable={false} />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className={`${styles.img} ${styles.imgHover}`} src="/road-sign/home-sign-hover.svg" alt="" draggable={false} />
-                <span className={styles.srOnly}>HOME</span>
-              </Link>
+      {!usesSimpleNav && (
+        <aside ref={asideRef} className={styles.roadSign} aria-label="Main navigation">
+          <div ref={roadSignSlideRef} className={styles.roadSignSlide}>
+            <div className={styles.roadSignGroup}>
+              {/* Layer 1: clock sign with live time overlay */}
+              <RoadSignClock
+                className={styles.clock}
+                clockRef={clockRef}
+                bunnyRef={bunnyRef}
+                onBunnyPointerEnter={() => {
+                  if (!bunnyReadyRef.current) return
+                  playBunnySquash()
+                }}
+              />
 
-              <Link className={`${styles.link} ${styles.linkWorks}`} href="/works">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className={`${styles.img} ${styles.imgDefault}`} src="/road-sign/works-sign-default.svg" alt="" draggable={false} />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className={`${styles.img} ${styles.imgHover}`} src="/road-sign/works-sign-hover.svg" alt="" draggable={false} />
-                <span className={styles.srOnly}>WORKS</span>
-              </Link>
+              {/* Layer 2: nav signs */}
+              <nav ref={navRef} className={styles.nav} aria-label="Primary navigation">
+                <Link
+                  className={`${styles.link} ${styles.linkHome}`}
+                  href="/"
+                  onClick={handleHomeClick}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img className={`${styles.img} ${styles.imgDefault}`} src="/road-sign/home-sign-default.svg" alt="" draggable={false} />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img className={`${styles.img} ${styles.imgHover}`} src="/road-sign/home-sign-hover.svg" alt="" draggable={false} />
+                  <span className={styles.srOnly}>HOME</span>
+                </Link>
 
-              <Link className={`${styles.link} ${styles.linkProfile}`} href="/profile">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className={`${styles.img} ${styles.imgDefault}`} src="/road-sign/profile-sign-default.svg" alt="" draggable={false} />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className={`${styles.img} ${styles.imgHover}`} src="/road-sign/profile-sign-hover.svg" alt="" draggable={false} />
-                <span className={styles.srOnly}>PROFILE</span>
-              </Link>
+                <Link className={`${styles.link} ${styles.linkWorks}`} href="/works">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img className={`${styles.img} ${styles.imgDefault}`} src="/road-sign/works-sign-default.svg" alt="" draggable={false} />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img className={`${styles.img} ${styles.imgHover}`} src="/road-sign/works-sign-hover.svg" alt="" draggable={false} />
+                  <span className={styles.srOnly}>WORKS</span>
+                </Link>
 
-              <Link className={`${styles.link} ${styles.linkContact}`} href="/contact">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className={`${styles.img} ${styles.imgDefault}`} src="/road-sign/contact-sign-default.svg" alt="" draggable={false} />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className={`${styles.img} ${styles.imgHover}`} src="/road-sign/contact-sign-hover.svg" alt="" draggable={false} />
-                <span className={styles.srOnly}>CONTACT</span>
-              </Link>
-            </nav>
+                <Link className={`${styles.link} ${styles.linkProfile}`} href="/profile">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img className={`${styles.img} ${styles.imgDefault}`} src="/road-sign/profile-sign-default.svg" alt="" draggable={false} />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img className={`${styles.img} ${styles.imgHover}`} src="/road-sign/profile-sign-hover.svg" alt="" draggable={false} />
+                  <span className={styles.srOnly}>PROFILE</span>
+                </Link>
+
+                <Link className={`${styles.link} ${styles.linkContact}`} href="/contact">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img className={`${styles.img} ${styles.imgDefault}`} src="/road-sign/contact-sign-default.svg" alt="" draggable={false} />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img className={`${styles.img} ${styles.imgHover}`} src="/road-sign/contact-sign-hover.svg" alt="" draggable={false} />
+                  <span className={styles.srOnly}>CONTACT</span>
+                </Link>
+              </nav>
+            </div>
           </div>
-        </div>
-      </aside>
+        </aside>
+      )}
 
       <aside
         ref={compactNavRef}
-        className={`${styles.compactNav} ${isCompactNavVisible ? styles.compactNavVisible : ''} ${isCompactNavExpanded ? styles.compactNavOpen : ''}`}
+        className={`${styles.compactNav} ${isCompactNavVisible ? styles.compactNavVisible : ''} ${isCompactNavExpanded ? styles.compactNavOpen : ''} ${pathname === '/contact' ? styles.compactNavContactActive : ''}`}
         aria-label="Compact main navigation"
-        aria-hidden={!isRoadSignCollapsed || !isCompactNavVisible}
+        aria-hidden={!isCompactNavVisible || (!usesSimpleNav && !isRoadSignCollapsed)}
       >
         <div ref={compactNavTravelRef} className={styles.compactNavTravel}>
           <div ref={compactNavStageRef} className={styles.compactNavStage}>
@@ -1077,23 +1262,28 @@ export default function Header() {
               aria-hidden={!isCompactNavExpanded}
               onPointerLeave={releaseCompactNavMagnet}
             >
-              {SIMPLE_NAV_ITEMS.map((item, index) => (
-                <Link
-                  key={item.href}
-                  className={`${styles.compactNavLink} ${item.href === '/contact' ? styles.compactNavLinkContact : ''}`}
-                  href={item.href}
-                  tabIndex={isCompactNavExpanded ? undefined : -1}
-                  onClick={item.href === '/' ? handleHomeClick : undefined}
-                  onPointerEnter={() => playCompactNavMagnet(index)}
-                  onFocus={() => playCompactNavMagnet(index)}
-                >
-                  <span className={styles.compactNavPill} aria-hidden="true" />
-                  <span className={styles.compactNavLabel}>{item.label}</span>
-                  {index < SIMPLE_NAV_ITEMS.length - 1 && (
-                    <span className={styles.compactNavTether} aria-hidden="true" />
-                  )}
-                </Link>
-              ))}
+              {SIMPLE_NAV_ITEMS.map((item, index) => {
+                const isActive = pathname === item.href
+
+                return (
+                  <Link
+                    key={item.href}
+                    className={`${styles.compactNavLink} ${item.href === '/contact' ? styles.compactNavLinkContact : ''} ${isActive ? styles.compactNavLinkActive : ''}`}
+                    href={item.href}
+                    aria-current={isActive ? 'page' : undefined}
+                    tabIndex={isCompactNavExpanded ? undefined : -1}
+                    onClick={item.href === '/' ? handleHomeClick : undefined}
+                    onPointerEnter={() => playCompactNavMagnet(index)}
+                    onFocus={() => playCompactNavMagnet(index)}
+                  >
+                    <span className={styles.compactNavPill} aria-hidden="true" />
+                    <span className={styles.compactNavLabel}>{item.label}</span>
+                    {index < SIMPLE_NAV_ITEMS.length - 1 && (
+                      <span className={styles.compactNavTether} aria-hidden="true" />
+                    )}
+                  </Link>
+                )
+              })}
             </nav>
 
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1110,6 +1300,7 @@ export default function Header() {
               type="button"
               className={styles.compactNavToggle}
               onClick={handleCompactNavToggleClick}
+              onPointerEnter={playCompactNavRabbitBounce}
               aria-controls="compact-home-navigation"
               aria-expanded={isCompactNavExpanded}
               aria-label={isCompactNavExpanded ? 'Close compact navigation' : 'Open compact navigation'}

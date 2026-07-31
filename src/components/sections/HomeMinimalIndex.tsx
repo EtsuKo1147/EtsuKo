@@ -12,9 +12,12 @@ import {
   type PointerEvent,
 } from 'react'
 import Link from 'next/link'
+import { rememberHomeHistoryPosition } from '@/components/animation/homeLoaderSession'
 import { profileCopy } from '@/data/profile'
 import type { Work } from '@/data/works'
+import ContactInteractiveHelmet from './ContactInteractiveHelmet'
 import HomePhysicsFooter from './HomePhysicsFooter'
+import scrollCueStyles from './HomeHero.module.css'
 import styles from './HomeMinimalIndex.module.css'
 
 const polaroidAssetPath = '/home/images/works-polaroid'
@@ -320,6 +323,26 @@ function ProfileConsoleTypewriter() {
   )
 }
 
+function HomeScrollCue({ visible }: { visible: boolean }) {
+  return (
+    <div
+      className={[
+        scrollCueStyles.scrollCue,
+        styles.sectionScrollCue,
+        visible ? styles.sectionScrollCueVisible : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      aria-hidden="true"
+    >
+      <span className={scrollCueStyles.scrollCueLabel}>Scroll</span>
+      <svg className={scrollCueStyles.scrollCueArrow} viewBox="0 0 64 34">
+        <path d="M4 4 32 30 60 4" />
+      </svg>
+    </div>
+  )
+}
+
 type HomeMinimalIndexProps = {
   featuredWorks: Work[]
 }
@@ -334,8 +357,11 @@ export default function HomeMinimalIndex({
   const [isWorksStampCameraVisible, setIsWorksStampCameraVisible] = useState(false)
   const [isWorksStampCameraPressed, setIsWorksStampCameraPressed] = useState(false)
   const [isWorksStampHintActive, setIsWorksStampHintActive] = useState(false)
+  const [isSectionScrollCueVisible, setIsSectionScrollCueVisible] = useState(false)
   const [isProfileCharacterActive, setIsProfileCharacterActive] = useState(false)
   const [isProfileCharacterReady, setIsProfileCharacterReady] = useState(false)
+  const [isProfileGameCardActive, setIsProfileGameCardActive] = useState(false)
+  const [isProfileGameCardReady, setIsProfileGameCardReady] = useState(false)
   const [stampPhotos, setStampPhotos] = useState<StampPhoto[]>([])
   const [homeDesignScale, setHomeDesignScale] = useState(1)
   const worksStampZoneRef = useRef<HTMLDivElement>(null)
@@ -343,7 +369,11 @@ export default function HomeMinimalIndex({
   const polaroidHeroRef = useRef<HTMLDivElement>(null)
   const featuredBoardRef = useRef<HTMLDivElement>(null)
   const featuredLargeStackRef = useRef<HTMLDivElement>(null)
+  const worksScrollCueAnchorRef = useRef<HTMLSpanElement>(null)
+  const featuredScrollCueAnchorRef = useRef<HTMLSpanElement>(null)
+  const profileScrollCueAnchorRef = useRef<HTMLSpanElement>(null)
   const profileCharacterRef = useRef<HTMLSpanElement>(null)
+  const profileGameCardRef = useRef<HTMLSpanElement>(null)
   const profileConsoleFrameRef = useRef<HTMLDivElement>(null)
   const mobileStampPointerStartRef = useRef<{
     pointerId: number
@@ -719,6 +749,70 @@ export default function HomeMinimalIndex({
   }, [])
 
   useEffect(() => {
+    const anchors = [
+      worksScrollCueAnchorRef.current,
+      featuredScrollCueAnchorRef.current,
+      profileScrollCueAnchorRef.current,
+    ].filter((anchor): anchor is HTMLSpanElement => anchor !== null)
+
+    if (anchors.length === 0) {
+      return
+    }
+
+    const dismissedAnchors = new Set<Element>()
+    let activeAnchor: Element | null = null
+    let cueStartY = window.scrollY
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) {
+            dismissedAnchors.delete(entry.target)
+
+            if (activeAnchor === entry.target) {
+              activeAnchor = null
+              setIsSectionScrollCueVisible(false)
+            }
+            return
+          }
+
+          if (dismissedAnchors.has(entry.target)) {
+            return
+          }
+
+          activeAnchor = entry.target
+          cueStartY = window.scrollY
+          setIsSectionScrollCueVisible(true)
+        })
+      },
+      {
+        rootMargin: '0px 0px 4% 0px',
+        threshold: 0,
+      },
+    )
+
+    const handleScroll = () => {
+      const dismissDistance = window.innerHeight * 0.15
+
+      if (!activeAnchor || window.scrollY <= cueStartY + dismissDistance) {
+        return
+      }
+
+      dismissedAnchors.add(activeAnchor)
+      activeAnchor = null
+      setIsSectionScrollCueVisible(false)
+    }
+
+    anchors.forEach((anchor) => observer.observe(anchor))
+    window.addEventListener('scroll', handleScroll, { passive: true })
+
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
+
+  useEffect(() => {
     const board = featuredBoardRef.current
 
     if (!board) {
@@ -855,6 +949,40 @@ export default function HomeMinimalIndex({
     }
   }, [])
 
+  useEffect(() => {
+    const gameCard = profileGameCardRef.current
+
+    if (!gameCard) {
+      return
+    }
+
+    const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) {
+          return
+        }
+
+        setIsProfileGameCardActive(true)
+
+        if (reducedMotionQuery.matches) {
+          setIsProfileGameCardReady(true)
+        }
+
+        observer.disconnect()
+      },
+      {
+        threshold: 0.25,
+      },
+    )
+
+    observer.observe(gameCard)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
+
   const featuredBoardClassName = [
     styles.featuredBoard,
     isFeaturedBoardActive ? styles.featuredBoardActive : '',
@@ -980,6 +1108,8 @@ export default function HomeMinimalIndex({
       aria-labelledby="home-work-index-title"
       style={homeScaleStyle}
     >
+      <HomeScrollCue visible={isSectionScrollCueVisible} />
+
       <div
         className={`${styles.worksPolaroid} ${isWorkCueActive ? styles.worksPolaroidCue : ''}`}
         aria-labelledby="home-work-index-title"
@@ -1170,6 +1300,12 @@ export default function HomeMinimalIndex({
                 </Link>
               ))}
             </nav>
+
+            <span
+              ref={worksScrollCueAnchorRef}
+              className={`${styles.sectionScrollCueAnchor} ${styles.worksCameraScrollCue}`}
+              aria-hidden="true"
+            />
           </div>
 
           <div
@@ -1294,6 +1430,7 @@ export default function HomeMinimalIndex({
                     href={work.href}
                     className={styles.featuredPhoto}
                     aria-label={`View ${work.title}`}
+                    onClick={rememberHomeHistoryPosition}
                     onPointerMove={handlePolaroidPointerMove}
                   >
                     <span className={styles.featuredShell} aria-hidden="true" />
@@ -1381,7 +1518,14 @@ export default function HomeMinimalIndex({
                   <path d="M44 5 56 14 44 23" />
                 </svg>
               </Link>
+
+              <span
+                ref={featuredScrollCueAnchorRef}
+                className={`${styles.sectionScrollCueAnchor} ${styles.featuredLargeScrollCue}`}
+                aria-hidden="true"
+              />
           </div>
+
         </div>
       </div>
 
@@ -1426,16 +1570,53 @@ export default function HomeMinimalIndex({
                 draggable={false}
               />
 
+              <span
+                ref={profileGameCardRef}
+                className={styles.profileGameCardClip}
+                aria-hidden="true"
+              >
+                <span
+                  className={`${styles.profileGameCardMotion} ${
+                    isProfileGameCardActive ? styles.profileGameCardActive : ''
+                  } ${isProfileGameCardReady ? styles.profileGameCardReady : ''}`}
+                  onAnimationEnd={() => {
+                    if (isProfileGameCardActive) {
+                      setIsProfileGameCardReady(true)
+                    }
+                  }}
+                >
+                  <img
+                    src="/home/character-stage/doodles/gamecard.svg"
+                    alt=""
+                    className={styles.profileGameCard}
+                    draggable={false}
+                  />
+                </span>
+              </span>
+
               <ProfileConsoleTypewriter />
             </div>
+
+            <span
+              ref={profileScrollCueAnchorRef}
+              className={`${styles.sectionScrollCueAnchor} ${styles.profileConsoleScrollCue}`}
+              aria-hidden="true"
+            />
           </div>
         </div>
       </section>
 
-      <div className={styles.contactWorld} data-contact-world>
+      <div
+        className={styles.contactWorld}
+        data-contact-world
+        data-contact-interactive
+      >
         <HomePhysicsFooter />
 
-        <section className={styles.contactSection} aria-labelledby="home-contact-title">
+        <section
+          className={styles.contactSection}
+          aria-labelledby="home-contact-title"
+        >
           <div className={styles.contactHeader}>
             <p className={styles.eyebrow}>Selected contact</p>
             <h2 id="home-contact-title" className={styles.title} data-physics-trigger>
@@ -1444,28 +1625,33 @@ export default function HomeMinimalIndex({
           </div>
 
           <div className={styles.directMailPanel}>
-            <span className={styles.directMailDoodle} aria-hidden="true" />
+            <ContactInteractiveHelmet />
             <h3 id="home-direct-mail-title" className={styles.directMailTitle}>
               Direct Mail
             </h3>
-            <a
-              className={styles.directMailLink}
-              href="mailto:koetsu1147@gmail.com?subject=Portfolio%20Contact"
+            <div
+              className={styles.contactPointerSafeZone}
+              data-contact-glove-exclude
             >
-              koetsu1147@gmail.com
-            </a>
-            <button
-              type="button"
-              className={styles.topButton}
-              aria-label="Back to top"
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            >
-              <img src="/home/character-stage/ui/top-up.svg" alt="" draggable={false} />
-              <span>back</span>
-            </button>
-            <div className={styles.contactCredits} aria-label="Footer credits">
-              <p>Designed &amp; Built by ETSU.</p>
-              <p>&copy; 2026</p>
+              <a
+                className={styles.directMailLink}
+                href="mailto:koetsu1147@gmail.com?subject=Portfolio%20Contact"
+              >
+                koetsu1147@gmail.com
+              </a>
+              <button
+                type="button"
+                className={styles.topButton}
+                aria-label="Back to top"
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              >
+                <img src="/home/character-stage/ui/top-up.svg" alt="" draggable={false} />
+                <span>back</span>
+              </button>
+              <div className={styles.contactCredits} aria-label="Footer credits">
+                <p>Designed &amp; Built by ETSU.</p>
+                <p>&copy; 2026</p>
+              </div>
             </div>
           </div>
         </section>
