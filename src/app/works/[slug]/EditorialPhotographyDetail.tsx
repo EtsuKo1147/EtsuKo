@@ -34,6 +34,24 @@ type PreviewState = {
   top: number
 } | null
 
+const ZOOM_LEVELS = [30, 65, 100] as const
+
+type ZoomLevel = (typeof ZOOM_LEVELS)[number]
+
+type LightboxSizing = {
+  fitWidth: number
+  maxWidth: number
+}
+
+type PanState = {
+  pointerId: number
+  startX: number
+  startY: number
+  startScrollLeft: number
+  startScrollTop: number
+  moved: boolean
+}
+
 function getImageDimensions(url: string) {
   const match = url.match(/-(\d+)x(\d+)\.(?:avif|gif|jpe?g|png|webp)(?:\?.*)?$/i)
 
@@ -68,6 +86,9 @@ export default function EditorialPhotographyDetail({
   const galleryLightboxOffset = work.coverImageUrl ? 1 : 0
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const [preview, setPreview] = useState<PreviewState>(null)
+  const [zoomLevel, setZoomLevel] = useState<ZoomLevel>(30)
+  const [lightboxSizing, setLightboxSizing] =
+    useState<LightboxSizing | null>(null)
   const pageRef = useRef<HTMLElement>(null)
   const heroStageRef = useRef<HTMLDivElement>(null)
   const coverRef = useRef<HTMLElement>(null)
@@ -75,11 +96,15 @@ export default function EditorialPhotographyDetail({
   const descriptionRef = useRef<HTMLDivElement>(null)
   const galleryRef = useRef<HTMLElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
-  const mediaRef = useRef<HTMLButtonElement>(null)
+  const lightboxScrollRef = useRef<HTMLDivElement>(null)
+  const mediaRef = useRef<HTMLDivElement>(null)
   const lightboxImageRef = useRef<HTMLImageElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const openerRef = useRef<HTMLElement | null>(null)
   const sourceRectRef = useRef<DOMRect | null>(null)
+  const panStateRef = useRef<PanState | null>(null)
+  const suppressPanClickRef = useRef(false)
+  const zoomFocusRef = useRef<{ x: number; y: number } | null>(null)
   const wasOpenRef = useRef(false)
   const closingRef = useRef(false)
   const currentIndex = displayIndex - 1
@@ -107,6 +132,16 @@ export default function EditorialPhotographyDetail({
     poster: 8,
     quiet: 11,
   }[layoutVariant]
+  const zoomProgress = (zoomLevel - 30) / 70
+  const zoomIndex = ZOOM_LEVELS.indexOf(zoomLevel)
+  const targetImageWidth = lightboxSizing
+    ? lightboxSizing.fitWidth +
+      (lightboxSizing.maxWidth - lightboxSizing.fitWidth) * zoomProgress
+    : null
+  const zoomImageStyle =
+    zoomLevel !== 30 && targetImageWidth !== null
+      ? ({ width: `${targetImageWidth}px` } as CSSProperties)
+      : undefined
 
   const getSafePreviewTop = (element: HTMLElement) => {
     const rect = element.getBoundingClientRect()
@@ -133,6 +168,9 @@ export default function EditorialPhotographyDetail({
     openerRef.current = event.currentTarget
     sourceRectRef.current = event.currentTarget.getBoundingClientRect()
     closingRef.current = false
+    setZoomLevel(30)
+    setLightboxSizing(null)
+    zoomFocusRef.current = null
     setActiveIndex(index)
   }
 
@@ -237,6 +275,9 @@ export default function EditorialPhotographyDetail({
     }
 
     sourceRectRef.current = null
+    setZoomLevel(30)
+    setLightboxSizing(null)
+    zoomFocusRef.current = null
     setActiveIndex((current) => {
       if (current === null) {
         return 0
@@ -252,6 +293,9 @@ export default function EditorialPhotographyDetail({
     }
 
     sourceRectRef.current = null
+    setZoomLevel(30)
+    setLightboxSizing(null)
+    zoomFocusRef.current = null
     setActiveIndex((current) => {
       if (current === null) {
         return 0
@@ -615,6 +659,170 @@ export default function EditorialPhotographyDetail({
         onComplete: () => closeButtonRef.current?.focus(),
       },
     )
+  }
+
+  const measureLightboxImage = useCallback(() => {
+    const image = lightboxImageRef.current
+
+    if (!image || image.naturalWidth === 0 || image.naturalHeight === 0) {
+      return
+    }
+
+    const isCompact = window.innerWidth <= 1050
+    const maxWidth = isCompact
+      ? window.innerWidth - 36
+      : Math.min(window.innerWidth * 0.82, 1680)
+    const maxHeight = isCompact
+      ? window.innerHeight - 140
+      : window.innerHeight * 0.82
+    const aspectRatio = image.naturalWidth / image.naturalHeight
+    const fitWidth = Math.min(
+      image.naturalWidth,
+      maxWidth,
+      maxHeight * aspectRatio,
+    )
+    const expandedWidth = fitWidth * (100 / 30)
+
+    setLightboxSizing({
+      fitWidth,
+      maxWidth: expandedWidth,
+    })
+  }, [])
+
+  const handleLightboxImageLoad = () => {
+    measureLightboxImage()
+    window.requestAnimationFrame(animateLightboxImage)
+  }
+
+  const changeZoom = (direction: -1 | 1) => {
+    const nextLevel = ZOOM_LEVELS[zoomIndex + direction]
+
+    if (nextLevel === undefined) {
+      return
+    }
+
+    const scroller = lightboxScrollRef.current
+
+    if (scroller && scroller.scrollWidth > 0 && scroller.scrollHeight > 0) {
+      zoomFocusRef.current = {
+        x:
+          (scroller.scrollLeft + scroller.clientWidth / 2) /
+          scroller.scrollWidth,
+        y:
+          (scroller.scrollTop + scroller.clientHeight / 2) /
+          scroller.scrollHeight,
+      }
+    }
+
+    sourceRectRef.current = null
+    setZoomLevel(nextLevel)
+  }
+
+  useLayoutEffect(() => {
+    const scroller = lightboxScrollRef.current
+
+    if (activeIndex === null || !scroller) {
+      return
+    }
+
+    if (zoomLevel === 30) {
+      scroller.scrollTo({ top: 0, left: 0 })
+      zoomFocusRef.current = null
+      return
+    }
+
+    const focus = zoomFocusRef.current ?? { x: 0.5, y: 0.5 }
+    const frame = window.requestAnimationFrame(() => {
+      scroller.scrollTo({
+        left: focus.x * scroller.scrollWidth - scroller.clientWidth / 2,
+        top: focus.y * scroller.scrollHeight - scroller.clientHeight / 2,
+      })
+      zoomFocusRef.current = null
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [activeIndex, targetImageWidth, zoomLevel])
+
+  useEffect(() => {
+    if (activeIndex === null) {
+      return
+    }
+
+    const handleResize = () => measureLightboxImage()
+    window.addEventListener('resize', handleResize)
+
+    return () => window.removeEventListener('resize', handleResize)
+  }, [activeIndex, measureLightboxImage])
+
+  const handlePanPointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (
+      zoomLevel === 30 ||
+      event.pointerType === 'touch' ||
+      event.button !== 0 ||
+      event.target !== lightboxImageRef.current
+    ) {
+      return
+    }
+
+    panStateRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      startScrollLeft: event.currentTarget.scrollLeft,
+      startScrollTop: event.currentTarget.scrollTop,
+      moved: false,
+    }
+    suppressPanClickRef.current = false
+    event.currentTarget.setPointerCapture(event.pointerId)
+    event.currentTarget.dataset.dragging = 'true'
+  }
+
+  const handlePanPointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    const pan = panStateRef.current
+
+    if (!pan || pan.pointerId !== event.pointerId) {
+      return
+    }
+
+    const deltaX = event.clientX - pan.startX
+    const deltaY = event.clientY - pan.startY
+
+    if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+      pan.moved = true
+    }
+
+    event.currentTarget.scrollLeft = pan.startScrollLeft - deltaX
+    event.currentTarget.scrollTop = pan.startScrollTop - deltaY
+    event.preventDefault()
+  }
+
+  const finishPan = (event: PointerEvent<HTMLDivElement>) => {
+    const pan = panStateRef.current
+
+    if (!pan || pan.pointerId !== event.pointerId) {
+      return
+    }
+
+    suppressPanClickRef.current = pan.moved
+    panStateRef.current = null
+    event.currentTarget.dataset.dragging = 'false'
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+  }
+
+  const handleLightboxBackgroundClick = (
+    event: MouseEvent<HTMLDivElement>,
+  ) => {
+    if (suppressPanClickRef.current) {
+      suppressPanClickRef.current = false
+      return
+    }
+
+    if (event.target === event.currentTarget) {
+      closeImage()
+    }
   }
 
   useEffect(() => {
@@ -1015,11 +1223,7 @@ export default function EditorialPhotographyDetail({
           role="dialog"
           aria-modal="true"
           aria-label={`${work.title} image ${activeIndex + 1}`}
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              closeImage()
-            }
-          }}
+          data-zoom-level={zoomLevel}
         >
           <button
             ref={closeButtonRef}
@@ -1041,22 +1245,60 @@ export default function EditorialPhotographyDetail({
             <span aria-hidden="true">←</span>
           </button>
 
-          <button
-            ref={mediaRef}
-            type="button"
-            className={styles.lightboxMedia}
-            aria-label="Close enlarged image"
-            onClick={closeImage}
+          <div
+            ref={lightboxScrollRef}
+            className={styles.lightboxScrollArea}
+            data-pannable={zoomLevel !== 30}
+            onPointerDown={handlePanPointerDown}
+            onPointerMove={handlePanPointerMove}
+            onPointerUp={finishPan}
+            onPointerCancel={finishPan}
+            onClick={handleLightboxBackgroundClick}
           >
-            <img
-              ref={lightboxImageRef}
-              key={activeImage.url}
-              src={activeImage.url}
-              alt={activeImage.alt || `${work.title} image ${activeIndex + 1}`}
-              decoding="async"
-              onLoad={animateLightboxImage}
-            />
-          </button>
+            <div
+              ref={mediaRef}
+              className={styles.lightboxMedia}
+              onClick={handleLightboxBackgroundClick}
+            >
+              <img
+                ref={lightboxImageRef}
+                key={activeImage.url}
+                src={activeImage.url}
+                alt={
+                  activeImage.alt || `${work.title} image ${activeIndex + 1}`
+                }
+                decoding="async"
+                onLoad={handleLightboxImageLoad}
+                style={zoomImageStyle}
+                draggable={false}
+              />
+            </div>
+          </div>
+
+          <div
+            className={styles.zoomControls}
+            role="group"
+            aria-label="Image zoom controls"
+          >
+            <button
+              type="button"
+              className={styles.zoomButton}
+              aria-label="Zoom out"
+              disabled={zoomIndex === 0}
+              onClick={() => changeZoom(-1)}
+            >
+              <span className={styles.zoomMinus} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className={styles.zoomButton}
+              aria-label="Zoom in"
+              disabled={zoomIndex === ZOOM_LEVELS.length - 1}
+              onClick={() => changeZoom(1)}
+            >
+              <span className={styles.zoomPlus} aria-hidden="true" />
+            </button>
+          </div>
 
           <button
             type="button"
