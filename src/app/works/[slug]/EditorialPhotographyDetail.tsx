@@ -106,6 +106,7 @@ export default function EditorialPhotographyDetail({
   const [lightboxPreviewSrc, setLightboxPreviewSrc] = useState<string | null>(
     null,
   )
+  const [lightboxMaxSourceWidth, setLightboxMaxSourceWidth] = useState(1920)
   const [preview, setPreview] = useState<PreviewState>(null)
   const [zoomLevel, setZoomLevel] = useState<ZoomLevel>(30)
   const [lightboxSizing, setLightboxSizing] =
@@ -199,6 +200,7 @@ export default function EditorialPhotographyDetail({
     closingRef.current = false
     isLightboxImageReadyRef.current = false
     setZoomLevel(30)
+    setLightboxMaxSourceWidth(1920)
     setLightboxSizing(null)
     setLightboxPreviewSrc(
       clickedImage?.currentSrc ||
@@ -321,6 +323,7 @@ export default function EditorialPhotographyDetail({
 
     isLightboxImageReadyRef.current = false
     setZoomLevel(30)
+    setLightboxMaxSourceWidth(1920)
     setLightboxSizing(null)
     setLightboxPreviewSrc(
       getLightboxPreviewUrl(lightboxImages[previousIndex].source),
@@ -340,6 +343,7 @@ export default function EditorialPhotographyDetail({
 
     isLightboxImageReadyRef.current = false
     setZoomLevel(30)
+    setLightboxMaxSourceWidth(1920)
     setLightboxSizing(null)
     setLightboxPreviewSrc(
       getLightboxPreviewUrl(lightboxImages[nextIndex].source),
@@ -642,44 +646,6 @@ export default function EditorialPhotographyDetail({
       return
     }
 
-    const sourceRect = sourceRectRef.current
-    const imageRect = image.getBoundingClientRect()
-    const canExpandFromSource =
-      sourceRect &&
-      sourceRect.width > 0 &&
-      sourceRect.height > 0 &&
-      imageRect.width > 0 &&
-      imageRect.height > 0
-
-    if (canExpandFromSource) {
-      const sourceCenterX = sourceRect.left + sourceRect.width / 2
-      const sourceCenterY = sourceRect.top + sourceRect.height / 2
-      const imageCenterX = imageRect.left + imageRect.width / 2
-      const imageCenterY = imageRect.top + imageRect.height / 2
-
-      gsap.fromTo(
-        image,
-        {
-          x: sourceCenterX - imageCenterX,
-          y: sourceCenterY - imageCenterY,
-          scaleX: sourceRect.width / imageRect.width,
-          scaleY: sourceRect.height / imageRect.height,
-          transformOrigin: 'center center',
-        },
-        {
-          x: 0,
-          y: 0,
-          scaleX: 1,
-          scaleY: 1,
-          duration: 0.46,
-          ease: 'power3.inOut',
-          clearProps: 'transform',
-          onComplete: () => closeButtonRef.current?.focus(),
-        },
-      )
-      return
-    }
-
     gsap.fromTo(
       media,
       { scale: 0.985, y: 8 },
@@ -809,6 +775,11 @@ export default function EditorialPhotographyDetail({
     }
 
     sourceRectRef.current = null
+
+    if (nextLevel > 30) {
+      setLightboxMaxSourceWidth(3200)
+    }
+
     setZoomLevel(nextLevel)
   }
 
@@ -1406,7 +1377,7 @@ export default function EditorialPhotographyDetail({
                 }
                 sizes="100vw"
                 quality={84}
-                maxSourceWidth={zoomLevel === 30 ? 1920 : 3200}
+                maxSourceWidth={lightboxMaxSourceWidth}
                 loading="eager"
                 decoding="async"
                 className={styles.lightboxHighResolutionImage}
