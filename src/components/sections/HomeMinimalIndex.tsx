@@ -13,6 +13,7 @@ import {
 } from 'react'
 import Link from 'next/link'
 import { rememberHomeHistoryPosition } from '@/components/animation/homeLoaderSession'
+import SanityImage from '@/components/ui/SanityImage'
 import { profileCopy } from '@/data/profile'
 import type { Work } from '@/data/works'
 import ContactInteractiveHelmet from './ContactInteractiveHelmet'
@@ -1436,15 +1437,25 @@ export default function HomeMinimalIndex({
                     onPointerMove={handlePolaroidPointerMove}
                   >
                     <span className={styles.featuredShell} aria-hidden="true" />
-                    <img
-                      src={
-                        work.coverImageUrl ||
-                        `${polaroidAssetPath}/featured-0${index + 1}.jpg`
-                      }
-                      alt=""
-                      className={styles.featuredImage}
-                      draggable={false}
-                    />
+                    {work.coverImage ? (
+                      <SanityImage
+                        image={work.coverImage.source}
+                        alt=""
+                        width={1200}
+                        height={1000}
+                        sizes="(max-width: 640px) 86vw, 520px"
+                        quality={72}
+                        className={styles.featuredImage}
+                        draggable={false}
+                      />
+                    ) : (
+                      <img
+                        src={`${polaroidAssetPath}/featured-0${index + 1}.jpg`}
+                        alt=""
+                        className={styles.featuredImage}
+                        draggable={false}
+                      />
+                    )}
                     <span className={styles.paperSurfaceShadow} aria-hidden="true" />
                     <span className={styles.featuredStrip}>
                       <span className={styles.featuredStripTitle}>{work.title}</span>

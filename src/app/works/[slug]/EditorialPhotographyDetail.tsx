@@ -1,13 +1,11 @@
 'use client'
 
-/* eslint-disable @next/next/no-img-element */
-
-import Image from 'next/image'
 import Link from 'next/link'
 import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type CSSProperties,
@@ -17,6 +15,10 @@ import {
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/dist/ScrollTrigger'
 import { useSiteTheme } from '@/components/theme/SiteThemeProvider'
+import SanityImage, {
+  getSanityImageDimensions,
+} from '@/components/ui/SanityImage'
+import { urlFor } from '@/sanity/lib/image'
 import type { Work } from '@/data/works'
 import detailStyles from './page.module.css'
 import styles from './editorial-photography.module.css'
@@ -52,17 +54,29 @@ type PanState = {
   moved: boolean
 }
 
-function getImageDimensions(url: string) {
-  const match = url.match(/-(\d+)x(\d+)\.(?:avif|gif|jpe?g|png|webp)(?:\?.*)?$/i)
+const galleryColumnSpans = [7, 5, 10, 4, 8, 5, 4, 12, 4, 7, 7, 4, 9, 5, 5]
+const mobileThreeQuarterLayouts = new Set([2, 4, 6, 7, 9, 11, 12, 14])
 
-  if (!match) {
-    return { width: 1600, height: 1200 }
-  }
+function getGalleryImageSizes(layoutNumber: number) {
+  const columnSpan = galleryColumnSpans[layoutNumber - 1] || 12
+  const tabletWidth = Math.round((84 * columnSpan) / 12 * 10) / 10
+  const tabletMaxWidth = Math.round((940 * columnSpan) / 12)
+  const desktopWidth = Math.round((78 * columnSpan) / 12 * 10) / 10
+  const desktopMaxWidth = Math.round((1480 * columnSpan) / 12)
+  const mobileWidth = mobileThreeQuarterLayouts.has(layoutNumber)
+    ? 'calc(75vw - 30px)'
+    : 'calc(100vw - 40px)'
 
-  return {
-    width: Number(match[1]),
-    height: Number(match[2]),
-  }
+  return `(max-width: 700px) ${mobileWidth}, (max-width: 1050px) min(${tabletWidth}vw, ${tabletMaxWidth}px), min(${desktopWidth}vw, ${desktopMaxWidth}px)`
+}
+
+function getLightboxPreviewUrl(image: Parameters<typeof urlFor>[0]) {
+  return urlFor(image)
+    .width(1600)
+    .fit('max')
+    .quality(80)
+    .auto('format')
+    .url()
 }
 
 export default function EditorialPhotographyDetail({
@@ -73,18 +87,25 @@ export default function EditorialPhotographyDetail({
   layoutVariant,
 }: EditorialPhotographyDetailProps) {
   const { isInverted, toggleTheme } = useSiteTheme()
-  const images = work.galleryImages || []
-  const lightboxImages = work.coverImageUrl
-    ? [
-        {
-          url: work.coverImageUrl,
-          alt: work.coverImageAlt || work.title,
-        },
-        ...images,
-      ]
-    : images
-  const galleryLightboxOffset = work.coverImageUrl ? 1 : 0
+  const images = useMemo(() => work.galleryImages || [], [work.galleryImages])
+  const lightboxImages = useMemo(
+    () =>
+      work.coverImage
+        ? [
+            {
+              ...work.coverImage,
+              alt: work.coverImage.alt || work.title,
+            },
+            ...images,
+          ]
+        : images,
+    [images, work.coverImage, work.title],
+  )
+  const galleryLightboxOffset = work.coverImage ? 1 : 0
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
+  const [lightboxPreviewSrc, setLightboxPreviewSrc] = useState<string | null>(
+    null,
+  )
   const [preview, setPreview] = useState<PreviewState>(null)
   const [zoomLevel, setZoomLevel] = useState<ZoomLevel>(30)
   const [lightboxSizing, setLightboxSizing] =
@@ -98,7 +119,9 @@ export default function EditorialPhotographyDetail({
   const overlayRef = useRef<HTMLDivElement>(null)
   const lightboxScrollRef = useRef<HTMLDivElement>(null)
   const mediaRef = useRef<HTMLDivElement>(null)
+  const lightboxPreviewImageRef = useRef<HTMLImageElement>(null)
   const lightboxImageRef = useRef<HTMLImageElement>(null)
+  const isLightboxImageReadyRef = useRef(false)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const openerRef = useRef<HTMLElement | null>(null)
   const sourceRectRef = useRef<DOMRect | null>(null)
@@ -116,6 +139,9 @@ export default function EditorialPhotographyDetail({
 
   const activeImage =
     activeIndex === null ? null : lightboxImages[activeIndex]
+  const activeImageDimensions = activeImage
+    ? getSanityImageDimensions(activeImage.source)
+    : null
   const titleWords = work.title.trim().split(/\s+/)
   const titleTail = titleWords.pop() || work.title
   const variantClass = {
@@ -165,11 +191,20 @@ export default function EditorialPhotographyDetail({
   }
 
   const openImage = (index: number, event: MouseEvent<HTMLButtonElement>) => {
+    const clickedImage = event.currentTarget.querySelector('img')
+    const image = lightboxImages[index]
+
     openerRef.current = event.currentTarget
     sourceRectRef.current = event.currentTarget.getBoundingClientRect()
     closingRef.current = false
+    isLightboxImageReadyRef.current = false
     setZoomLevel(30)
     setLightboxSizing(null)
+    setLightboxPreviewSrc(
+      clickedImage?.currentSrc ||
+        clickedImage?.src ||
+        (image ? getLightboxPreviewUrl(image.source) : null),
+    )
     zoomFocusRef.current = null
     setActiveIndex(index)
   }
@@ -181,7 +216,9 @@ export default function EditorialPhotographyDetail({
 
     const overlay = overlayRef.current
     const media = mediaRef.current
-    const image = lightboxImageRef.current
+    const image = isLightboxImageReadyRef.current
+      ? lightboxImageRef.current
+      : lightboxPreviewImageRef.current || lightboxImageRef.current
 
     if (!overlay || !media) {
       wasOpenRef.current = false
@@ -194,6 +231,8 @@ export default function EditorialPhotographyDetail({
       wasOpenRef.current = false
       closingRef.current = false
       sourceRectRef.current = null
+      isLightboxImageReadyRef.current = false
+      setLightboxPreviewSrc(null)
       setActiveIndex(null)
       openerRef.current?.focus()
     }
@@ -275,17 +314,20 @@ export default function EditorialPhotographyDetail({
     }
 
     sourceRectRef.current = null
+    const previousIndex =
+      activeIndex === null
+        ? 0
+        : (activeIndex - 1 + lightboxImages.length) % lightboxImages.length
+
+    isLightboxImageReadyRef.current = false
     setZoomLevel(30)
     setLightboxSizing(null)
+    setLightboxPreviewSrc(
+      getLightboxPreviewUrl(lightboxImages[previousIndex].source),
+    )
     zoomFocusRef.current = null
-    setActiveIndex((current) => {
-      if (current === null) {
-        return 0
-      }
-
-      return (current - 1 + lightboxImages.length) % lightboxImages.length
-    })
-  }, [lightboxImages.length])
+    setActiveIndex(previousIndex)
+  }, [activeIndex, lightboxImages])
 
   const showNext = useCallback(() => {
     if (lightboxImages.length < 2) {
@@ -293,17 +335,35 @@ export default function EditorialPhotographyDetail({
     }
 
     sourceRectRef.current = null
+    const nextIndex =
+      activeIndex === null ? 0 : (activeIndex + 1) % lightboxImages.length
+
+    isLightboxImageReadyRef.current = false
     setZoomLevel(30)
     setLightboxSizing(null)
+    setLightboxPreviewSrc(
+      getLightboxPreviewUrl(lightboxImages[nextIndex].source),
+    )
     zoomFocusRef.current = null
-    setActiveIndex((current) => {
-      if (current === null) {
-        return 0
-      }
+    setActiveIndex(nextIndex)
+  }, [activeIndex, lightboxImages])
 
-      return (current + 1) % lightboxImages.length
+  useEffect(() => {
+    if (activeIndex === null || lightboxImages.length < 2) {
+      return
+    }
+
+    const adjacentIndexes = new Set([
+      (activeIndex - 1 + lightboxImages.length) % lightboxImages.length,
+      (activeIndex + 1) % lightboxImages.length,
+    ])
+
+    adjacentIndexes.forEach((index) => {
+      const preloadImage = new window.Image()
+      preloadImage.decoding = 'async'
+      preloadImage.src = getLightboxPreviewUrl(lightboxImages[index].source)
     })
-  }, [lightboxImages.length])
+  }, [activeIndex, lightboxImages])
 
   useLayoutEffect(() => {
     const heroStage = heroStageRef.current
@@ -564,37 +624,10 @@ export default function EditorialPhotographyDetail({
     }
   }, [images.length, work.slug])
 
-  useLayoutEffect(() => {
-    if (activeIndex === null) {
-      return
-    }
-
-    const overlay = overlayRef.current
+  const animateLightboxImage = useCallback(() => {
     const media = mediaRef.current
-
-    if (!overlay || !media) {
-      return
-    }
-
-    gsap.killTweensOf([overlay, media])
-    gsap.set(media, { visibility: 'hidden' })
-
-    if (!wasOpenRef.current) {
-      wasOpenRef.current = true
-      gsap.fromTo(overlay, { autoAlpha: 0 }, {
-        autoAlpha: 1,
-        duration: 0.22,
-        ease: 'power2.out',
-      })
-      return
-    }
-
-    gsap.set(overlay, { autoAlpha: 1 })
-  }, [activeIndex])
-
-  const animateLightboxImage = () => {
-    const media = mediaRef.current
-    const image = lightboxImageRef.current
+    const image =
+      lightboxPreviewImageRef.current || lightboxImageRef.current
 
     if (!media || !image) {
       return
@@ -659,7 +692,37 @@ export default function EditorialPhotographyDetail({
         onComplete: () => closeButtonRef.current?.focus(),
       },
     )
-  }
+  }, [])
+
+  useLayoutEffect(() => {
+    if (activeIndex === null) {
+      return
+    }
+
+    const overlay = overlayRef.current
+    const media = mediaRef.current
+
+    if (!overlay || !media) {
+      return
+    }
+
+    gsap.killTweensOf([overlay, media])
+    gsap.set(media, { visibility: 'visible' })
+    const animationFrame = window.requestAnimationFrame(animateLightboxImage)
+
+    if (!wasOpenRef.current) {
+      wasOpenRef.current = true
+      gsap.fromTo(overlay, { autoAlpha: 0 }, {
+        autoAlpha: 1,
+        duration: 0.22,
+        ease: 'power2.out',
+      })
+    } else {
+      gsap.set(overlay, { autoAlpha: 1 })
+    }
+
+    return () => window.cancelAnimationFrame(animationFrame)
+  }, [activeIndex, animateLightboxImage])
 
   const measureLightboxImage = useCallback(() => {
     const image = lightboxImageRef.current
@@ -690,8 +753,39 @@ export default function EditorialPhotographyDetail({
   }, [])
 
   const handleLightboxImageLoad = () => {
+    const image = lightboxImageRef.current
+    const previewImage = lightboxPreviewImageRef.current
+
+    if (!image) {
+      return
+    }
+
+    isLightboxImageReadyRef.current = true
     measureLightboxImage()
-    window.requestAnimationFrame(animateLightboxImage)
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      gsap.set(image, { autoAlpha: 1 })
+
+      if (previewImage) {
+        gsap.set(previewImage, { autoAlpha: 0 })
+      }
+
+      return
+    }
+
+    gsap.to(image, {
+      autoAlpha: 1,
+      duration: 0.18,
+      ease: 'power1.out',
+    })
+
+    if (previewImage) {
+      gsap.to(previewImage, {
+        autoAlpha: 0,
+        duration: 0.18,
+        ease: 'power1.out',
+      })
+    }
   }
 
   const changeZoom = (direction: -1 | 1) => {
@@ -725,22 +819,48 @@ export default function EditorialPhotographyDetail({
       return
     }
 
+    let settleFrame: number | null = null
+
     if (zoomLevel === 30) {
-      scroller.scrollTo({ top: 0, left: 0 })
+      const resetScrollPosition = () => {
+        scroller.scrollLeft = 0
+        scroller.scrollTop = 0
+      }
+
+      resetScrollPosition()
       zoomFocusRef.current = null
-      return
+
+      const layoutFrame = window.requestAnimationFrame(() => {
+        settleFrame = window.requestAnimationFrame(resetScrollPosition)
+      })
+
+      return () => {
+        window.cancelAnimationFrame(layoutFrame)
+
+        if (settleFrame !== null) {
+          window.cancelAnimationFrame(settleFrame)
+        }
+      }
     }
 
     const focus = zoomFocusRef.current ?? { x: 0.5, y: 0.5 }
-    const frame = window.requestAnimationFrame(() => {
-      scroller.scrollTo({
-        left: focus.x * scroller.scrollWidth - scroller.clientWidth / 2,
-        top: focus.y * scroller.scrollHeight - scroller.clientHeight / 2,
+    const layoutFrame = window.requestAnimationFrame(() => {
+      settleFrame = window.requestAnimationFrame(() => {
+        scroller.scrollTo({
+          left: focus.x * scroller.scrollWidth - scroller.clientWidth / 2,
+          top: focus.y * scroller.scrollHeight - scroller.clientHeight / 2,
+        })
+        zoomFocusRef.current = null
       })
-      zoomFocusRef.current = null
     })
 
-    return () => window.cancelAnimationFrame(frame)
+    return () => {
+      window.cancelAnimationFrame(layoutFrame)
+
+      if (settleFrame !== null) {
+        window.cancelAnimationFrame(settleFrame)
+      }
+    }
   }, [activeIndex, targetImageWidth, zoomLevel])
 
   useEffect(() => {
@@ -908,19 +1028,20 @@ export default function EditorialPhotographyDetail({
           </h1>
 
           <figure ref={coverRef} className={styles.commercialCover}>
-            {work.coverImageUrl ? (
+            {work.coverImage ? (
               <button
                 type="button"
                 className={styles.commercialCoverButton}
                 aria-label={`Open cover image 1 of ${lightboxImages.length}`}
                 onClick={(event) => openImage(0, event)}
               >
-                <Image
-                  src={work.coverImageUrl}
-                  alt={work.coverImageAlt || work.title}
+                <SanityImage
+                  image={work.coverImage.source}
+                  alt={work.coverImage.alt || work.title}
                   fill
                   priority
                   sizes="(max-width: 700px) calc(100vw - 40px), (max-width: 1050px) 60vw, 46vw"
+                  quality={84}
                   className={styles.commercialCoverImage}
                 />
               </button>
@@ -929,7 +1050,7 @@ export default function EditorialPhotographyDetail({
                 className={styles.commercialCoverFallback}
                 style={{ background: work.surface }}
                 role="img"
-                aria-label={work.coverImageAlt || work.title}
+                aria-label={work.title}
               />
             )}
           </figure>
@@ -975,13 +1096,11 @@ export default function EditorialPhotographyDetail({
         >
           <div className={styles.commercialGalleryGrid}>
             {images.map((image, index) => {
+              const layoutNumber = ((index + galleryOffset) % 15) + 1
               const layoutClass =
                 styles[
-                  `commercialLayout${
-                    ((index + galleryOffset) % 15) + 1
-                  }` as keyof typeof styles
+                  `commercialLayout${layoutNumber}` as keyof typeof styles
                 ]
-              const dimensions = getImageDimensions(image.url)
 
               return (
                 <button
@@ -996,12 +1115,13 @@ export default function EditorialPhotographyDetail({
                   key={`${image.url}-${index}`}
                 >
                   <span className={styles.commercialImageFrame}>
-                    <Image
-                      src={image.url}
+                    <SanityImage
+                      image={image.source}
                       alt={image.alt || `${work.title} image ${index + 1}`}
-                      width={dimensions.width}
-                      height={dimensions.height}
-                      sizes="(max-width: 700px) calc(100vw - 40px), (max-width: 1050px) 78vw, 64vw"
+                      sizes={getGalleryImageSizes(layoutNumber)}
+                      quality={84}
+                      deferUntilNearViewport
+                      deferDelayMs={Math.min(index, 4) * 140}
                     />
                   </span>
                 </button>
@@ -1193,12 +1313,13 @@ export default function EditorialPhotographyDetail({
           aria-hidden="true"
         >
           <div className={detailStyles.previewImage}>
-            {previewWork.coverImageUrl ? (
-              <Image
-                src={previewWork.coverImageUrl}
+            {previewWork.coverImage ? (
+              <SanityImage
+                image={previewWork.coverImage.source}
                 alt=""
                 fill
-                sizes="(max-width: 900px) 220px, 360px"
+                sizes="(max-width: 1100px) 183px, 240px"
+                quality={72}
                 className={detailStyles.previewCover}
               />
             ) : (
@@ -1260,14 +1381,35 @@ export default function EditorialPhotographyDetail({
               className={styles.lightboxMedia}
               onClick={handleLightboxBackgroundClick}
             >
-              <img
+              {lightboxPreviewSrc && activeImageDimensions ? (
+                // This reuses the already transformed Sanity CDN image that is visible on the page.
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  ref={lightboxPreviewImageRef}
+                  key={`${activeImage.url}-preview`}
+                  src={lightboxPreviewSrc}
+                  alt=""
+                  width={activeImageDimensions.width}
+                  height={activeImageDimensions.height}
+                  className={styles.lightboxPreviewImage}
+                  style={zoomImageStyle}
+                  aria-hidden="true"
+                  draggable={false}
+                />
+              ) : null}
+              <SanityImage
                 ref={lightboxImageRef}
                 key={activeImage.url}
-                src={activeImage.url}
+                image={activeImage.source}
                 alt={
                   activeImage.alt || `${work.title} image ${activeIndex + 1}`
                 }
+                sizes="100vw"
+                quality={84}
+                maxSourceWidth={zoomLevel === 30 ? 1920 : 3200}
+                loading="eager"
                 decoding="async"
+                className={styles.lightboxHighResolutionImage}
                 onLoad={handleLightboxImageLoad}
                 style={zoomImageStyle}
                 draggable={false}

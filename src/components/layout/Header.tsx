@@ -68,6 +68,7 @@ function getCompactNavScale(viewportWidth: number) {
 export default function Header() {
   const pathname = usePathname()
   const isWorkDetailPage = pathname.startsWith('/works/')
+  const isStudioPage = pathname === '/studio' || pathname.startsWith('/studio/')
   const usesSimpleNav = pathname === '/works'
     || pathname.startsWith('/works/')
     || pathname === '/profile'
@@ -1167,7 +1168,7 @@ export default function Header() {
     }
   }, [pathname])
 
-  if (isWorkDetailPage) {
+  if (isWorkDetailPage || isStudioPage) {
     return null
   }
 

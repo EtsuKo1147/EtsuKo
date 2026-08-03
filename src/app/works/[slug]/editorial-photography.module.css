@@ -213,7 +213,7 @@
   max-height: 78%;
   margin: 0;
   overflow: hidden;
-  background: color-mix(in srgb, var(--editorial-text) 7%, transparent);
+  background: var(--editorial-bg);
 }
 
 .commercialCoverButton {
@@ -470,7 +470,7 @@
   display: block;
   width: 100%;
   overflow: hidden;
-  background: color-mix(in srgb, var(--editorial-text) 7%, transparent);
+  background: var(--editorial-bg);
 }
 
 .commercialImageFrame img {
@@ -921,6 +921,7 @@
 }
 
 .lightboxMedia img {
+  grid-area: 1 / 1;
   display: block;
   max-width: min(82vw, 1680px);
   max-height: 82svh;
@@ -928,6 +929,14 @@
   user-select: none;
   -webkit-user-drag: none;
   cursor: default;
+}
+
+.lightboxPreviewImage {
+  pointer-events: none;
+}
+
+.lightboxHighResolutionImage {
+  opacity: 0;
 }
 
 .lightbox:not([data-zoom-level='30']) .lightboxMedia img {

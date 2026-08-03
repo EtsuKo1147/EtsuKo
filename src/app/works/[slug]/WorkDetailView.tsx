@@ -1,13 +1,11 @@
 'use client'
 
-/* eslint-disable @next/next/no-img-element */
-
-import Image from 'next/image'
 import Link from 'next/link'
 import { useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/dist/ScrollTrigger'
 import { useSiteTheme } from '@/components/theme/SiteThemeProvider'
+import SanityImage from '@/components/ui/SanityImage'
 import type { Work, WorkImage } from '@/data/works'
 import styles from './page.module.css'
 
@@ -255,10 +253,13 @@ function SteppedGallery({ title, images }: SteppedGalleryProps) {
           aria-hidden={index !== activeIndex}
           key={`${image.url}-${index}`}
         >
-          <img
-            src={image.url}
+          <SanityImage
+            image={image.source}
             alt={image.alt || `${title} image ${index + 2}`}
-            loading={index <= activeIndex + 1 ? 'eager' : 'lazy'}
+            sizes="100vw"
+            quality={80}
+            loading="lazy"
+            deferUntilNearViewport
             decoding="async"
           />
         </figure>
@@ -500,20 +501,21 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
 
           <div ref={coverPanelRef} className={styles.coverPanel}>
             <figure className={styles.coverFigure}>
-              {work.coverImageUrl ? (
-                <Image
-                  src={work.coverImageUrl}
-                  alt={work.coverImageAlt || work.title}
+              {work.coverImage ? (
+                <SanityImage
+                  image={work.coverImage.source}
+                  alt={work.coverImage.alt || work.title}
                   fill
                   priority
-                  sizes="100vw"
+                  sizes="(max-width: 760px) 100vw, (max-width: 1100px) 64vw, 70vw"
+                  quality={80}
                   className={styles.coverImage}
                 />
               ) : (
                 <div
                   className={styles.coverFallback}
                   role="img"
-                  aria-label={work.coverImageAlt || work.title}
+                  aria-label={work.title}
                 />
               )}
             </figure>
@@ -532,10 +534,13 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
           <section className={styles.gallery} aria-label={`${work.title} project images`}>
             {work.galleryImages.map((image, index) => (
               <figure className={styles.galleryFigure} key={`${image.url}-${index}`}>
-                <img
-                  src={image.url}
+                <SanityImage
+                  image={image.source}
                   alt={image.alt || `${work.title} image ${index + 2}`}
+                  sizes="100vw"
+                  quality={80}
                   loading="lazy"
+                  deferUntilNearViewport
                   decoding="async"
                 />
               </figure>
@@ -683,12 +688,13 @@ export default function WorkDetailView({ work, works }: WorkDetailViewProps) {
           aria-hidden="true"
         >
           <div className={styles.previewImage}>
-            {previewWork.coverImageUrl ? (
-              <Image
-                src={previewWork.coverImageUrl}
+            {previewWork.coverImage ? (
+              <SanityImage
+                image={previewWork.coverImage.source}
                 alt=""
                 fill
-                sizes="(max-width: 900px) 220px, 360px"
+                sizes="(max-width: 1100px) 183px, 240px"
+                quality={72}
                 className={styles.previewCover}
               />
             ) : (

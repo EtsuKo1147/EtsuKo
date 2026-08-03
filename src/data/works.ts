@@ -1,3 +1,5 @@
+import type { SanityImageSource } from '@sanity/image-url'
+
 export interface Work {
   id: string
   slug: string
@@ -13,8 +15,7 @@ export interface Work {
   surface: string
   featured?: boolean
   href: string
-  coverImageUrl?: string
-  coverImageAlt?: string
+  coverImage?: WorkImage
   galleryImages?: WorkImage[]
   projectLinks?: WorkLink[]
 }
@@ -24,6 +25,7 @@ export type WorkCategory = 'branding' | 'photography' | 'web' | 'graphic'
 export interface WorkImage {
   url: string
   alt?: string
+  source: SanityImageSource
 }
 
 export interface WorkLink {

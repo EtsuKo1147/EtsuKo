@@ -4,6 +4,7 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import Link from 'next/link'
+import SanityImage from '@/components/ui/SanityImage'
 import { type Work, type WorkCategory } from '@/data/works'
 import { useSiteTheme } from '@/components/theme/SiteThemeProvider'
 import styles from './page.module.css'
@@ -274,10 +275,14 @@ export default function WorksView({ works, initialCategory = 'all' }: WorksViewP
                 >
                   <span className={styles.workFlip}>
                     <span className={styles.workImageViewport}>
-                      {work.coverImageUrl ? (
-                        <img
-                          src={work.coverImageUrl}
-                          alt={work.coverImageAlt || work.title}
+                      {work.coverImage ? (
+                        <SanityImage
+                          image={work.coverImage.source}
+                          alt={work.coverImage.alt || work.title}
+                          width={1200}
+                          height={1000}
+                          sizes="(max-width: 640px) 28vw, (max-width: 1100px) 48vw, 480px"
+                          quality={72}
                           className={styles.workCoverImage}
                           draggable={false}
                         />

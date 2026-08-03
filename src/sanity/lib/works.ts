@@ -6,10 +6,33 @@ import {
   type WorkImage,
   type WorkLink,
 } from '@/data/works'
+import type { SanityImageSource } from '@sanity/image-url'
 import { client } from './client'
 
 type SanityWorkImage = {
-  url?: string
+  asset?: {
+    _id?: string
+    url?: string
+    metadata?: {
+      dimensions?: {
+        width?: number
+        height?: number
+        aspectRatio?: number
+      }
+    }
+  }
+  crop?: {
+    top?: number
+    right?: number
+    bottom?: number
+    left?: number
+  }
+  hotspot?: {
+    x?: number
+    y?: number
+    height?: number
+    width?: number
+  }
   alt?: string
 }
 
@@ -44,24 +67,20 @@ const worksQuery = `*[_type == "work"] | order(order asc, _createdAt asc) {
   category,
   year,
   description,
-  projectLinks[] {
-    label,
-    url
-  },
-  summary,
   role,
-  tools,
   accent,
   surface,
   featured,
   order,
-  "coverImage": {
-    "url": coverImage.asset->url,
-    "alt": coverImage.alt
-  },
-  "galleryImages": galleryImages[] {
-    "url": asset->url,
-    "alt": alt
+  coverImage {
+    asset->{
+      _id,
+      url,
+      metadata { dimensions }
+    },
+    crop,
+    hotspot,
+    alt
   }
 }`
 
@@ -83,13 +102,25 @@ const workBySlugQuery = `*[_type == "work" && slug.current == $slug][0] {
   surface,
   featured,
   order,
-  "coverImage": {
-    "url": coverImage.asset->url,
-    "alt": coverImage.alt
+  coverImage {
+    asset->{
+      _id,
+      url,
+      metadata { dimensions }
+    },
+    crop,
+    hotspot,
+    alt
   },
-  "galleryImages": galleryImages[] {
-    "url": asset->url,
-    "alt": alt
+  galleryImages[] {
+    asset->{
+      _id,
+      url,
+      metadata { dimensions }
+    },
+    crop,
+    hotspot,
+    alt
   }
 }`
 
@@ -105,13 +136,14 @@ function isWorkCategory(category: string | undefined): category is WorkCategory 
 }
 
 function normalizeWorkImage(image: SanityWorkImage | undefined): WorkImage | undefined {
-  if (!image?.url) {
+  if (!image?.asset?.url) {
     return undefined
   }
 
   return {
-    url: image.url,
+    url: image.asset.url,
     alt: image.alt,
+    source: image as SanityImageSource,
   }
 }
 
@@ -155,8 +187,9 @@ function normalizeSanityWork(work: SanityWork, index: number): Work | null {
     surface: work.surface || '#ecebe6',
     featured: work.featured,
     href: `/works/${work.slug}`,
-    coverImageUrl: coverImage?.url,
-    coverImageAlt: coverImage?.alt || work.title,
+    coverImage: coverImage
+      ? { ...coverImage, alt: coverImage.alt || work.title }
+      : undefined,
     galleryImages,
     projectLinks,
   }
