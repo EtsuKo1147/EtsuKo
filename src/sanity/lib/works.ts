@@ -44,6 +44,7 @@ type SanityWorkLink = {
 type SanityWork = {
   _id: string
   title?: string
+  titleAnnotation?: string
   slug?: string
   category?: string
   year?: string
@@ -63,6 +64,7 @@ type SanityWork = {
 const worksQuery = `*[_type == "work"] | order(order asc, _createdAt asc) {
   _id,
   title,
+  titleAnnotation,
   "slug": slug.current,
   category,
   year,
@@ -87,6 +89,7 @@ const worksQuery = `*[_type == "work"] | order(order asc, _createdAt asc) {
 const workBySlugQuery = `*[_type == "work" && slug.current == $slug][0] {
   _id,
   title,
+  titleAnnotation,
   "slug": slug.current,
   category,
   year,
@@ -176,6 +179,7 @@ function normalizeSanityWork(work: SanityWork, index: number): Work | null {
     id,
     slug: work.slug,
     title: work.title,
+    titleAnnotation: work.titleAnnotation?.trim() || undefined,
     category: work.category,
     categoryLabel: categoryLabels.get(work.category) || work.category,
     year: work.year || '',

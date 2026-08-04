@@ -4,6 +4,7 @@ export interface Work {
   id: string
   slug: string
   title: string
+  titleAnnotation?: string
   category: WorkCategory
   categoryLabel: string
   year: string

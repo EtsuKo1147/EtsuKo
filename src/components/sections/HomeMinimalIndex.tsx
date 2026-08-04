@@ -70,9 +70,9 @@ const polaroidCategories = [
     href: '/works?category=branding',
   },
   {
-    label: 'Illustration',
+    label: 'Graphic',
     image: `${polaroidAssetPath}/work-illustration.jpg`,
-    href: '/works?category=illustration',
+    href: '/works?category=graphic',
   },
   {
     label: 'Web',
@@ -1259,7 +1259,7 @@ export default function HomeMinimalIndex({
                 </text>
                 <text>
                   <textPath href="#camera-category-ring" startOffset="32%">
-                    Illustration
+                    Graphic
                   </textPath>
                 </text>
                 <text>

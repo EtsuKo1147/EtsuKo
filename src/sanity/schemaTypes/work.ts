@@ -19,6 +19,13 @@ export const workType = defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'titleAnnotation',
+      title: 'Title Annotation',
+      type: 'string',
+      description:
+        'Optional small reading or subtitle shown above the detail-page title.',
+    }),
+    defineField({
       name: 'slug',
       title: 'Slug',
       type: 'slug',

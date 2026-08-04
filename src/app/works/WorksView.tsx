@@ -16,7 +16,7 @@ const polaroidAssetPath = '/home/images/works-polaroid'
 const categoryOptions: { slug: ActiveCategory; label: string }[] = [
   { slug: 'all', label: 'ALL' },
   { slug: 'branding', label: 'Branding' },
-  { slug: 'graphic', label: 'Illustration' },
+  { slug: 'graphic', label: 'Graphic' },
   { slug: 'web', label: 'Web' },
   { slug: 'photography', label: 'Photography' },
 ]
@@ -200,7 +200,7 @@ export default function WorksView({ works, initialCategory = 'all' }: WorksViewP
               </text>
               <text>
                 <textPath href="#works-category-ring" startOffset="32%">
-                  Illustration
+                  Graphic
                 </textPath>
               </text>
               <text>

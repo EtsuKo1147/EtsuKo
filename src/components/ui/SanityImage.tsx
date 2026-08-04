@@ -10,7 +10,7 @@ import {
   type CSSProperties,
 } from 'react'
 import type { SanityImageSource } from '@sanity/image-url'
-import NextImage, { type ImageLoaderProps } from 'next/image'
+import NextImage from 'next/image'
 import { imageLoader } from 'next-sanity/image'
 import { urlFor } from '@/sanity/lib/image'
 
@@ -45,7 +45,6 @@ type SanityImageProps = Omit<
   style?: CSSProperties
   deferUntilNearViewport?: boolean
   deferDelayMs?: number
-  maxSourceWidth?: number
 }
 
 type SanityImageRecord = {
@@ -140,7 +139,6 @@ const SanityImage = forwardRef<HTMLImageElement, SanityImageProps>(
       style,
       deferUntilNearViewport = false,
       deferDelayMs = 0,
-      maxSourceWidth,
       ...imageProps
     },
     ref,
@@ -163,16 +161,6 @@ const SanityImage = forwardRef<HTMLImageElement, SanityImageProps>(
           ? PREVIEW_IMAGE_SIZES
           : DEFERRED_IMAGE_SIZES
     const responsiveQuality = effectivePhase === 'full' ? quality : PREVIEW_IMAGE_QUALITY
-    const responsiveLoader = useCallback(
-      (loaderProps: ImageLoaderProps) =>
-        imageLoader({
-          ...loaderProps,
-          width: maxSourceWidth
-            ? Math.min(loaderProps.width, maxSourceWidth)
-            : loaderProps.width,
-        }),
-      [maxSourceWidth],
-    )
     const setImageRef = useCallback(
       (node: HTMLImageElement | null) => {
         internalRef.current = node
@@ -260,7 +248,7 @@ const SanityImage = forwardRef<HTMLImageElement, SanityImageProps>(
         <NextImage
           {...imageProps}
           ref={setImageRef}
-          loader={responsiveLoader}
+          loader={imageLoader}
           src={src}
           alt={alt}
           fill
@@ -277,7 +265,7 @@ const SanityImage = forwardRef<HTMLImageElement, SanityImageProps>(
       <NextImage
         {...imageProps}
         ref={setImageRef}
-        loader={responsiveLoader}
+        loader={imageLoader}
         src={src}
         alt={alt}
         width={renderedWidth}
