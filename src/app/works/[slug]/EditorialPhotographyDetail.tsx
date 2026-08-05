@@ -134,15 +134,13 @@ function getLightboxPreviewUrl(image: Parameters<typeof urlFor>[0]) {
     .url()
 }
 
-const LIGHTBOX_IMAGE_QUALITY = 84
+const LIGHTBOX_IMAGE_QUALITY = 86
+const LIGHTBOX_MAX_IMAGE_WIDTH = 3200
 
 function getLightboxRequestWidth(
   dimensions: ReturnType<typeof getSanityImageDimensions>,
 ) {
-  const viewportCap =
-    window.innerWidth <= 700 ? 1600 : window.innerWidth <= 1050 ? 2400 : 3200
-
-  return Math.max(1, Math.min(dimensions.width, viewportCap))
+  return Math.max(1, Math.min(dimensions.width, LIGHTBOX_MAX_IMAGE_WIDTH))
 }
 
 function getLightboxImageUrl(
@@ -360,6 +358,22 @@ export default function EditorialPhotographyDetail({
     [getLightboxSource],
   )
 
+  const getRenderedPreviewSource = useCallback(
+    (index: number) => {
+      const renderedImage = pageRef.current
+        ?.querySelector<HTMLElement>(`[data-lightbox-index="${index}"]`)
+        ?.querySelector<HTMLImageElement>('img')
+
+      if (renderedImage?.currentSrc || renderedImage?.src) {
+        return renderedImage.currentSrc || renderedImage.src
+      }
+
+      const image = lightboxImages[index]
+      return image ? getLightboxPreviewUrl(image.source) : null
+    },
+    [lightboxImages],
+  )
+
   const getSafePreviewTop = (element: HTMLElement) => {
     const rect = element.getBoundingClientRect()
     const edge = Math.min(180, window.innerHeight / 3)
@@ -529,12 +543,17 @@ export default function EditorialPhotographyDetail({
       calculateLightboxSizing(getSanityImageDimensions(previousImage.source)),
     )
     setLightboxImageSrc(previousSource)
-    setLightboxPreviewSrc(previousSource)
+    setLightboxPreviewSrc(
+      previousSource && decodedLightboxUrlsRef.current.has(previousSource)
+        ? previousSource
+        : getRenderedPreviewSource(previousIndex),
+    )
     zoomFocusRef.current = null
     setActiveIndex(previousIndex)
   }, [
     activeIndex,
     calculateLightboxSizing,
+    getRenderedPreviewSource,
     lightboxImages,
     preloadLightboxImage,
   ])
@@ -556,76 +575,20 @@ export default function EditorialPhotographyDetail({
       calculateLightboxSizing(getSanityImageDimensions(nextImage.source)),
     )
     setLightboxImageSrc(nextSource)
-    setLightboxPreviewSrc(nextSource)
+    setLightboxPreviewSrc(
+      nextSource && decodedLightboxUrlsRef.current.has(nextSource)
+        ? nextSource
+        : getRenderedPreviewSource(nextIndex),
+    )
     zoomFocusRef.current = null
     setActiveIndex(nextIndex)
   }, [
     activeIndex,
     calculateLightboxSizing,
+    getRenderedPreviewSource,
     lightboxImages,
     preloadLightboxImage,
   ])
-
-  useEffect(() => {
-    if (activeIndex === null || lightboxImages.length < 2) {
-      return
-    }
-
-    const adjacentIndexes = new Set([
-      (activeIndex - 1 + lightboxImages.length) % lightboxImages.length,
-      (activeIndex + 1) % lightboxImages.length,
-    ])
-
-    adjacentIndexes.forEach(preloadLightboxImage)
-  }, [activeIndex, lightboxImages.length, preloadLightboxImage])
-
-  useEffect(() => {
-    const page = pageRef.current
-
-    if (!page || typeof IntersectionObserver === 'undefined') {
-      return
-    }
-
-    let observer: IntersectionObserver | null = null
-
-    const startObserving = () => {
-      observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (!entry.isIntersecting) {
-              return
-            }
-
-            const index = Number(
-              (entry.target as HTMLElement).dataset.lightboxIndex,
-            )
-
-            if (Number.isInteger(index)) {
-              preloadLightboxImage(index)
-            }
-
-            observer?.unobserve(entry.target)
-          })
-        },
-        { rootMargin: '600px 0px' },
-      )
-
-      page
-        .querySelectorAll<HTMLElement>('[data-lightbox-index]')
-        .forEach((element) => observer?.observe(element))
-    }
-
-    if (document.readyState === 'complete') {
-      startObserving()
-    } else {
-      window.addEventListener('load', startObserving, { once: true })
-    }
-
-    return () => {
-      window.removeEventListener('load', startObserving)
-      observer?.disconnect()
-    }
-  }, [preloadLightboxImage, work.slug])
 
   useLayoutEffect(() => {
     const heroStage = heroStageRef.current
@@ -969,6 +932,15 @@ export default function EditorialPhotographyDetail({
     decodedLightboxUrlsRef.current.add(image.currentSrc || image.src)
     isLightboxImageReadyRef.current = true
     gsap.killTweensOf([image, previewImage].filter(Boolean))
+
+    if (activeIndex !== null && lightboxImages.length > 1) {
+      const adjacentIndexes = new Set([
+        (activeIndex - 1 + lightboxImages.length) % lightboxImages.length,
+        (activeIndex + 1) % lightboxImages.length,
+      ])
+
+      adjacentIndexes.forEach(preloadLightboxImage)
+    }
 
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       gsap.set(image, { autoAlpha: 1 })
@@ -1649,7 +1621,7 @@ export default function EditorialPhotographyDetail({
                   />
                 ) : null}
                 {lightboxImageSrc && activeImageDimensions ? (
-                  // A fixed Sanity CDN URL prevents srcset changes while the user zooms.
+                  // The decoded 3200px Sanity CDN image replaces the preview without changing geometry.
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     ref={lightboxImageRef}
