@@ -245,7 +245,7 @@
 }
 
 .commercialCoverImage {
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
   transition:
     transform 500ms cubic-bezier(0.16, 1, 0.3, 1),
@@ -522,8 +522,11 @@
 
 @media (hover: hover) and (pointer: fine) {
   .commercialCoverButton:hover .commercialCoverImage,
+  .commercialCoverButton:focus-visible .commercialCoverImage {
+    filter: saturate(1.035) contrast(1.012);
+  }
+
   .commercialGalleryItem:hover .commercialImageFrame img,
-  .commercialCoverButton:focus-visible .commercialCoverImage,
   .commercialGalleryItem:focus-visible .commercialImageFrame img {
     filter: saturate(1.035) contrast(1.012);
     transform: scale(1.018);

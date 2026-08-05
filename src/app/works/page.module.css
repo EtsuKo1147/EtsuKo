@@ -444,6 +444,17 @@
   transform: translateZ(0);
 }
 
+.workFlip::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  background: rgb(0 0 0 / 15%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
 @media (min-width: 1101px) {
   .workFlip {
     transform-style: preserve-3d;
@@ -467,6 +478,18 @@
 .workPolaroid:hover,
 .workPolaroid:focus-visible {
   outline: none;
+  transform:
+    translate(var(--work-x, 0), var(--work-y, 0))
+    rotate(var(--work-rotate, 0deg))
+    scale(1.025);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .workDisplay:has(.workPolaroid:is(:hover, :focus-visible))
+    .workPolaroid:not(:is(:hover, :focus-visible))
+    .workFlip::after {
+    opacity: 1;
+  }
 }
 
 @media (min-width: 1101px) {
@@ -571,6 +594,10 @@
 
   .workFlip {
     animation: none !important;
+  }
+
+  .workFlip::after {
+    transition: none;
   }
 }
 

@@ -162,6 +162,23 @@ function getDetailTitlePresentation(
   }
 }
 
+function getUncroppedCoverImage(
+  image: NonNullable<Work['coverImage']>,
+): NonNullable<Work['coverImage']> {
+  if (!image.source || typeof image.source !== 'object') {
+    return image
+  }
+
+  const source = { ...(image.source as Record<string, unknown>) }
+  delete source.crop
+  delete source.hotspot
+
+  return {
+    ...image,
+    source: source as NonNullable<Work['coverImage']>['source'],
+  }
+}
+
 export default function EditorialPhotographyDetail({
   work,
   works,
@@ -171,20 +188,25 @@ export default function EditorialPhotographyDetail({
 }: EditorialPhotographyDetailProps) {
   const { isInverted, toggleTheme } = useSiteTheme()
   const images = useMemo(() => work.galleryImages || [], [work.galleryImages])
+  const detailCoverImage = useMemo(
+    () =>
+      work.coverImage ? getUncroppedCoverImage(work.coverImage) : undefined,
+    [work.coverImage],
+  )
   const lightboxImages = useMemo(
     () =>
-      work.coverImage
+      detailCoverImage
         ? [
             {
-              ...work.coverImage,
-              alt: work.coverImage.alt || work.title,
+              ...detailCoverImage,
+              alt: detailCoverImage.alt || work.title,
             },
             ...images,
           ]
         : images,
-    [images, work.coverImage, work.title],
+    [detailCoverImage, images, work.title],
   )
-  const galleryLightboxOffset = work.coverImage ? 1 : 0
+  const galleryLightboxOffset = detailCoverImage ? 1 : 0
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const [lightboxPreviewSrc, setLightboxPreviewSrc] = useState<string | null>(
     null,
@@ -1308,7 +1330,7 @@ export default function EditorialPhotographyDetail({
           </h1>
 
           <figure ref={coverRef} className={styles.commercialCover}>
-            {work.coverImage ? (
+            {detailCoverImage ? (
               <button
                 type="button"
                 className={styles.commercialCoverButton}
@@ -1320,8 +1342,8 @@ export default function EditorialPhotographyDetail({
                 onClick={(event) => openImage(0, event)}
               >
                 <SanityImage
-                  image={work.coverImage.source}
-                  alt={work.coverImage.alt || work.title}
+                  image={detailCoverImage.source}
+                  alt={detailCoverImage.alt || work.title}
                   fill
                   priority
                   sizes="(max-width: 700px) calc(100vw - 40px), (max-width: 1050px) 60vw, 46vw"
