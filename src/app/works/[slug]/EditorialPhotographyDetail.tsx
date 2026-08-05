@@ -127,30 +127,9 @@ function getGalleryImageSizes(
 
 function getLightboxPreviewUrl(image: Parameters<typeof urlFor>[0]) {
   return urlFor(image)
-    .width(1600)
+    .width(2048)
     .fit('max')
-    .quality(80)
-    .auto('format')
-    .url()
-}
-
-const LIGHTBOX_IMAGE_QUALITY = 86
-const LIGHTBOX_MAX_IMAGE_WIDTH = 3200
-
-function getLightboxRequestWidth(
-  dimensions: ReturnType<typeof getSanityImageDimensions>,
-) {
-  return Math.max(1, Math.min(dimensions.width, LIGHTBOX_MAX_IMAGE_WIDTH))
-}
-
-function getLightboxImageUrl(
-  image: Parameters<typeof urlFor>[0],
-  dimensions: ReturnType<typeof getSanityImageDimensions>,
-) {
-  return urlFor(image)
-    .width(getLightboxRequestWidth(dimensions))
-    .fit('max')
-    .quality(LIGHTBOX_IMAGE_QUALITY)
+    .quality(86)
     .auto('format')
     .url()
 }
@@ -229,12 +208,19 @@ export default function EditorialPhotographyDetail({
   const isLightboxImageReadyRef = useRef(false)
   const decodedLightboxUrlsRef = useRef(new Set<string>())
   const lightboxPreloadPromisesRef = useRef(new Map<string, Promise<void>>())
+  const decodedLightboxPreviewUrlsRef = useRef(new Set<string>())
+  const lightboxPreviewPreloadPromisesRef = useRef(
+    new Map<string, Promise<string>>(),
+  )
+  const lightboxNavigationRequestRef = useRef(0)
+  const lightboxNavigationTargetRef = useRef<number | null>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const openerRef = useRef<HTMLElement | null>(null)
   const sourceRectRef = useRef<DOMRect | null>(null)
   const panStateRef = useRef<PanState | null>(null)
   const suppressPanClickRef = useRef(false)
   const zoomFocusRef = useRef<{ x: number; y: number } | null>(null)
+  const pendingZoomLevelRef = useRef<ZoomLevel | null>(null)
   const wasOpenRef = useRef(false)
   const closingRef = useRef(false)
   const currentIndex = displayIndex - 1
@@ -284,11 +270,11 @@ export default function EditorialPhotographyDetail({
           height: `${targetImageHeight}px`,
         } as CSSProperties)
       : undefined
-  const lightboxImageStyle = lightboxSizing
+  const lightboxImageStyle =
+    targetImageWidth !== null && targetImageHeight !== null
     ? ({
-        width: `${lightboxSizing.fitWidth}px`,
-        height: `${lightboxSizing.fitHeight}px`,
-        transform: `scale(${zoomScale})`,
+        width: `${targetImageWidth}px`,
+        height: `${targetImageHeight}px`,
       } as CSSProperties)
     : undefined
 
@@ -324,8 +310,7 @@ export default function EditorialPhotographyDetail({
         return null
       }
 
-      const dimensions = getSanityImageDimensions(image.source)
-      return getLightboxImageUrl(image.source, dimensions)
+      return urlFor(image.source).url()
     },
     [lightboxImages],
   )
@@ -374,6 +359,65 @@ export default function EditorialPhotographyDetail({
     [lightboxImages],
   )
 
+  const preloadLightboxPreviewImage = useCallback(
+    (index: number) => {
+      const image = lightboxImages[index]
+
+      if (!image) {
+        return Promise.resolve<string | null>(null)
+      }
+
+      const src = getLightboxPreviewUrl(image.source)
+
+      if (decodedLightboxPreviewUrlsRef.current.has(src)) {
+        return Promise.resolve(src)
+      }
+
+      const existingPromise = lightboxPreviewPreloadPromisesRef.current.get(src)
+
+      if (existingPromise) {
+        return existingPromise
+      }
+
+      const preloadImage = new window.Image()
+      preloadImage.decoding = 'async'
+      preloadImage.src = src
+
+      const decodePromise = preloadImage
+        .decode()
+        .catch(() => undefined)
+        .then(() => {
+          decodedLightboxPreviewUrlsRef.current.add(src)
+          return src
+        })
+
+      lightboxPreviewPreloadPromisesRef.current.set(src, decodePromise)
+      return decodePromise
+    },
+    [lightboxImages],
+  )
+
+  const preloadNearbyLightboxPreviews = useCallback(
+    (index: number) => {
+      if (lightboxImages.length < 2) {
+        return
+      }
+
+      const nearbyIndexes = new Set(
+        [-1, 1, 2].map(
+          (offset) =>
+            (index + offset + lightboxImages.length) % lightboxImages.length,
+        ),
+      )
+
+      nearbyIndexes.delete(index)
+      nearbyIndexes.forEach((nearbyIndex) => {
+        void preloadLightboxPreviewImage(nearbyIndex)
+      })
+    },
+    [lightboxImages.length, preloadLightboxPreviewImage],
+  )
+
   const getSafePreviewTop = (element: HTMLElement) => {
     const rect = element.getBoundingClientRect()
     const edge = Math.min(180, window.innerHeight / 3)
@@ -409,7 +453,10 @@ export default function EditorialPhotographyDetail({
     openerRef.current = event.currentTarget
     sourceRectRef.current = event.currentTarget.getBoundingClientRect()
     closingRef.current = false
+    lightboxNavigationRequestRef.current += 1
+    lightboxNavigationTargetRef.current = null
     isLightboxImageReadyRef.current = false
+    pendingZoomLevelRef.current = null
     setZoomLevel(30)
     setLightboxSizing(calculateLightboxSizing(dimensions))
     setLightboxImageSrc(fullImageSrc)
@@ -422,6 +469,7 @@ export default function EditorialPhotographyDetail({
     )
     zoomFocusRef.current = null
     setActiveIndex(index)
+    preloadNearbyLightboxPreviews(index)
   }
 
   const closeImage = useCallback(() => {
@@ -443,10 +491,13 @@ export default function EditorialPhotographyDetail({
     }
 
     const finishClose = () => {
+      lightboxNavigationRequestRef.current += 1
+      lightboxNavigationTargetRef.current = null
       wasOpenRef.current = false
       closingRef.current = false
       sourceRectRef.current = null
       isLightboxImageReadyRef.current = false
+      pendingZoomLevelRef.current = null
       setLightboxPreviewSrc(null)
       setLightboxImageSrc(null)
       setActiveIndex(null)
@@ -524,71 +575,77 @@ export default function EditorialPhotographyDetail({
       )
   }, [activeIndex])
 
+  const switchLightboxImage = useCallback(async (index: number) => {
+    const image = lightboxImages[index]
+
+    if (!image) {
+      return
+    }
+
+    const requestId = lightboxNavigationRequestRef.current + 1
+    lightboxNavigationRequestRef.current = requestId
+    lightboxNavigationTargetRef.current = index
+    sourceRectRef.current = null
+    const fullImageSrc = preloadLightboxImage(index)
+    const decodedPreviewSrc = await preloadLightboxPreviewImage(index)
+
+    if (
+      lightboxNavigationRequestRef.current !== requestId ||
+      closingRef.current
+    ) {
+      return
+    }
+
+    isLightboxImageReadyRef.current = false
+    pendingZoomLevelRef.current = null
+    setZoomLevel(30)
+    setLightboxSizing(
+      calculateLightboxSizing(getSanityImageDimensions(image.source)),
+    )
+    setLightboxImageSrc(fullImageSrc)
+    setLightboxPreviewSrc(
+      fullImageSrc && decodedLightboxUrlsRef.current.has(fullImageSrc)
+        ? fullImageSrc
+        : decodedPreviewSrc || getRenderedPreviewSource(index),
+    )
+    zoomFocusRef.current = null
+    setActiveIndex(index)
+    lightboxNavigationTargetRef.current = null
+    preloadNearbyLightboxPreviews(index)
+  }, [
+    calculateLightboxSizing,
+    getRenderedPreviewSource,
+    lightboxImages,
+    preloadLightboxImage,
+    preloadNearbyLightboxPreviews,
+    preloadLightboxPreviewImage,
+  ])
+
   const showPrevious = useCallback(() => {
     if (lightboxImages.length < 2) {
       return
     }
 
-    sourceRectRef.current = null
+    const currentNavigationIndex =
+      lightboxNavigationTargetRef.current ?? activeIndex ?? 0
     const previousIndex =
-      activeIndex === null
-        ? 0
-        : (activeIndex - 1 + lightboxImages.length) % lightboxImages.length
+      (currentNavigationIndex - 1 + lightboxImages.length) %
+      lightboxImages.length
 
-    isLightboxImageReadyRef.current = false
-    setZoomLevel(30)
-    const previousImage = lightboxImages[previousIndex]
-    const previousSource = preloadLightboxImage(previousIndex)
-    setLightboxSizing(
-      calculateLightboxSizing(getSanityImageDimensions(previousImage.source)),
-    )
-    setLightboxImageSrc(previousSource)
-    setLightboxPreviewSrc(
-      previousSource && decodedLightboxUrlsRef.current.has(previousSource)
-        ? previousSource
-        : getRenderedPreviewSource(previousIndex),
-    )
-    zoomFocusRef.current = null
-    setActiveIndex(previousIndex)
-  }, [
-    activeIndex,
-    calculateLightboxSizing,
-    getRenderedPreviewSource,
-    lightboxImages,
-    preloadLightboxImage,
-  ])
+    void switchLightboxImage(previousIndex)
+  }, [activeIndex, lightboxImages.length, switchLightboxImage])
 
   const showNext = useCallback(() => {
     if (lightboxImages.length < 2) {
       return
     }
 
-    sourceRectRef.current = null
-    const nextIndex =
-      activeIndex === null ? 0 : (activeIndex + 1) % lightboxImages.length
+    const currentNavigationIndex =
+      lightboxNavigationTargetRef.current ?? activeIndex ?? 0
+    const nextIndex = (currentNavigationIndex + 1) % lightboxImages.length
 
-    isLightboxImageReadyRef.current = false
-    setZoomLevel(30)
-    const nextImage = lightboxImages[nextIndex]
-    const nextSource = preloadLightboxImage(nextIndex)
-    setLightboxSizing(
-      calculateLightboxSizing(getSanityImageDimensions(nextImage.source)),
-    )
-    setLightboxImageSrc(nextSource)
-    setLightboxPreviewSrc(
-      nextSource && decodedLightboxUrlsRef.current.has(nextSource)
-        ? nextSource
-        : getRenderedPreviewSource(nextIndex),
-    )
-    zoomFocusRef.current = null
-    setActiveIndex(nextIndex)
-  }, [
-    activeIndex,
-    calculateLightboxSizing,
-    getRenderedPreviewSource,
-    lightboxImages,
-    preloadLightboxImage,
-  ])
+    void switchLightboxImage(nextIndex)
+  }, [activeIndex, lightboxImages.length, switchLightboxImage])
 
   useLayoutEffect(() => {
     const heroStage = heroStageRef.current
@@ -895,10 +952,11 @@ export default function EditorialPhotographyDetail({
 
     gsap.killTweensOf([overlay, media])
     gsap.set(media, { visibility: 'visible' })
-    const animationFrame = window.requestAnimationFrame(animateLightboxImage)
+    let animationFrame: number | null = null
 
     if (!wasOpenRef.current) {
       wasOpenRef.current = true
+      animationFrame = window.requestAnimationFrame(animateLightboxImage)
       gsap.fromTo(overlay, { autoAlpha: 0 }, {
         autoAlpha: 1,
         duration: 0.22,
@@ -906,9 +964,14 @@ export default function EditorialPhotographyDetail({
       })
     } else {
       gsap.set(overlay, { autoAlpha: 1 })
+      gsap.set(media, { clearProps: 'transform' })
     }
 
-    return () => window.cancelAnimationFrame(animationFrame)
+    return () => {
+      if (animationFrame !== null) {
+        window.cancelAnimationFrame(animationFrame)
+      }
+    }
   }, [activeIndex, animateLightboxImage])
 
   const handleLightboxImageLoad = async () => {
@@ -930,16 +993,22 @@ export default function EditorialPhotographyDetail({
 
     const previewImage = lightboxPreviewImageRef.current
     decodedLightboxUrlsRef.current.add(image.currentSrc || image.src)
-    isLightboxImageReadyRef.current = true
     gsap.killTweensOf([image, previewImage].filter(Boolean))
 
-    if (activeIndex !== null && lightboxImages.length > 1) {
-      const adjacentIndexes = new Set([
-        (activeIndex - 1 + lightboxImages.length) % lightboxImages.length,
-        (activeIndex + 1) % lightboxImages.length,
-      ])
+    const finishImageReveal = () => {
+      if (lightboxImageRef.current !== image) {
+        return
+      }
 
-      adjacentIndexes.forEach(preloadLightboxImage)
+      isLightboxImageReadyRef.current = true
+      const pendingZoomLevel = pendingZoomLevelRef.current
+      pendingZoomLevelRef.current = null
+
+      if (pendingZoomLevel && pendingZoomLevel !== 30) {
+        sourceRectRef.current = null
+        setZoomLevel(pendingZoomLevel)
+      }
+
     }
 
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -949,30 +1018,46 @@ export default function EditorialPhotographyDetail({
         gsap.set(previewImage, { autoAlpha: 0 })
       }
 
+      finishImageReveal()
       return
+    }
+
+    if (previewImage) {
+      gsap.set(previewImage, { autoAlpha: 1 })
     }
 
     gsap.to(image, {
       autoAlpha: 1,
-      duration: 0.18,
+      duration: 0.16,
       ease: 'power1.out',
-    })
+      onComplete: () => {
+        if (
+          previewImage &&
+          lightboxPreviewImageRef.current === previewImage
+        ) {
+          gsap.set(previewImage, { autoAlpha: 0 })
+        }
 
-    if (previewImage) {
-      gsap.to(previewImage, {
-        autoAlpha: 0,
-        duration: 0.18,
-        ease: 'power1.out',
-      })
-    }
+        finishImageReveal()
+      },
+    })
   }
 
   const changeZoom = (direction: -1 | 1) => {
-    const nextLevel = ZOOM_LEVELS[zoomIndex + direction]
+    const requestedZoomLevel = pendingZoomLevelRef.current ?? zoomLevel
+    const requestedZoomIndex = ZOOM_LEVELS.indexOf(requestedZoomLevel)
+    const nextLevel = ZOOM_LEVELS[requestedZoomIndex + direction]
 
     if (nextLevel === undefined) {
       return
     }
+
+    if (!isLightboxImageReadyRef.current) {
+      pendingZoomLevelRef.current = nextLevel === 30 ? null : nextLevel
+      return
+    }
+
+    pendingZoomLevelRef.current = null
 
     const scroller = lightboxScrollRef.current
 
@@ -1621,7 +1706,7 @@ export default function EditorialPhotographyDetail({
                   />
                 ) : null}
                 {lightboxImageSrc && activeImageDimensions ? (
-                  // The decoded 3200px Sanity CDN image replaces the preview without changing geometry.
+                  // The decoded original-sized Sanity image replaces the preview without changing geometry.
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     ref={lightboxImageRef}

@@ -67,12 +67,11 @@ type SanityImageRecord = {
   }
 }
 
-type DeferredImagePhase = 'deferred' | 'preview' | 'full'
+type DeferredImagePhase = 'deferred' | 'full'
 
 const FALLBACK_DIMENSIONS = { width: 1600, height: 1200 }
 const DEFERRED_IMAGE_SIZES = '1px'
-const PREVIEW_IMAGE_SIZES = '(max-width: 700px) 160px, 256px'
-const PREVIEW_IMAGE_QUALITY = 72
+const DEFERRED_IMAGE_QUALITY = 72
 
 function readAssetDimensions(image: SanityImageSource) {
   if (!image || typeof image !== 'object') {
@@ -139,6 +138,7 @@ const SanityImage = forwardRef<HTMLImageElement, SanityImageProps>(
       style,
       deferUntilNearViewport = false,
       deferDelayMs = 0,
+      onLoad,
       ...imageProps
     },
     ref,
@@ -155,12 +155,9 @@ const SanityImage = forwardRef<HTMLImageElement, SanityImageProps>(
     const src = urlFor(image).url()
     const effectivePhase = priority || !deferUntilNearViewport ? 'full' : deferredPhase
     const responsiveSizes =
-      effectivePhase === 'full'
-        ? sizes
-        : effectivePhase === 'preview'
-          ? PREVIEW_IMAGE_SIZES
-          : DEFERRED_IMAGE_SIZES
-    const responsiveQuality = effectivePhase === 'full' ? quality : PREVIEW_IMAGE_QUALITY
+      effectivePhase === 'full' ? sizes : DEFERRED_IMAGE_SIZES
+    const responsiveQuality =
+      effectivePhase === 'full' ? quality : DEFERRED_IMAGE_QUALITY
     const setImageRef = useCallback(
       (node: HTMLImageElement | null) => {
         internalRef.current = node
@@ -175,36 +172,11 @@ const SanityImage = forwardRef<HTMLImageElement, SanityImageProps>(
     )
 
     useEffect(() => {
-      if (!deferUntilNearViewport || priority || deferredPhase !== 'deferred') {
-        return
-      }
-
-      const imageElement = internalRef.current
-
-      if (!imageElement || typeof IntersectionObserver === 'undefined') {
-        setDeferredPhase('full')
-        return
-      }
-
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry?.isIntersecting) {
-            setDeferredPhase('preview')
-            observer.disconnect()
-          }
-        },
-        { rootMargin: '700px 0px' },
-      )
-
-      observer.observe(imageElement)
-
-      return () => {
-        observer.disconnect()
-      }
-    }, [deferUntilNearViewport, deferredPhase, priority])
-
-    useEffect(() => {
-      if (!deferUntilNearViewport || priority) {
+      if (
+        !deferUntilNearViewport ||
+        priority ||
+        deferredPhase !== 'deferred'
+      ) {
         return
       }
 
@@ -216,21 +188,24 @@ const SanityImage = forwardRef<HTMLImageElement, SanityImageProps>(
         return
       }
 
-      const observer = new IntersectionObserver(([entry]) => {
-        if (!entry?.isIntersecting) {
-          return
-        }
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry?.isIntersecting) {
+            return
+          }
 
-        if (deferDelayMs > 0) {
-          loadTimer = window.setTimeout(() => {
+          if (deferDelayMs > 0) {
+            loadTimer = window.setTimeout(() => {
+              setDeferredPhase('full')
+            }, deferDelayMs)
+          } else {
             setDeferredPhase('full')
-          }, deferDelayMs)
-        } else {
-          setDeferredPhase('full')
-        }
+          }
 
-        observer.disconnect()
-      })
+          observer.disconnect()
+        },
+        { rootMargin: '700px 0px' },
+      )
 
       observer.observe(imageElement)
 
@@ -241,7 +216,34 @@ const SanityImage = forwardRef<HTMLImageElement, SanityImageProps>(
           window.clearTimeout(loadTimer)
         }
       }
-    }, [deferDelayMs, deferUntilNearViewport, priority])
+    }, [deferDelayMs, deferUntilNearViewport, deferredPhase, priority])
+
+    const handleImageLoad = useCallback<
+      NonNullable<NextImageProps['onLoad']>
+    >(
+      (event) => {
+        if (
+          deferUntilNearViewport &&
+          effectivePhase === 'full' &&
+          !window.matchMedia('(prefers-reduced-motion: reduce)').matches &&
+          typeof event.currentTarget.animate === 'function'
+        ) {
+          event.currentTarget.animate(
+            [
+              { opacity: 0.9, filter: 'blur(2px)' },
+              { opacity: 1, filter: 'blur(0px)' },
+            ],
+            {
+              duration: 260,
+              easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+            },
+          )
+        }
+
+        onLoad?.(event)
+      },
+      [deferUntilNearViewport, effectivePhase, onLoad],
+    )
 
     if (fill) {
       return (
@@ -257,6 +259,7 @@ const SanityImage = forwardRef<HTMLImageElement, SanityImageProps>(
           preload={priority}
           className={className}
           style={imageStyle}
+          onLoad={handleImageLoad}
         />
       )
     }
@@ -275,6 +278,7 @@ const SanityImage = forwardRef<HTMLImageElement, SanityImageProps>(
         preload={priority}
         className={className}
         style={imageStyle}
+        onLoad={handleImageLoad}
       />
     )
   },
