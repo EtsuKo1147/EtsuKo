@@ -47,6 +47,26 @@
   background-image: url('/home/character-stage/ui/turn-light.svg');
 }
 
+@media (any-hover: hover) and (any-pointer: fine) {
+  .invertToggle:hover,
+  .invertToggle:focus-visible {
+    background-image: url('/home/character-stage/ui/turn-dark-hover.svg');
+  }
+
+  .pageInverted .invertToggle:hover,
+  .pageInverted .invertToggle:focus-visible {
+    background-image: url('/home/character-stage/ui/turn-light-hover.svg');
+  }
+}
+
+.invertToggle:active {
+  background-image: url('/home/character-stage/ui/turn-dark-pressed.svg');
+}
+
+.pageInverted .invertToggle:active {
+  background-image: url('/home/character-stage/ui/turn-light-pressed.svg');
+}
+
 .invertToggle:focus-visible,
 .footerLink:focus-visible,
 .nextProject:focus-visible {

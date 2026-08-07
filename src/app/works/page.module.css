@@ -73,7 +73,7 @@
   background-image: url('/home/character-stage/ui/turn-light.svg');
 }
 
-@media (hover: hover) and (pointer: fine) {
+@media (any-hover: hover) and (any-pointer: fine) {
   .invertToggle:hover,
   .invertToggle:focus-visible {
     background-image: url('/home/character-stage/ui/turn-dark-hover.svg');
@@ -449,7 +449,7 @@
   position: absolute;
   inset: 0;
   z-index: 6;
-  background: rgb(0 0 0 / 15%);
+  background: rgb(0 0 0 / 40%);
   opacity: 0;
   pointer-events: none;
   transition: opacity 200ms ease;
